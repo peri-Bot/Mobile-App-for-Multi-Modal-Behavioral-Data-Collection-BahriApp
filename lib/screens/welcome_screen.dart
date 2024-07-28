@@ -11,12 +11,14 @@ class WelcomeScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(
+                  height: 140), // creates a padding for the logo from the top
               Container(
-                width: 150,
-                height: 150,
+                // container for the logo
+                width: 450,
+                height: 450,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
@@ -40,7 +42,7 @@ class WelcomeScreen extends StatelessWidget {
               const Text(
                 'Bahri App',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 48,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
