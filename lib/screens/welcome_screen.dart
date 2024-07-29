@@ -1,3 +1,4 @@
+import 'package:bahri_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -58,7 +59,11 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: Implement login functionality
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()));
+                      ;
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB19EF0),
