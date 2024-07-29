@@ -1,3 +1,5 @@
+import 'package:bahri_app/screens/signup_screen.dart';
+import 'package:bahri_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -14,11 +16,11 @@ class WelcomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(
-                  height: 140), // creates a padding for the logo from the top
+                  height: 40), // creates a padding for the logo from the top
               Container(
                 // container for the logo
-                width: 450,
-                height: 450,
+                width: 300,
+                height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
@@ -50,7 +52,10 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement login functionality
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFB19EF0),
@@ -64,7 +69,10 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/signup');
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SignupPage()));
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.black),
