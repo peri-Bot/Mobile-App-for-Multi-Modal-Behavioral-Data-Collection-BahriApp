@@ -8,10 +8,10 @@ class User {
   late String lastName;
   late DateTime dOB;
   late Char gender;
-  late Char userName;
+  late String userName;
   late String email;
   late String password;
-  late double progress;
+  late double? progress;
   late double? teamId;
   User({
     required this.id,
@@ -32,7 +32,7 @@ class User {
     String? lastName,
     DateTime? dOB,
     Char? gender,
-    Char? userName,
+    String? userName,
     String? email,
     String? password,
     double? progress,
