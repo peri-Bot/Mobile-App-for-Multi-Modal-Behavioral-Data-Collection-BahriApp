@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
 import 'dart:ffi';
 
 class User {
@@ -7,6 +8,7 @@ class User {
   late String lastName;
   late DateTime dOB;
   late Char gender;
+  late Char userName;
   late String email;
   late String password;
   late double progress;
@@ -17,6 +19,7 @@ class User {
     required this.lastName,
     required this.dOB,
     required this.gender,
+    required this.userName,
     required this.email,
     required this.password,
     required this.progress,
@@ -29,6 +32,7 @@ class User {
     String? lastName,
     DateTime? dOB,
     Char? gender,
+    Char? userName,
     String? email,
     String? password,
     double? progress,
@@ -40,6 +44,7 @@ class User {
       lastName: lastName ?? this.lastName,
       dOB: dOB ?? this.dOB,
       gender: gender ?? this.gender,
+      userName: userName ?? this.userName,
       email: email ?? this.email,
       password: password ?? this.password,
       progress: progress ?? this.progress,
@@ -49,7 +54,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, email: $email, password: $password, progress: $progress, teamId: $teamId)';
+    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, userName: $userName, email: $email, password: $password, progress: $progress, teamId: $teamId)';
   }
 
   @override
@@ -61,6 +66,7 @@ class User {
         other.lastName == lastName &&
         other.dOB == dOB &&
         other.gender == gender &&
+        other.userName == userName &&
         other.email == email &&
         other.password == password &&
         other.progress == progress &&
@@ -74,6 +80,7 @@ class User {
         lastName.hashCode ^
         dOB.hashCode ^
         gender.hashCode ^
+        userName.hashCode ^
         email.hashCode ^
         password.hashCode ^
         progress.hashCode ^
