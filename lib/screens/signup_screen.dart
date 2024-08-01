@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 //import 'package:flutter/widgets.dart';
 import 'package:bahri_app/widgets/CustomStepper.dart';
 import 'package:bahri_app/widgets/LogoCircularBorder.dart';
+import 'package:bahri_app/services/UserServices.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -12,6 +13,15 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   int _currentStep = 0;
+  bool _visibleBackBtn = false;
+  String? _error;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _birthdateController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  String? _selectedGender;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +105,18 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _currentStep++;
+                        var errRetrun = validate(_currentStep);
+                        if (errRetrun.isEmpty || errRetrun == "") {
+                          _currentStep++;
+                          if (_currentStep > 0) {
+                            _visibleBackBtn = true;
+                          } else if (_currentStep <= 0) {
+                            _visibleBackBtn = false;
+                          }
+                          _error = null;
+                        } else {
+                          _error = errRetrun;
+                        }
                       });
                     },
                     style: ElevatedButton.styleFrom(
@@ -115,6 +136,43 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                   ),
+                ),
+                const Divider(color: Colors.transparent),
+                FractionallySizedBox(
+                  widthFactor: 0.9,
+                  child: Visibility(
+                    visible: _visibleBackBtn,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentStep--;
+                          if (_currentStep > 0) {
+                            _visibleBackBtn = true;
+                          } else if (_currentStep <= 0) {
+                            _visibleBackBtn = false;
+                          }
+                          _error = null;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        minimumSize: const Size(double.infinity, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                          //fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 )
               ],
             ),
@@ -123,83 +181,163 @@ class _SignupScreenState extends State<SignupScreen> {
       )),
     );
   }
-}
 
-Widget changeTextBox(int currentStep, BuildContext context) {
-  switch (currentStep) {
-    case 0:
-      return const TextField(
-        decoration: InputDecoration(
-          labelText: 'Email',
-          border: OutlineInputBorder(),
-        ),
-      );
-    case 1:
-      return const TextField(
-        decoration: InputDecoration(
-          labelText: 'Name',
-          border: OutlineInputBorder(),
-        ),
-      );
-    case 2:
-      return GestureDetector(
-        onTap: () async {
-          DateTime? pickedDate = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
-          );
-          if (pickedDate != null) {
-            // You can format the picked date and set it to a TextEditingController to display it
-          }
-        },
-        child: const AbsorbPointer(
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Birthdate',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-      );
-    case 3:
-      return DropdownButtonFormField<String>(
-        decoration: const InputDecoration(
-          labelText: 'Gender',
-          border: OutlineInputBorder(),
-        ),
-        items: ['Male', 'Female'].map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (newValue) {
-          // Handle change
-        },
-      );
-    case 4:
-      return const Column(
-        children: [
-          TextField(
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 15),
-          TextField(
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Confirm Password',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ],
-      );
-    default:
-      return Container();
+  Widget changeTextBox(
+    int currentStep,
+    BuildContext context,
+  ) {
+    switch (currentStep) {
+      case 0:
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            return TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                errorText: _error,
+                border: const OutlineInputBorder(),
+              ),
+            );
+          },
+        );
+      case 1:
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            return TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                errorText: _error,
+                border: const OutlineInputBorder(),
+              ),
+            );
+          },
+        );
+      case 2:
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            return GestureDetector(
+              onTap: () async {
+                DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+                if (pickedDate != null) {
+                  setState(() {
+                    _birthdateController.text =
+                        "${pickedDate.toLocal()}".split(' ')[0];
+                  });
+                }
+              },
+              child: AbsorbPointer(
+                child: TextField(
+                  controller: _birthdateController,
+                  decoration: InputDecoration(
+                    labelText: 'Birthdate',
+                    errorText: _error,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      case 3:
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            return DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Gender',
+                errorText: _error,
+                border: const OutlineInputBorder(),
+              ),
+              value: _selectedGender,
+              items: ['Male', 'Female'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedGender = newValue;
+                });
+              },
+            );
+          },
+        );
+      case 4:
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            return Column(
+              children: [
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    errorText: _error,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      default:
+        return Container();
+    }
+  }
+
+  String validate(int currentStep) {
+    UserServices usrsrvs = UserServices();
+    var error = "";
+    switch (currentStep) {
+      case 0:
+        error = usrsrvs.validateUserInput(email: _emailController.text.trim());
+      case 1:
+        String? fname;
+        if (_nameController.text.trim().isEmpty) {
+          fname = _nameController.text;
+        } else if (_nameController.text.trim().isNotEmpty &&
+            (!_nameController.text.trimRight().contains(" ") ||
+                _nameController.text.trim().length <= 2)) {
+          fname = _nameController.text.trim();
+        }
+        if (fname != null) {
+          error = usrsrvs.validateUserInput(firstName: fname);
+        }
+        if (error.isEmpty) {
+          error = usrsrvs.validateUserInput(
+              lastName: _nameController.text.trim().isNotEmpty &&
+                      !_nameController.text.trimRight().contains(" ")
+                  ? ""
+                  : _nameController.text.trim().split(" ")[1]);
+        }
+      case 2:
+        error = usrsrvs.validateUserInput(
+            birthdate: _birthdateController.text.trim());
+      case 3:
+        error = usrsrvs.validateUserInput(gender: _selectedGender);
+      default:
+        error = "";
+    }
+    return error;
   }
 }
