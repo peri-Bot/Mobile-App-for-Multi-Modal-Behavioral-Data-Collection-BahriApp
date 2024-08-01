@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:bahri_app/models/user.dart';
 
 class UserServices {
@@ -9,9 +7,10 @@ class UserServices {
     required String firstName,
     required String lastName,
     required DateTime dOB,
-    required Char gender,
+    required String gender,
     required String userName,
     required String email,
+    required String skillLevel,
     required String password,
     double? progress,
     double? teamId,
@@ -24,6 +23,7 @@ class UserServices {
       gender: gender,
       userName: userName,
       email: email,
+      skillLevel: skillLevel,
       password: password,
       progress: progress,
       teamId: teamId,
@@ -38,6 +38,7 @@ class UserServices {
     String? password,
     String? birthdate,
     String? gender = "-1",
+    String? skillLevle = "-1",
   }) {
     String error = "";
     if (email != null) {
@@ -77,6 +78,12 @@ class UserServices {
     if (gender != "-1") {
       if (gender == null) {
         error = 'Chose male or female';
+      }
+      return error;
+    }
+    if (skillLevle != "-1") {
+      if (skillLevle == null) {
+        error = 'Chose your skill level';
       }
       return error;
     }
