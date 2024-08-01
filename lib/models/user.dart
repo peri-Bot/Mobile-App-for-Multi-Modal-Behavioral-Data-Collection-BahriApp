@@ -1,13 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:ffi';
 
 class User {
   late double id;
   late String firstName;
   late String lastName;
   late DateTime dOB;
-  late Char gender;
+  late String gender;
   late String userName;
   late String email;
   late String password;
@@ -31,7 +30,7 @@ class User {
     String? firstName,
     String? lastName,
     DateTime? dOB,
-    Char? gender,
+    String? gender,
     String? userName,
     String? email,
     String? password,

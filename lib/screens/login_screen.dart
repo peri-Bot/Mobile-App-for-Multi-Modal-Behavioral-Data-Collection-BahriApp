@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bahri_app/services/login_controller.dart';
+import 'package:bahri_app/services/UserServices.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -23,7 +23,7 @@ class ResponsiveLoginScreen extends StatefulWidget {
 }
 
 class _ResponsiveLoginScreenState extends State<ResponsiveLoginScreen> {
-  final loginValidate = LoginValidate();
+  final loginValidate = UserServices();
 
   @override
   void dispose() {
