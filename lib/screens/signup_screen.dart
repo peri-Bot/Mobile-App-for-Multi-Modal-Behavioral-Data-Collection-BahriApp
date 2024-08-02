@@ -26,6 +26,8 @@ class _SignupScreenState extends State<SignupScreen> {
       TextEditingController();
   String? _selectedGender;
   String? _selectedSkill;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +113,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       setState(() {
                         var errRetrun = validate(_currentStep);
                         if (errRetrun.isEmpty || errRetrun == "") {
-                          if (_currentStep <= 8) {
+                          if (_currentStep < 7) {
                             _currentStep++;
                           }
                           if (_currentStep > 0) {
@@ -215,7 +217,7 @@ class _SignupScreenState extends State<SignupScreen> {
             return TextField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'Name',
+                labelText: 'First Name And Last Name [Separated by Space]',
                 errorText: _error,
                 border: const OutlineInputBorder(),
               ),
@@ -373,20 +375,46 @@ class _SignupScreenState extends State<SignupScreen> {
               children: [
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     errorText: _error,
                     border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
                 TextField(
                   controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -570,6 +598,10 @@ class _SignupScreenState extends State<SignupScreen> {
         error = usrsrvs.validateUserInput(gender: _selectedGender);
       case 4:
         error = usrsrvs.validateUserInput(skillLevle: _selectedSkill);
+      case 5:
+        error = usrsrvs.validateUserInput(
+            password: _passwordController.text.trim(),
+            rePassword: _confirmPasswordController.text.trim());
       default:
         error = "";
     }

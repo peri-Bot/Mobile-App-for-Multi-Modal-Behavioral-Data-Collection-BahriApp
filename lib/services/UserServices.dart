@@ -36,6 +36,7 @@ class UserServices {
     String? lastName,
     String? email,
     String? password,
+    String? rePassword,
     String? birthdate,
     String? gender = "-1",
     String? skillLevle = "-1",
@@ -47,54 +48,62 @@ class UserServices {
       } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
         error = 'Invalid email format';
       }
-      return error;
-    }
-    if (firstName != null) {
+    } else if (firstName != null) {
       if (firstName.isEmpty) {
         error = 'First name cannot be empty';
-      } else if (RegExp(r'\d').hasMatch(firstName)) {
-        error = 'First name cannot contain a digit';
+      } else if (RegExp(r'\d').hasMatch(firstName) ||
+          RegExp(r'\s').hasMatch(firstName) ||
+          RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(firstName)) {
+        error =
+            'First name cannot contain a digit, white space or Special Characters';
       } else if (firstName.length <= 2) {
         error = 'First name must be at least 3 characters long';
       }
-      return error;
-    }
-    if (lastName != null) {
+    } else if (lastName != null) {
       if (lastName.isEmpty) {
         error = 'Last name cannot be empty';
-      } else if (RegExp(r'\d').hasMatch(lastName)) {
-        error = 'First name cannot contain a digit';
+      } else if (RegExp(r'\d').hasMatch(lastName) ||
+          RegExp(r'\s').hasMatch(lastName) ||
+          RegExp(r'[!@#$%^&*(),.?"=;+:{"}|<>]').hasMatch(lastName)) {
+        error =
+            'last name cannot contain a digit, white space or Special Characters';
       } else if (lastName.length <= 2) {
         error = 'Last name must be at least 3 characters long';
       }
-      return error;
-    }
-    if (birthdate != null) {
+    } else if (birthdate != null) {
       if (birthdate.isEmpty) {
         error = 'Chose a valid Birthdate';
       }
-      return error;
-    }
-    if (gender != "-1") {
+    } else if (gender != "-1") {
       if (gender == null) {
         error = 'Chose male or female';
       }
-      return error;
-    }
-    if (skillLevle != "-1") {
+    } else if (skillLevle != "-1") {
       if (skillLevle == null) {
         error = 'Chose your skill level';
       }
-      return error;
-    }
-
-    if (password != null) {
+    } else if (password != null) {
       if (password.isEmpty) {
         error = 'Password cannot be empty';
-      } else if (password.length < 6) {
-        error = 'Password must be at least 6 characters long';
+      } else if (password.length < 8) {
+        error = 'Password must be at least 8 characters long';
+      } else if (!RegExp(r'[A-Z]').hasMatch(password)) {
+        error = 'Password must contain at least one uppercase letter';
+      } else if (password.contains(' ')) {
+        error = 'Password cannot contain spaces';
+      } else if (!RegExp(r'[a-z]').hasMatch(password)) {
+        error = 'Password must contain at least one lowercase letter';
+      } else if (!RegExp(r'[0-9]').hasMatch(password)) {
+        error = 'Password must contain at least one number';
+      } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+        error = 'Password must contain at least one special character';
+      } else {
+        if (rePassword!.isEmpty) {
+          error = 'Confirm Password cannot be empty';
+        } else if (password != rePassword) {
+          error = "Passwords Don't match";
+        }
       }
-      return error;
     }
 
     return error;
