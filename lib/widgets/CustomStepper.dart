@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomStepper extends StatelessWidget {
-  CustomStepper({
+  const CustomStepper({
     super.key,
     required int currentStep,
     required this.steps,
@@ -24,8 +23,8 @@ class CustomStepper extends StatelessWidget {
 
       list.add(
         Container(
-            width: 35.0,
-            height: 35.0,
+            width: 19.0,
+            height: 19.0,
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -33,7 +32,7 @@ class CustomStepper extends StatelessWidget {
             ),
             child: Center(
               child: Icon(Icons.task_alt,
-                  size: 30,
+                  size: 15,
                   color: (i == _curStep) ? _activeColor : _inactiveColor),
             )),
       );
@@ -58,7 +57,7 @@ class CustomStepper extends StatelessWidget {
       } else {
         clr = Colors.white;
       }
-      list.add(Text(text["title"], style: TextStyle(color: clr)));
+      list.add(Text(text["title"], style: TextStyle(color: clr, fontSize: 12)));
     });
     return list;
   }

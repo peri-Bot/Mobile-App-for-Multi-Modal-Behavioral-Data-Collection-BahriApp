@@ -1,9 +1,10 @@
+import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/firebase_options.dart';
-// ignore: unused_import
-import './screens/signup_screen.dart';
+import 'package:bahri_app/screens/base_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class BahriApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Bahri App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // colorScheme: ColorScheme.fromSeed(
         //     seedColor: Colors.blue,
@@ -31,7 +33,7 @@ class BahriApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: WelcomeScreen(),
+      home: const BaseScreen(),
     );
   }
 }
