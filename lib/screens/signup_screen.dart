@@ -111,7 +111,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       setState(() {
                         var errRetrun = validate(_currentStep);
                         if (errRetrun.isEmpty || errRetrun == "") {
-                          _currentStep++;
+                          if (_currentStep <= 8) {
+                            _currentStep++;
+                          }
                           if (_currentStep > 0) {
                             _visibleBackBtn = true;
                           } else if (_currentStep <= 0) {
