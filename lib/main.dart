@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'services/firebase_options.dart';
 import 'package:bahri_app/screens/base_screen.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
