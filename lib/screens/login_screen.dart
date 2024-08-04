@@ -1,17 +1,44 @@
+import 'package:bahri_app/screens/home_screen.dart';
+import 'package:bahri_app/services/firebase_login_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/services/UserServices.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   LoginScreen({super.key});
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseLoginServices _auth= FirebaseLoginServices();
   final loginValidate = UserServices();
 
- /* @override
+  void _Login() async{
+    String email= loginValidate.usernameController.text;
+    String password= loginValidate.passwordController.text;
+
+    User? user= await _auth.signInWithEmailPassword(loginValidate.usernameController.text,
+        loginValidate.usernameController.text);
+    if(user != null){
+      print("Login Succesfull");
+      Navigator.push(context, MaterialPageRoute(builder:
+          (context)=>HomeScreen())
+
+      );
+    }
+    else{
+       ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to sign in")));
+    }
+  }
+
+  @override
   void dispose() {
     loginValidate.dispose();
     super.dispose();
-  }*/
-
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +126,7 @@ class LoginScreen extends StatelessWidget {
                               TextFormField(
                                 controller: loginValidate.passwordController,
                                 decoration: InputDecoration(
-                                  hintText: 'Password',
+                                 hintText: 'Password',
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
@@ -125,12 +152,7 @@ class LoginScreen extends StatelessWidget {
                               ),
                               SizedBox(height: constraints.maxHeight * 0.02),
                               ElevatedButton(
-                                onPressed: () {
-                                  if (loginValidate.formKey.currentState!
-                                      .validate()) {
-                                    // yeah uh huh
-                                  }
-                                },
+                                onPressed: _Login,
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 50),
                                   shape: RoundedRectangleBorder(
