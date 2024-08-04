@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -52,11 +53,11 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAQNzd8AoDyHfpKW5SpK6n2LCsH_11k9oI',
-    appId: '1:660894224529:android:3f080ee275998cc6ec2f30',
-    messagingSenderId: '660894224529',
-    projectId: 'bahri-app',
-    storageBucket: 'bahri-app.appspot.com',
+  static FirebaseOptions android = FirebaseOptions(
+    apiKey: dotenv.env['GOOGLE_API_KEY']!,
+    appId: dotenv.env['APP_ID']!,
+    messagingSenderId: dotenv.env['MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['PROJECT_ID']!,
+    storageBucket: dotenv.env['STORAGE_BUCKET']!,
   );
 }
