@@ -37,7 +37,7 @@ class BahriApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SignupScreen(),
+      home: LoginScreen(),
     );
   }
 }
