@@ -32,6 +32,8 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       //backgroundColor: const Color.fromRGBO(172, 185, 255, 1),
       body: SafeArea(
           child: Container(

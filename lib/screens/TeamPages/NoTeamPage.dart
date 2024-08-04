@@ -19,8 +19,15 @@ class InitialScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Initial Screen'),
+        title: const Text(
+          'Teams',
+          style: TextStyle(fontFamily: "assets/fonts/Poppins.ttf"),
+        ),
+        backgroundColor: Colors.transparent,
       ),
       body: Center(
         child: Column(
@@ -28,7 +35,10 @@ class InitialScreen extends StatelessWidget {
           children: [
             const Text(
               'You are not currently in a team',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
