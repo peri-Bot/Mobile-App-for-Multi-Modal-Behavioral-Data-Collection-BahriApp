@@ -1,6 +1,7 @@
-import 'package:bahri_app/screens/home_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
+import 'package:bahri_app/screens/home_screen.dart';
 
 class BaseScreen extends StatefulWidget {
   const BaseScreen({super.key});
@@ -14,7 +15,7 @@ class _BaseScreenState extends State<BaseScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     // Add other screens here, e.g. SecondScreen(), ThirdScreen(), etc.
-    const Center(child: Text('Groups Screen')), // Placeholder for Groups Screen
+    const InitialScreen(), // Placeholder for Groups Screen
     const Center(
         child:
             Text('Leaderboard Screen')), // Placeholder for Leaderboard Screen

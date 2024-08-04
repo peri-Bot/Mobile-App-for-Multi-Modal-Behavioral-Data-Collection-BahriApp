@@ -17,17 +17,29 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,49 +52,11 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD8CW5tqalTa4Z4Ai_tuMN5YIeeozov3eE',
-    appId: '1:862935678742:web:d717b632b404fee9431a37',
-    messagingSenderId: '862935678742',
-    projectId: 'bahiapp-76870',
-    authDomain: 'bahiapp-76870.firebaseapp.com',
-    storageBucket: 'bahiapp-76870.appspot.com',
-    measurementId: 'G-CSRBKTPP34',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAiMJLr89pTHJF-VyOOoV-opIAZMf0PjV8',
-    appId: '1:862935678742:android:1473b039d0b24b87431a37',
-    messagingSenderId: '862935678742',
-    projectId: 'bahiapp-76870',
-    storageBucket: 'bahiapp-76870.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAFZmYRhmfw9KNxTTvKfEDAGKgh8wRl0yY',
-    appId: '1:862935678742:ios:f2dcbf45ee2079d8431a37',
-    messagingSenderId: '862935678742',
-    projectId: 'bahiapp-76870',
-    storageBucket: 'bahiapp-76870.appspot.com',
-    iosBundleId: 'com.example.bahriApp',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAFZmYRhmfw9KNxTTvKfEDAGKgh8wRl0yY',
-    appId: '1:862935678742:ios:f2dcbf45ee2079d8431a37',
-    messagingSenderId: '862935678742',
-    projectId: 'bahiapp-76870',
-    storageBucket: 'bahiapp-76870.appspot.com',
-    iosBundleId: 'com.example.bahriApp',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD8CW5tqalTa4Z4Ai_tuMN5YIeeozov3eE',
-    appId: '1:862935678742:web:86561c7a01100194431a37',
-    messagingSenderId: '862935678742',
-    projectId: 'bahiapp-76870',
-    authDomain: 'bahiapp-76870.firebaseapp.com',
-    storageBucket: 'bahiapp-76870.appspot.com',
-    measurementId: 'G-SPMSN96QN2',
+    apiKey: 'AIzaSyAQNzd8AoDyHfpKW5SpK6n2LCsH_11k9oI',
+    appId: '1:660894224529:android:3f080ee275998cc6ec2f30',
+    messagingSenderId: '660894224529',
+    projectId: 'bahri-app',
+    storageBucket: 'bahri-app.appspot.com',
   );
 }

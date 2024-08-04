@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "862935678742",
-    "project_id": "bahiapp-76870",
-    "storage_bucket": "bahiapp-76870.appspot.com"
+    "project_number": "660894224529",
+    "project_id": "bahri-app",
+    "storage_bucket": "bahri-app.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:862935678742:android:1473b039d0b24b87431a37",
+        "mobilesdk_app_id": "1:660894224529:android:3f080ee275998cc6ec2f30",
         "android_client_info": {
-          "package_name": "com.example.bahri_app"
+          "package_name": "com.bahriteam.bahriapp"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAiMJLr89pTHJF-VyOOoV-opIAZMf0PjV8"
+          "current_key": "AIzaSyAQNzd8AoDyHfpKW5SpK6n2LCsH_11k9oI"
         }
       ],
       "services": {
