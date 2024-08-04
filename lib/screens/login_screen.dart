@@ -1,4 +1,5 @@
 import 'package:bahri_app/screens/home_screen.dart';
+import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/services/firebase_login_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/services/UserServices.dart';
@@ -175,7 +176,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                                  SignupScreen()
+                                  ));
+                                },
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 35),
                                   shape: RoundedRectangleBorder(
