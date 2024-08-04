@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-
 class User {
   late double id;
   late String firstName;
@@ -57,7 +56,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, userName: $userName, email: $email, skillLevel: $skillLevel, password: $password, progress: $progress, teamId: $teamId)';
+    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, userName: $userName, email: $email, skillLevel: $skillLevel, password: $password, progress: $progress)';
   }
 
   @override

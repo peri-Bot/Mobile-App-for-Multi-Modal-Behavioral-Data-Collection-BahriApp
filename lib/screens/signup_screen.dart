@@ -6,6 +6,8 @@ import 'package:bahri_app/widgets/CustomStepper.dart';
 import 'package:bahri_app/widgets/LogoCircularBorder.dart';
 import 'package:bahri_app/services/UserServices.dart';
 import 'package:pinput/pinput.dart';
+import 'dart:math';
+import 'package:intl/intl.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -114,7 +116,28 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: () {
                       setState(() {
                         var errRetrun = validate(_currentStep);
-                        if (errRetrun.isEmpty || errRetrun == "") {
+                        if (_currentStep == 7) {
+                          UserServices newSrvc = new UserServices();
+                          Random rng = Random();
+                          final dateString = _birthdateController.text;
+                          final dateFormat = DateFormat('yyyy-MM-dd');
+                          DateTime dateti = dateFormat.parse(dateString);
+
+                          newSrvc.newUser = newSrvc.createUser(
+                              id: rng.nextInt(100).toDouble(),
+                              firstName:
+                                  _nameController.text.trim().split(" ")[0],
+                              lastName:
+                                  _nameController.text.trim().split(" ")[1],
+                              dOB: dateti,
+                              gender: _selectedGender![0],
+                              userName: "userName${rng.nextInt(100)}",
+                              email: _emailController.text.trim(),
+                              skillLevel: _selectedSkill!,
+                              password: _passwordController.text,
+                              progress: rng.nextInt(100).toDouble());
+                          newSrvc.registerUser();
+                        } else if (errRetrun.isEmpty || errRetrun == "") {
                           if (_currentStep < 7) {
                             _currentStep++;
                           }

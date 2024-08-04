@@ -1,4 +1,4 @@
-package com.example.bahri_app
+package com.bahriteam.bahriapp
 
 import io.flutter.embedding.android.FlutterActivity
 

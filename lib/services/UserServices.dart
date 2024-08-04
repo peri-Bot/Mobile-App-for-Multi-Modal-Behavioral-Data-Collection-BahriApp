@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/models/user.dart';
+import 'firestore.dart';
 
 class UserServices {
+  late final User newUser;
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -57,6 +60,20 @@ class UserServices {
       progress: progress,
       teamId: teamId,
     );
+  }
+
+  Future<void> registerUser() async {
+    FirestoreServive firestoreServive = FirestoreServive();
+    firestoreServive.AddUser(
+        newUser.id,
+        newUser.firstName,
+        newUser.lastName,
+        newUser.dOB,
+        newUser.gender,
+        newUser.userName,
+        newUser.email,
+        newUser.skillLevel,
+        newUser.password);
   }
 
   // Method to validate user input fields
