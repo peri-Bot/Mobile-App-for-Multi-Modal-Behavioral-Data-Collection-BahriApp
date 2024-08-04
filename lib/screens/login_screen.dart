@@ -19,7 +19,7 @@ class ResponsiveLoginScreen extends StatefulWidget {
   const ResponsiveLoginScreen({super.key});
 
   @override
-  _ResponsiveLoginScreenState createState() => _ResponsiveLoginScreenState();
+  State<ResponsiveLoginScreen> createState() => _ResponsiveLoginScreenState();
 }
 
 class _ResponsiveLoginScreenState extends State<ResponsiveLoginScreen> {

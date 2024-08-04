@@ -17,7 +17,7 @@ class CreateTeamPage extends StatefulWidget {
   const CreateTeamPage({super.key});
 
   @override
-  _CreateTeamPageState createState() => _CreateTeamPageState();
+  State<CreateTeamPage> createState() => _CreateTeamPageState();
 }
 
 class _CreateTeamPageState extends State<CreateTeamPage> {

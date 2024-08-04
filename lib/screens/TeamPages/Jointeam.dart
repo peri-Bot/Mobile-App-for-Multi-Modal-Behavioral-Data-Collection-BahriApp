@@ -17,7 +17,7 @@ class JoinTeamPage extends StatefulWidget {
   const JoinTeamPage({super.key});
 
   @override
-  _JoinTeamPageState createState() => _JoinTeamPageState();
+  State<JoinTeamPage> createState() => _JoinTeamPageState();
 }
 
 class _JoinTeamPageState extends State<JoinTeamPage> {

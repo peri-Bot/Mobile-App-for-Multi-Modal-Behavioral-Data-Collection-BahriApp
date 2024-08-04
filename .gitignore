@@ -139,3 +139,4 @@ app.*.symbols
 
 # Environment variables
 .env
+android/app/google-services.json

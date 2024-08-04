@@ -29,24 +29,22 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   another_stepper: ^1.2.2
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   firebase_core: ^2.24.2
   flutter:
     sdk: flutter
-
   flutter_markdown: any
   flutter_svg: ^2.0.10+1
+  path: ^1.9.0
   provider: ^6.1.2
-dev_dependencies:
-  curved_navigation_bar: ^1.0.6
   flutter_dotenv: ^5.1.0
+  curved_navigation_bar: ^1.0.6
+  pinput: ^5.0.0
+
+dev_dependencies:
   flutter_lints: ^3.0.0
   flutter_test:
     sdk: flutter
-  pinput: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
