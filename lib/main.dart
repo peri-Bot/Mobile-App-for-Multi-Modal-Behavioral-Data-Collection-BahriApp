@@ -1,6 +1,7 @@
 import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
 import 'package:bahri_app/screens/base_screen.dart';
 import 'package:bahri_app/screens/home_screen.dart';
+import 'package:bahri_app/screens/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,7 +38,7 @@ class BahriApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const BaseScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }
