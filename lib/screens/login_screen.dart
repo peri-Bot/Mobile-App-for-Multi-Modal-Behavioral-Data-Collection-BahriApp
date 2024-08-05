@@ -58,11 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color.fromRGBO(172, 188, 255, 1.0), // RGB color
-                    Color.fromRGBO(174, 226, 255, 1.0), // RGB color
+                    Color.fromRGBO(183, 153, 255, 1),
+                    Color.fromRGBO(172, 188, 255, 1),
+                    Color.fromRGBO(174, 226, 255, 1),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
                 ),
               ),
               child: AnimatedContainer(
@@ -93,6 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontSize: 28, // Responsive font size
                                     fontWeight: FontWeight.bold,
+                                    fontFamily:
+                                        "assets/fonts/Poppins-SemiBold.ttf",
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -101,6 +104,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Welcome back you\'ve been missed!',
                                   style: TextStyle(
                                     fontSize: 16, // Responsive font size
+                                    fontFamily:
+                                        "assets/fonts/Poppins-SemiBold.ttf",
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -119,6 +124,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 decoration: InputDecoration(
                                   hintText: 'Email',
                                   filled: true,
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -144,13 +151,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: true,
                                 validator: loginValidate.validatePassword,
                               ),
-                              const SizedBox(height: 0),
+                              const SizedBox(height: 7),
                               const Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
                                   'Forgot your password?',
                                   style: TextStyle(
                                     color: Colors.black,
+                                    fontFamily:
+                                        "assets/fonts/Poppins-SemiBold.ttf",
                                     decoration: TextDecoration.underline,
                                   ),
                                 ),
@@ -159,13 +168,22 @@ class _LoginScreenState extends State<LoginScreen> {
                               ElevatedButton(
                                 onPressed: _login,
                                 style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(double.infinity, 50),
+                                  minimumSize: const Size(double.infinity, 55),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  backgroundColor: const Color(0xFFCF98FF),
+                                  backgroundColor: const Color(0xFFB19EF0),
                                 ),
-                                child: const Text('Sign in'),
+                                child: const Text(
+                                  'Sign in',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontFamily:
+                                        "assets/fonts/Poppins-SemiBold.ttf",
+                                    //fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               SizedBox(
                                 height: constraints.maxHeight * 0.02,
@@ -183,7 +201,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const SignupScreen()),
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SignupScreen()),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -195,7 +215,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: const Text(
                                   'Create a new Account',
-                                  style: TextStyle(color: Colors.black),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                    fontFamily:
+                                        "assets/fonts/Poppins-SemiBold.ttf",
+                                    //fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               SizedBox(height: constraints.maxHeight * 0.02),
@@ -226,4 +252,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

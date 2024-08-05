@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class JoinTeamPage extends StatefulWidget {
   const JoinTeamPage({super.key});
 
@@ -20,10 +19,12 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.lightBlueAccent,
       appBar: AppBar(
         title: const Text('Join Team'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -32,86 +33,106 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Join team',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Search for a team to join',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
-                TextFormField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Search teams',
-                    hintText: 'Enter team name or keyword',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Available Teams',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // Replace this with actual list of teams
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: 5, // Sample data count
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        title: Text('Team $index'),
-                        subtitle: const Text('Team description here...'),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            // Add your join team logic here
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                          child: const Text('Join'),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Color.fromRGBO(183, 153, 255, 1),
+                  Color.fromRGBO(172, 188, 255, 1),
+                  Color.fromRGBO(174, 226, 255, 1),
+                ],
+              ),
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // const Text(
+                    //   'Join team',
+                    //   style: TextStyle(
+                    //     fontSize: 24,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    const SizedBox(height: 30),
+                    const Text(
+                      'Search for a team to join',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 3, 2, 2),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
+                    TextFormField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Search teams',
+                        hintText: 'Enter team name or keyword',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: UnderlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Available Teams',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    //const SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: 5, // Sample data count
+                      itemBuilder: (context, index) {
+                        return Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ListTile(
+                            title: Text('Team $index'),
+                            subtitle: const Text('Team description here...'),
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                // Add your join team logic here
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                backgroundColor: const Color(0xFFB19EF0),
+                              ),
+                              child: const Text(
+                                'Join',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

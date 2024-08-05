@@ -228,9 +228,11 @@ class _SignupScreenState extends State<SignupScreen> {
             return TextField(
               controller: _emailController,
               decoration: InputDecoration(
+                fillColor: Colors.white,
+                filled: true,
                 labelText: 'Email',
                 errorText: _error,
-                border: const OutlineInputBorder(),
+                border: const UnderlineInputBorder(),
               ),
             );
           },
@@ -242,9 +244,11 @@ class _SignupScreenState extends State<SignupScreen> {
             return TextField(
               controller: _nameController,
               decoration: InputDecoration(
+                fillColor: Colors.white,
+                filled: true,
                 labelText: 'First Name And Last Name [Separated by Space]',
                 errorText: _error,
-                border: const OutlineInputBorder(),
+                border: const UnderlineInputBorder(),
               ),
             );
           },
@@ -272,9 +276,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: TextField(
                   controller: _birthdateController,
                   decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
                     labelText: 'Birthdate',
                     errorText: _error,
-                    border: const OutlineInputBorder(),
+                    border: const UnderlineInputBorder(),
                   ),
                 ),
               ),
@@ -288,8 +294,10 @@ class _SignupScreenState extends State<SignupScreen> {
             return DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Gender',
+                fillColor: Colors.white,
+                filled: true,
                 errorText: _error,
-                border: const OutlineInputBorder(),
+                border: const UnderlineInputBorder(),
               ),
               value: _selectedGender,
               items: ['Male', 'Female'].map((String value) {
@@ -403,8 +411,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
+                    fillColor: Colors.white,
+                    filled: true,
                     errorText: _error,
-                    border: const OutlineInputBorder(),
+                    border: const UnderlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -426,13 +436,15 @@ class _SignupScreenState extends State<SignupScreen> {
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    border: const OutlineInputBorder(),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: const UnderlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: () {
                         setState(() {
@@ -463,9 +475,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   controller: _emailController,
                   readOnly: true,
                   decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    border: UnderlineInputBorder(),
                   ),
                 ),
                 const Divider(color: Colors.transparent),
@@ -473,9 +487,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   controller: _nameController,
                   readOnly: true,
                   decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelText: 'Full Name',
-                    border: OutlineInputBorder(),
+                    border: UnderlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -483,9 +499,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   controller: _birthdateController,
                   readOnly: true,
                   decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelText: 'Date of birth',
-                    border: OutlineInputBorder(),
+                    border: UnderlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -495,7 +513,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: const InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelText: 'Gender',
-                    border: OutlineInputBorder(),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: UnderlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -505,7 +525,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: const InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelText: 'Skill Level',
-                    border: OutlineInputBorder(),
+                    fillColor: Colors.white,
+                    filled: true,
+                    border: UnderlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -580,6 +602,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const Divider(color: Colors.transparent),
                 const Pinput(
                   length: 4,
+                  //defaultPinTheme: PinTheme(colors),
                 )
               ],
             );
