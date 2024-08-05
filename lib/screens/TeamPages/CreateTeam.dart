@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: CreateTeamPage(),
-    );
-  }
-}
 
 class CreateTeamPage extends StatefulWidget {
   const CreateTeamPage({super.key});
@@ -36,9 +24,11 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue[300],
       appBar: AppBar(
+
         title: const Text('Create Team'),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blue[300],
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),

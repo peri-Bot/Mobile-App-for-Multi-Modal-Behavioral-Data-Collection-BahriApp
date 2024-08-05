@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: JoinTeamPage(),
-    );
-  }
-}
 
 class JoinTeamPage extends StatefulWidget {
   const JoinTeamPage({super.key});
@@ -32,9 +20,10 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.lightBlueAccent,
       appBar: AppBar(
         title: const Text('Join Team'),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.lightBlueAccent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
