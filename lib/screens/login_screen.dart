@@ -6,32 +6,38 @@ import 'package:bahri_app/services/UserServices.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({super.key});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseLoginServices _auth= FirebaseLoginServices();
+  final FirebaseLoginServices _auth = FirebaseLoginServices();
   final loginValidate = UserServices();
 
-  void _Login() async{
-    String email= loginValidate.usernameController.text;
-    String password= loginValidate.passwordController.text;
+  void _login() async {
+    String email = loginValidate.usernameController.text;
+    String password = loginValidate.passwordController.text;
 
-    User? user= await _auth.signInWithEmailPassword(loginValidate.usernameController.text,
-        loginValidate.usernameController.text);
-    if(user != null){
-      print("Login Succesfull");
-      Navigator.push(context, MaterialPageRoute(builder:
-          (context)=>HomeScreen())
-
+    try {
+      User? user = await _auth.signInWithEmailPassword(email, password);
+      if (user != null) {
+        print("Login Successful");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to sign in")),
+        );
+      }
+    } catch (e) {
+      print("Error during login: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to sign in: $e")),
       );
-    }
-    else{
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to sign in")));
     }
   }
 
@@ -40,10 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
     loginValidate.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: LayoutBuilder(
+      body: LayoutBuilder(
         builder: (context, constraints) {
           return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
@@ -110,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: loginValidate.usernameController,
                                 decoration: InputDecoration(
-                                  hintText: 'Username',
+                                  hintText: 'Email',
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
@@ -121,13 +128,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 validator: loginValidate.validateUsername,
                               ),
                               SizedBox(
-                                height: constraints.maxHeight *
-                                    0.02, // Responsive gap
+                                height: constraints.maxHeight * 0.02,
                               ),
                               TextFormField(
                                 controller: loginValidate.passwordController,
                                 decoration: InputDecoration(
-                                 hintText: 'Password',
+                                  hintText: 'Password',
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
@@ -138,9 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: true,
                                 validator: loginValidate.validatePassword,
                               ),
-                              const SizedBox(
-                                height: 0,
-                              ),
+                              const SizedBox(height: 0),
                               const Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
@@ -153,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               SizedBox(height: constraints.maxHeight * 0.02),
                               ElevatedButton(
-                                onPressed: _Login,
+                                onPressed: _login,
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 50),
                                   shape: RoundedRectangleBorder(
@@ -177,9 +181,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                                  SignupScreen()
-                                  ));
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const SignupScreen()),
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 35),
@@ -193,9 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(color: Colors.black),
                                 ),
                               ),
-                              SizedBox(
-                                height: constraints.maxHeight * 0.02,
-                              ),
+                              SizedBox(height: constraints.maxHeight * 0.02),
                               const Text("or continue with"),
                               SizedBox(
                                 height: constraints.maxHeight * 0.05,
@@ -223,3 +226,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
