@@ -2,14 +2,13 @@ import 'package:bahri_app/screens/TeamPages/CreateTeam.dart';
 import 'package:bahri_app/screens/TeamPages/Jointeam.dart';
 import 'package:flutter/material.dart';
 
-
 class InitialScreen extends StatelessWidget {
   const InitialScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlueAccent,
+      backgroundColor: Colors.transparent,
       extendBody: true,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -33,8 +32,10 @@ class InitialScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                MaterialPageRoute(builder: (context) => JoinTeamPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const JoinTeamPage()));
               },
               style: ElevatedButton.styleFrom(
                 padding:
@@ -60,7 +61,8 @@ class InitialScreen extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>CreateTeamPage()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CreateTeamPage()));
               },
               style: ElevatedButton.styleFrom(
                 padding:
