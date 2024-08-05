@@ -117,7 +117,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       setState(() {
                         var errRetrun = validate(_currentStep);
                         if (_currentStep == 7) {
-                          UserServices newSrvc = new UserServices();
+                          UserServices newSrvc = UserServices();
                           Random rng = Random();
                           final dateString = _birthdateController.text;
                           final dateFormat = DateFormat('yyyy-MM-dd');
