@@ -1,4 +1,6 @@
+import 'package:bahri_app/screens/game_screens/pic_pick_screen.dart';
 import 'package:flutter/material.dart';
+import 'game_screens/pic_pick_lvl_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -59,7 +61,12 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: SizedBox.expand(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PicPickLvlScreen()));
+                    },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.black,
                       backgroundColor: Colors.white, // Text color
