@@ -1,17 +1,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class ScoreNotifier extends ValueNotifier<int> {
-  ScoreNotifier(super.value);
-}
-
-final scoreNotifier = ScoreNotifier(0); // Global or higher scope
-
 class ImageGrid extends StatefulWidget {
   final int gridSize;
   final String intensityLevel; // New parameter for distortion intensity
-  const ImageGrid(
-      {super.key, required this.gridSize, required this.intensityLevel});
+  final Function(int) onScoreUpdate;
+  const ImageGrid({
+    super.key,
+    required this.gridSize,
+    required this.intensityLevel,
+    required this.onScoreUpdate,
+  });
 
   @override
   State<ImageGrid> createState() => _ImageGrid();
@@ -21,7 +20,7 @@ class _ImageGrid extends State<ImageGrid> {
   late int gridSize;
   late String intensityLevel;
   late List<String> currentImages;
-  int score = 0;
+  late int score;
 
   List<String> images = [
     'assets/pic_pick_images/Image(1).jpg',
@@ -81,6 +80,7 @@ class _ImageGrid extends State<ImageGrid> {
     super.initState();
     gridSize = widget.gridSize;
     intensityLevel = widget.intensityLevel;
+    score = 0;
     _initializeGrid();
   }
 
@@ -107,10 +107,14 @@ class _ImageGrid extends State<ImageGrid> {
       String tappedImage = currentImages[index];
 
       if (_isDistorted(tappedImage)) {
-        scoreNotifier.value--; // Deduct a point if the image is distorted
+        score = score - 4; // Deduct a point if the image is distorted
+        if (score <= 0) {
+          score = 0;
+        }
       } else {
-        scoreNotifier.value++; // Add a point if the image is not distorted
+        score++; // Add a point if the image is not distorted
       }
+      widget.onScoreUpdate(score);
 
       // Replace the tapped image with a new one while respecting the distorted limit
       currentImages[index] = _getNextImage();

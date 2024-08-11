@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:bahri_app/widgets/linear_timer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:bahri_app/widgets/image_grid.dart';
+import 'package:bahri_app/widgets/show_score_popup.dart';
 
 class PicPick extends StatefulWidget {
   final int difficulty;
@@ -16,7 +17,8 @@ class PicPick extends StatefulWidget {
 class _PicPick extends State<PicPick> {
   late int difficulty;
   List<String> difficulties = [" Easy", " Medium", " Hard"];
-  List<int> timeLimits = [15000, 10000, 10000];
+  List<int> timeLimits = [12000, 10000, 10000];
+  int _score = 0;
   @override
   void initState() {
     super.initState();
@@ -73,10 +75,22 @@ class _PicPick extends State<PicPick> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 56),
                     LinearTimer(
                         durationMiliseconds: timeLimits[difficulty],
-                        onTimerFinish: () {}),
+                        onTimerFinish: () {
+                          showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) {
+                              return ShowScorePopup(
+                                score: _score,
+                                highScore: 22,
+                              );
+                            },
+                          );
+                          ;
+                        }),
                     const SizedBox(height: 56),
                     Container(
                         padding: const EdgeInsets.all(13),
@@ -97,14 +111,9 @@ class _PicPick extends State<PicPick> {
                         borderRadius: BorderRadius.circular(11),
                       ),
                       child: Center(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: scoreNotifier,
-                          builder: (context, value, child) {
-                            return Text(
-                              "Score: $value",
-                              style: const TextStyle(fontSize: 16),
-                            );
-                          },
+                        child: Text(
+                          "Score: $_score",
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     )
@@ -123,23 +132,42 @@ class _PicPick extends State<PicPick> {
       case 0:
         return StatefulBuilder(builder:
             (BuildContext context, void Function(void Function()) setState) {
-          return const Center(
-              child: const ImageGrid(gridSize: 2, intensityLevel: 'Easy'));
+          return Center(
+              child: ImageGrid(
+            gridSize: 2,
+            intensityLevel: 'Easy',
+            onScoreUpdate: _updateScore,
+          ));
         });
       case 1:
         return StatefulBuilder(builder:
             (BuildContext context, void Function(void Function()) setState) {
-          return const Center(
-              child: const ImageGrid(gridSize: 3, intensityLevel: 'Medium'));
+          return Center(
+              child: ImageGrid(
+            gridSize: 3,
+            intensityLevel: 'Medium',
+            onScoreUpdate: _updateScore,
+          ));
         });
       case 2:
         return StatefulBuilder(builder:
             (BuildContext context, void Function(void Function()) setState) {
-          return const Center(
-              child: const ImageGrid(gridSize: 4, intensityLevel: 'Hard'));
+          return Center(
+              child: ImageGrid(
+            gridSize: 3,
+            intensityLevel: 'Hard',
+            onScoreUpdate: _updateScore,
+          ));
         });
       default:
         return Container();
     }
+  }
+
+  void _updateScore(int newScore) {
+    // New callback function
+    setState(() {
+      _score = newScore;
+    });
   }
 }

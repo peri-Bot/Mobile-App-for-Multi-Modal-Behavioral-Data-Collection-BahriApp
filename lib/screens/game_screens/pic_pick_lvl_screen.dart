@@ -3,6 +3,7 @@ import 'package:bahri_app/screens/login_screen.dart';
 import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/widgets/LogoCircularBorder.dart';
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 
 class PicPickLvlScreen extends StatelessWidget {
   const PicPickLvlScreen({super.key});
@@ -62,23 +63,41 @@ class PicPickLvlScreen extends StatelessWidget {
                         // /const LogoCircularBorder(widthfactor: 0.8),
                         //const Spacer(flex: 1), // Adds space below the logo
                         const SizedBox(height: 55),
-                        const Text(
-                          'Choose Difficulty',
-                          style: TextStyle(
-                            fontFamily: "assets/fonts/Poppins-Regular.ttf",
-                            fontSize: 30,
-                            //fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                        const SizedBox(
+                          child: StrokeText(
+                            text: 'Pic Pick',
+                            textStyle: TextStyle(
+                              fontFamily: "assets/fonts/Poppins-Regular.ttf",
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(255, 255, 255, 255),
+                            ),
+                            strokeColor: Color.fromARGB(255, 0, 0, 0),
+                            strokeWidth: 7,
                           ),
                         ),
-                        const SizedBox(height: 46),
+                        // const SizedBox(height: 25),
+                        // const SizedBox(
+                        //   child: StrokeText(
+                        //     text: 'Choose Difficulty',
+                        //     textStyle: TextStyle(
+                        //       fontFamily: "assets/fonts/Poppins-Regular.ttf",
+                        //       fontSize: 27,
+                        //       fontWeight: FontWeight.bold,
+                        //       color: Color.fromARGB(255, 255, 255, 255),
+                        //     ),
+                        //     strokeColor: Color.fromARGB(255, 0, 0, 0),
+                        //     strokeWidth: 0,
+                        //   ),
+                        // ),
+                        const SizedBox(height: 36),
                         const Text(
                           'Note: The game will start right when you choose a difficulty',
                           style: TextStyle(
                             fontFamily: "assets/fonts/Poppins-Regular.ttf",
                             fontSize: 12,
                             //fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Color.fromARGB(255, 255, 255, 255),
                           ),
                         ),
                         const SizedBox(height: 46),
