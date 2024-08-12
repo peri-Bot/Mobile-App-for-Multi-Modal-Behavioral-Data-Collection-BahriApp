@@ -62,7 +62,7 @@ class InitialScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CreateTeamPage()));
+                    MaterialPageRoute(builder: (context) => const CreateTeamPage()));
               },
               style: ElevatedButton.styleFrom(
                 padding:
