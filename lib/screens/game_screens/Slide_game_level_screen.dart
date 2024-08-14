@@ -1,4 +1,4 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../services/slide_game_services.dart';
@@ -27,17 +27,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          AnimatedTextKit(
-            animatedTexts: [
-              WavyAnimatedText(
-                'Select Level',
-                textStyle: const TextStyle(fontSize: 32.0, fontWeight: FontWeight.bold),
-                //duration: Duration(seconds: 2),
-              ),
-            ],
-            repeatForever: true,
-            isRepeatingAnimation: true,
-          ),
+         Text("SELECT LEVEL"),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
