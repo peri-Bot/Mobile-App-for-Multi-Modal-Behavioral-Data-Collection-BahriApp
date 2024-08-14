@@ -1,17 +1,41 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
+import 'package:firebase_database/firebase_database.dart';
+
+
+
 
 class GameScreen extends StatefulWidget {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+
   final int level;
   final Function(int score) onLevelComplete;
 
-  const GameScreen({super.key, required this.level, required this.onLevelComplete});
+
+  GameScreen({super.key, required this.level, required this.onLevelComplete});
 
   @override
   _GameScreenState createState() => _GameScreenState();
 }
 
+
 class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  void _storeBiometricData() {
+    // Create a unique ID for each game session
+    String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    _database.child('game_sessions').child(sessionId).set({
+      'level': widget.level,
+      'score': _score,
+      'biometricData': _biometricData,
+    }).then((_) {
+      print('Biometric data stored successfully!');
+    }).catchError((error) {
+      print('Failed to store biometric data: $error');
+    });
+  }
   List<Map<String, dynamic>> _questions = [];
   int _currentQuestionIndex = 0;
   int _score = 0;
@@ -19,13 +43,20 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   Timer? _timer;
   late AnimationController _animationController;
 
+  // Variables to collect biometric data
+  final List<Map<String, dynamic>> _biometricData = [];
+  double? _initialX;
+  double? _initialY;
+  double? _initialPressure;
+  DateTime? _startTime;
+
   @override
   void initState() {
     super.initState();
     _loadQuestionsForLevel(widget.level);
     _startTimer();
 
-
+    // Initialize the animation controller for the timer
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(seconds: _timeLeft),
@@ -37,19 +68,19 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     if (level == 1) {
       _questions = [
         {'image': 'assets/slide_game/dog.jpg', 'questionType': 'mammal', 'answer': true},
-        {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': false},
         {'image': 'assets/slide_game/mole.jpg', 'questionType': 'mammal', 'answer': true},
       ];
     } else if (level == 2) {
       _questions = [
-        {'image': 'assets/slide_game/meerkat.jpg', 'questionType': 'flag', 'answer': true},
-        {'image': 'assets/slide_game/brazil.png', 'questionType': 'flag', 'answer': true},
-        {'image': 'assets/slide_game/kenya.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/meerkat.jpg', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/brazil.png', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/kenya.png', 'questionType': 'flag', 'answer': true},
       ];
     } else if (level == 3) {
       _questions = [
         {'image': 'assets/apple.jpg', 'questionType': 'fruit', 'answer': true},
-        {'image': 'assets/carrot.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/carrot.jpg', 'questionType': 'fruit', 'answer': false},
         {'image': 'assets/banana.jpg', 'questionType': 'fruit', 'answer': true},
       ];
     }
@@ -84,7 +115,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       });
     } else {
       _stopTimer();
-      widget.onLevelComplete(_score);
+      widget.onLevelComplete(_score); // Notify Level Complete
       _showGameOverDialog();
     }
   }
@@ -99,20 +130,17 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   void _showGameOverDialog() {
+    _storeBiometricData();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Game Over'),
-        content: Text('SCORE : $_score',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold
-
-          ),
-        ),
+        content: Text('Your score is $_score'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Go back to level selection
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -121,9 +149,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                'GO BACk',
+                'OK',
                 style: TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -139,6 +166,43 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
+  void _collectBiometricData(DragEndDetails details) {
+    DateTime endTime = DateTime.now();
+    double duration = endTime.difference(_startTime!).inMilliseconds / 1000.0;
+    double dx = details.velocity.pixelsPerSecond.dx;
+    double dy = details.velocity.pixelsPerSecond.dy;
+    double distance = sqrt(pow(dx, 2) + pow(dy, 2));
+
+    _biometricData.add({
+      'initialX': _initialX,
+      'initialY': _initialY,
+      'endX': details.velocity.pixelsPerSecond.dx,
+      'endY': details.velocity.pixelsPerSecond.dy,
+      'initialPressure': _initialPressure,
+      'duration': duration,
+      'distance': distance,
+      'speed': distance / duration,
+    });
+
+    print(_biometricData);
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    _initialX = details.localPosition.dx;
+    _initialY = details.localPosition.dy;
+
+    _startTime = DateTime.now();
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    _collectBiometricData(details);
+    if (details.velocity.pixelsPerSecond.dx > 0) {
+      _checkAnswer(true); // Swiped right (True)
+    } else {
+      _checkAnswer(false); // Swiped left (False)
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     String questionText = '';
@@ -151,15 +215,12 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     }
 
     return Scaffold(
-
       appBar: AppBar(
         title: Text('Level ${widget.level}'),
-        backgroundColor: Colors.black12,
-        elevation: 0,
-
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Container(
-        color: Colors.brown,
+        color: Colors.deepPurple[50],
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -168,15 +229,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
                 children: [
-                  const Icon(Icons.timer, color: Colors.purple, size: 30),
+                  const Icon(Icons.timer, color: Colors.redAccent, size: 30),
                   const SizedBox(width: 10),
                   Expanded(
                     child: LinearProgressIndicator(
                       value: _animationController.value,
                       backgroundColor: Colors.grey[300],
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
-                      minHeight: 15,
-                      borderRadius: BorderRadius.circular(10),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.redAccent),
                     ),
                   ),
                 ],
@@ -186,13 +245,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             // Image Container with Padding
             Expanded(
               child: GestureDetector(
-                onPanEnd: (details) {
-                  if (details.velocity.pixelsPerSecond.dx > 0) {
-                    _checkAnswer(true); // Swiped right (True)
-                  } else {
-                    _checkAnswer(false); // Swiped left (False)
-                  }
-                },
+                onPanStart: _onPanStart,
+                onPanEnd: _onPanEnd,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(

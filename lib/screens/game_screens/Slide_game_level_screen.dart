@@ -27,7 +27,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-         Text("SELECT LEVEL"),
+         const Text("SELECT LEVEL"),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

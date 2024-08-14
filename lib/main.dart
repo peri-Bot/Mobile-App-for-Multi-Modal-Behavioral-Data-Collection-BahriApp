@@ -1,5 +1,4 @@
 import 'package:bahri_app/screens/game_screens/Slide_game_level_screen.dart';
-import 'package:bahri_app/screens/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,7 +34,7 @@ class BahriApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: LevelSelectionScreen(),
+      home: const LevelSelectionScreen(),
     );
   }
 }
