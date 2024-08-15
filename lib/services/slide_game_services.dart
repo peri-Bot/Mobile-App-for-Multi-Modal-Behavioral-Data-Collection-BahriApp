@@ -70,7 +70,7 @@ class FirebaseService {
     // Create a unique ID for each game session
     String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
-    _database.child('game_sessions').child(sessionId).set({
+    _database.child('Slide_game_data').child(sessionId).set({
       'level': level,
       'score': score,
       'biometricData': biometricData,
