@@ -1,9 +1,8 @@
 import 'dart:math';
-
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import '../screens/game_screens/slide_game_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LevelButton extends StatelessWidget {
   final int level;
@@ -63,24 +62,35 @@ class LevelButton extends StatelessWidget {
 }
 
 
-class FirebaseService {
-  final DatabaseReference _database = FirebaseDatabase.instance.reference();
 
-  void storeBiometricData(int level, int score, List<Map<String, dynamic>> biometricData) {
-    // Create a unique ID for each game session
-    String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
 
-    _database.child('Slide_game_data').child(sessionId).set({
-      'level': level,
-      'score': score,
-      'biometricData': biometricData,
-    }).then((_) {
-      print('Biometric data stored successfully!');
-    }).catchError((error) {
-      print('Failed to store biometric data: $error');
-    });
+class FirestoreService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> storeBiometricData(int level, int score, List<Map<String, dynamic>> biometricData) async {
+    try {
+      // Create a new document with a unique ID for each game session
+      DocumentReference sessionDoc = _firestore.collection('Swipe_game_data').doc();
+
+      // Set the session-level data
+      await sessionDoc.set({
+        'level': level,
+        'score': score,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Add biometric data as a subcollection within the session document
+      for (var data in biometricData) {
+        await sessionDoc.collection('biometricData').add(data);
+      }
+
+      print('Biometric data stored successfully in Firestore!');
+    } catch (e) {
+      print('Failed to store biometric data in Firestore: $e');
+    }
   }
 }
+
 
 
 class DataCollectionService {

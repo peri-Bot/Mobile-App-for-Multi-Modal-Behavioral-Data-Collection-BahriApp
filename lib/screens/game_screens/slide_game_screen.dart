@@ -26,7 +26,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   double? _initialY;
   late int _startTime;
 
-  final FirebaseService _firebaseService = FirebaseService();
+  final FirestoreService _firestoreService = FirestoreService();
   final DataCollectionService _dataCollectionService = DataCollectionService();
 
   @override
@@ -92,7 +92,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       });
     } else {
       _stopTimer();
-      _firebaseService.storeBiometricData(widget.level, _score, _biometricData); // Store data at the end of the game
+      _firestoreService.storeBiometricData(widget.level, _score, _biometricData); // Store data at the end of the game
       widget.onLevelComplete(_score); // Notify Level Complete
       _showGameOverDialog();
     }
