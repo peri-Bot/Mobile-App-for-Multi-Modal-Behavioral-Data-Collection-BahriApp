@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../services/slide_game_services.dart';
+import '../../services/swipe_game_services.dart';
 
 
 class LevelSelectionScreen extends StatefulWidget {

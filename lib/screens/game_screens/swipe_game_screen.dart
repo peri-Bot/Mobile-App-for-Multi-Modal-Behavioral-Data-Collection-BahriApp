@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../../services/slide_game_services.dart';
+import '../../services/swipe_data_collection.dart';
+import '../../services/swipe_game_firebase_services.dart';
 
 
 class GameScreen extends StatefulWidget {
   final int level;
   final Function(int score) onLevelComplete;
+  final String userId; // Added userId to pass to FirestoreService
 
-  const GameScreen({super.key, required this.level, required this.onLevelComplete});
+  const GameScreen({
+    super.key,
+    required this.level,
+    required this.onLevelComplete,
+    required this.userId, // Required userId in constructor
+  });
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -19,7 +26,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   int _score = 0;
   int _timeLeft = 10;
   Timer? _timer;
-  final List<Map<String, dynamic>> _biometricData = [];
+  final List<Map<String, dynamic>> _swipeData = [];
 
   late AnimationController _animationController;
   double? _initialX;
@@ -50,9 +57,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       ];
     } else if (level == 2) {
       _questions = [
-        {'image': 'assets/meerkat.jpg', 'questionType': 'flag', 'answer': true},
-        {'image': 'assets/brazil.png', 'questionType': 'flag', 'answer': false},
-        {'image': 'assets/kenya.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/cambodia.jpg', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/slide_game/wales.jpg', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/slide-games/Scotlandjpg.jpg', 'questionType': 'flag', 'answer': false},
       ];
     } else if (level == 3) {
       _questions = [
@@ -92,8 +99,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       });
     } else {
       _stopTimer();
-      _firestoreService.storeBiometricData(widget.level, _score, _biometricData); // Store data at the end of the game
-      widget.onLevelComplete(_score); // Notify Level Complete
+      _firestoreService.storeSwipeData(
+        widget.userId, // passing the user id yes yes yes
+        widget.level,
+        _score,
+        _swipeData,
+      );
+      widget.onLevelComplete(_score);
       _showGameOverDialog();
     }
   }
@@ -120,7 +132,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               Navigator.of(context).pop(); // Go back to level selection
             },
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white, backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.black,
               minimumSize: const Size(100, 40),
             ),
             child: const Text('OK'),
@@ -200,7 +213,6 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   double acceleration = _dataCollectionService.calculateSwipeAcceleration(speed, duration);
                   double jerk = _dataCollectionService.calculateSwipeJerk(acceleration, duration);
 
-                  // Create a map with all the collected data
                   Map<String, dynamic> swipeData = {
                     'initialX': _initialX,
                     'initialY': _initialY,
@@ -215,10 +227,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     'jerk': jerk,
                   };
 
-                  // Add the data point to the list
-                  _biometricData.add(swipeData);
 
-                  _checkAnswer(details.velocity.pixelsPerSecond.dx > 0); // Swiped right (True) or left (False)
+                  _swipeData.add(swipeData);
+
+                  _checkAnswer(details.velocity.pixelsPerSecond.dx > 0); // Swiped right (True) or left (False) yes yes yes
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -228,7 +240,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 2), // Reduced the border width
+                          border: Border.all(color: Colors.white, width: 2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Image.asset(_questions[_currentQuestionIndex]['image']),
@@ -265,3 +277,4 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     );
   }
 }
+
