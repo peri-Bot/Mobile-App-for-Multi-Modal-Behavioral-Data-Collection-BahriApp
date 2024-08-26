@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../services/swipe_data_collection.dart';
@@ -5,11 +6,12 @@ import '../../services/swipe_game_firebase_services.dart';
 
 
 class GameScreen extends StatefulWidget {
+  final DataCollectionService _dataCollectionService = DataCollectionService();
   final int level;
   final Function(int score) onLevelComplete;
   final String userId; // Added userId to pass to FirestoreService
 
-  const GameScreen({
+   GameScreen({
     super.key,
     required this.level,
     required this.onLevelComplete,
@@ -27,11 +29,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   int _timeLeft = 10;
   Timer? _timer;
   final List<Map<String, dynamic>> _swipeData = [];
+  double screenResponseTime = 16.67; // in milliseconds
+  double screenSensitivity = 1.0;
+  double screenPerformanceIndex = 1.0; // Example performance index for time of day
 
   late AnimationController _animationController;
   double? _initialX;
   double? _initialY;
   late int _startTime;
+
 
   final FirestoreService _firestoreService = FirestoreService();
   final DataCollectionService _dataCollectionService = DataCollectionService();
@@ -47,19 +53,25 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     );
     _animationController.forward();
   }
+  double calculateScreenArea(BuildContext context) {
+    final view = View.of(context);
+    final width = view.physicalSize.width;
+    final height = view.physicalSize.height;
+    return width * height;
+  }
 
   void _loadQuestionsForLevel(int level) {
     if (level == 1) {
       _questions = [
         {'image': 'assets/slide_game/dog.jpg', 'questionType': 'mammal', 'answer': true},
-        {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': false},
+        {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': true},
         {'image': 'assets/slide_game/mole.jpg', 'questionType': 'mammal', 'answer': true},
       ];
     } else if (level == 2) {
       _questions = [
         {'image': 'assets/slide_game/cambodia.jpg', 'questionType': 'flag', 'answer': false},
         {'image': 'assets/slide_game/wales.jpg', 'questionType': 'flag', 'answer': false},
-        {'image': 'assets/slide-games/Scotlandjpg.jpg', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/slide_games/kenya.jpg', 'questionType': 'flag', 'answer': true},
       ];
     } else if (level == 3) {
       _questions = [
@@ -118,6 +130,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     }
     _nextQuestion();
   }
+
 
   void _showGameOverDialog() {
     showDialog(
@@ -200,6 +213,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   _initialX = details.localPosition.dx;
                   _initialY = details.localPosition.dy;
                   _startTime = DateTime.now().millisecondsSinceEpoch;
+
                 },
                 onPanEnd: (details) {
                   int endTime = DateTime.now().millisecondsSinceEpoch;
@@ -211,8 +225,28 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   double straightness = _dataCollectionService.calculateSwipePathStraightness(_initialX!, _initialY!, endX, endY);
                   double angle = _dataCollectionService.calculateSwipeAngle(_initialX!, _initialY!, endX, endY);
                   double acceleration = _dataCollectionService.calculateSwipeAcceleration(speed, duration);
-                  double jerk = _dataCollectionService.calculateSwipeJerk(acceleration, duration);
 
+                  double jerk = _dataCollectionService.calculateSwipeJerk(acceleration, duration);
+                  double deceleration = _dataCollectionService.calculateSwipeDeceleration(speed, duration);
+                  double areaCoverage = _dataCollectionService.calculateSwipeAreaCoverage(_initialX!, _initialY!, endX, endY,calculateScreenArea(context) );
+                  double fingerOrientation = _dataCollectionService.calculateSwipeFingerOrientation(_initialX!, _initialY!, endX, endY);
+                  double movementVariability = _dataCollectionService.calculateSwipeFingerMovementVariability(_initialX!, _initialY!, endX, endY);
+                  double timeOfDayImpact = _dataCollectionService.calculateTimeOfDayImpact();
+                  double snsl = _dataCollectionService.calculateSNSL(distance, context);
+                  double snss = _dataCollectionService.calculateSNSS(speed, context);
+                  double snsa = _dataCollectionService.calculateSNSA(angle, context);
+                  double snsd = _dataCollectionService.calculateSNSD(duration, screenResponseTime);
+                //  double snsp = _dataCollectionService.calculateSNSP(1.0, screenSensitivity); // will work on this later
+                  double snspc = _dataCollectionService.calculateSNSPC(straightness, context);
+                  double snspl = _dataCollectionService.calculateSNSPL(distance, context);
+                  double snsa_acc = _dataCollectionService.calculateSNSA_Acceleration(acceleration, context);
+                  double snsd_dec = _dataCollectionService.calculateSNSD_Deceleration(deceleration, context);
+                  double snsj = _dataCollectionService.calculateSNSJ(jerk, context);
+                  double spsac = _dataCollectionService.calculateSPSAC(1.0, context); // Assuming swipe area is 1.0 for demo
+                  double snss_straight = _dataCollectionService.calculateSNSS_Straightness(straightness, context);
+                  double snsfo = _dataCollectionService.calculateSNSFO(1.0, context); // Assuming finger orientation is 1.0 for demo
+                  double sns_fmv = _dataCollectionService.calculateSNSFMV(1.0, context); // Assuming finger movement variability is 1.0
+                  double snstdi = _dataCollectionService.calculateSNSTDI(1.0, screenPerformanceIndex); // Example values
                   Map<String, dynamic> swipeData = {
                     'initialX': _initialX,
                     'initialY': _initialY,
@@ -225,6 +259,27 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     'angle': angle,
                     'acceleration': acceleration,
                     'jerk': jerk,
+                    'deceleration': deceleration,
+                    'areaCoverage': areaCoverage,
+                    'fingerOrientation': fingerOrientation,
+                    'movementVariability': movementVariability,
+                    'timeOfDayImpact': timeOfDayImpact,
+                    'SN Swipe Length': snsl,
+                    'SN Swipe Speed': snss,
+                    'SN Swipe Angle': snsa,
+                    'SN Swipe Duration': snsd,
+                    //'SN Swipe Pressure': snsp,
+                    'SN Swipe Path Curvature': snspc,
+                    'SN Swipe Path Length': snspl,
+                    'SN Swipe Acceleration': snsa_acc,
+                    'SN Swipe Deceleration': snsd_dec,
+                    'SN Swipe Jerk': snsj,
+                    'Screen Proportional Swipe Area Coverage': spsac,
+                    'SN Swipe Straightness': snss_straight,
+                    'SN Swipe Finger Orientation': snsfo,
+                    'SN Swipe Finger Movement Variability': sns_fmv,
+                    'SN Swipe Time of Day Impact': snstdi,
+                    //everyone note that SN stands for screen normalized
                   };
 
 
