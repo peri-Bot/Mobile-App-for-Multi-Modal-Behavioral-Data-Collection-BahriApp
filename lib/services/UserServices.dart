@@ -152,9 +152,11 @@ class UserServices {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         String token = responseBody['idToken'];
+        String uid = responseBody['uid'];
 
         // Store the token securely using flutter_secure_storage
         await _secureStorage.write(key: 'authToken', value: token);
+        await _secureStorage.write(key: 'uid', value: uid);
 
         print("Login Successful: Token stored securely");
         return 'sucess';
@@ -248,6 +250,8 @@ class UserServices {
 
   void logout() async {
     await _secureStorage.delete(key: 'authToken');
+    await _secureStorage.delete(key: 'uid');
+
     print("User logged out: Token deleted");
   }
 }
