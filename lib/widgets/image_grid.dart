@@ -5,6 +5,7 @@ class ImageGrid extends StatefulWidget {
   final int gridSize;
   final String intensityLevel; // New parameter for distortion intensity
   final Function(int) onScoreUpdate;
+
   const ImageGrid({
     super.key,
     required this.gridSize,
