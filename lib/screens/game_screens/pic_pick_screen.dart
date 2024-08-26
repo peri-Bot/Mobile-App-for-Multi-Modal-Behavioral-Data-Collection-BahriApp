@@ -138,6 +138,7 @@ class _PicPick extends State<PicPick> {
             gridSize: 2,
             intensityLevel: 'Easy',
             onScoreUpdate: _updateScore,
+            seconds: timeLimits[0],
           ));
         });
       case 1:
@@ -148,6 +149,7 @@ class _PicPick extends State<PicPick> {
             gridSize: 3,
             intensityLevel: 'Medium',
             onScoreUpdate: _updateScore,
+            seconds: timeLimits[1],
           ));
         });
       case 2:
@@ -158,6 +160,7 @@ class _PicPick extends State<PicPick> {
             gridSize: 3,
             intensityLevel: 'Hard',
             onScoreUpdate: _updateScore,
+            seconds: timeLimits[2],
           ));
         });
       default:

@@ -1,72 +1,70 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 class TapDataCollectionService {
-  double calculateSwipePathStraightness(
-      double initialX, double initialY, double endX, double endY) {
-    double straightDistance =
-        sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
-    double actualDistance = (endX - initialX).abs() + (endY - initialY).abs();
-    return straightDistance / actualDistance;
+  double calculateTapDuration(double tapPressTime, double tapReleaseTime) {
+    return tapReleaseTime - tapPressTime;
   }
 
-  double calculateSwipeAngle(
-      double initialX, double initialY, double endX, double endY) {
-    return atan2(endY - initialY, endX - initialX) * (180 / pi);
+  double calculateTapLatency(double screenResponseTime, double tapPressTime) {
+    return screenResponseTime - tapPressTime;
   }
 
-  double calculateSwipeSpeed(double distance, double duration) {
-    return distance / duration;
+  double calculateTapSpeed(double tapPressTime, tapReleaseTime) {
+    return 1 / calculateTapDuration(tapPressTime, tapReleaseTime);
   }
 
-  double calculateSwipeAcceleration(double speed, double duration) {
-    return speed / duration;
+  double calculateTapDrift(
+      Offset intededTapLocation, Offset actualTapLocation) {
+    return sqrt(pow(intededTapLocation.dx - actualTapLocation.dx, 2) +
+        pow(intededTapLocation.dx - actualTapLocation.dy, 2));
   }
 
-  double calculateSwipeJerk(double acceleration, double duration) {
-    return acceleration / duration;
+  double calculateTapDistance(
+      Offset globalIntialLocation, Offset globalFinalLocation) {
+    return (globalFinalLocation - globalIntialLocation).distance;
   }
 
-  double calculateSwipeDistance(
-      double initialX, double initialY, double endX, double endY) {
-    return sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
+  Future<bool> isConnectedToInternet() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  double calculateSwipeDuration(int startTime, int endTime) {
-    return (endTime - startTime) / 1000.0; // convert milliseconds to seconds
+  Future<String> saveTapData(List<Map<String, dynamic>> tapData) async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return 'fail';
+    final url = Uri.parse(
+        'http://15.184.243.127:8080/collect_tap_data'); // Use your Dart Frog server address
+    print("ipgiven");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({tapData}),
+      );
+
+      if (response.statusCode == 200) {
+        // User registered successfully
+        print('User registered successfully');
+        return 'sucess';
+      } else {
+        // Handle error
+        print('Failed to register user: ${response.body}');
+        return 'fail';
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      return 'fail';
+    }
   }
 }
-
-//  Expanded(
-//               child: GestureDetector(
-//                 onPanStart: (details) {
-//                   _initialX = details.localPosition.dx;
-//                   _initialY = details.localPosition.dy;
-//                   _startTime = DateTime.now().millisecondsSinceEpoch;
-//                 },
-//                 onPanEnd: (details) {
-//                   int endTime = DateTime.now().millisecondsSinceEpoch;
-//                   double endX = details.velocity.pixelsPerSecond.dx;
-//                   double endY = details.velocity.pixelsPerSecond.dy;
-//                   double distance = _dataCollectionService.calculateSwipeDistance(_initialX!, _initialY!, endX, endY);
-//                   double duration = _dataCollectionService.calculateSwipeDuration(_startTime, endTime);
-//                   double speed = _dataCollectionService.calculateSwipeSpeed(distance, duration);
-//                   double straightness = _dataCollectionService.calculateSwipePathStraightness(_initialX!, _initialY!, endX, endY);
-//                   double angle = _dataCollectionService.calculateSwipeAngle(_initialX!, _initialY!, endX, endY);
-//                   double acceleration = _dataCollectionService.calculateSwipeAcceleration(speed, duration);
-//                   double jerk = _dataCollectionService.calculateSwipeJerk(acceleration, duration);
-
-//                   // Create a map with all the collected data
-//                   Map<String, dynamic> swipeData = {
-//                     'initialX': _initialX,
-//                     'initialY': _initialY,
-//                     'endX': endX,
-//                     'endY': endY,
-//                     'duration': duration,
-//                     'distance': distance,
-//                     'speed': speed,
-//                     'straightness': straightness,
-//                     'angle': angle,
-//                     'acceleration': acceleration,
-//                     'jerk': jerk,
-//                   };
-

@@ -4,18 +4,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import '../services/pic_pick_services.dart';
 
 class ImageGrid extends StatefulWidget {
   final int gridSize;
   final String intensityLevel; // New parameter for distortion intensity
   final Function(int) onScoreUpdate;
+  final int seconds;
 
-  const ImageGrid({
-    super.key,
-    required this.gridSize,
-    required this.intensityLevel,
-    required this.onScoreUpdate,
-  });
+  const ImageGrid(
+      {super.key,
+      required this.gridSize,
+      required this.intensityLevel,
+      required this.onScoreUpdate,
+      required this.seconds});
 
   @override
   State<ImageGrid> createState() => _ImageGrid();
@@ -26,6 +28,7 @@ class _ImageGrid extends State<ImageGrid> {
   late String intensityLevel;
   late List<String> currentImages;
   late int score;
+  late int seconds;
   double? _tapPressTime;
   double? _tapReleaseTime;
   double? _responseTime;
@@ -41,10 +44,13 @@ class _ImageGrid extends State<ImageGrid> {
   int _tapCount = 0;
   Timer? _timer;
   double _tapRepeatRate = 0.0;
-  final int _timeFrame = 1; // 1 second
+  final int _timeFrame = 2; // 1 second
   Offset? _tapGlobalFinalLocation;
   Offset? _tapLocalFinalLocation;
   final GlobalKey _gridKey = GlobalKey();
+  List<Map<String, dynamic>> tapData = [];
+  TapDataCollectionService tapDataCollectionService =
+      TapDataCollectionService();
 
   //double? _tapForce;
   double? _tapSurfaceArea;
@@ -108,6 +114,7 @@ class _ImageGrid extends State<ImageGrid> {
     gridSize = widget.gridSize;
     intensityLevel = widget.intensityLevel;
     score = 0;
+    seconds = widget.seconds;
     _initializeGrid();
   }
 
@@ -177,6 +184,9 @@ class _ImageGrid extends State<ImageGrid> {
       double itemWidth = constraints.maxWidth / gridSize;
       double itemHeight = constraints.maxHeight / gridSize;
       _targetSizeArea = (itemWidth / gridSize) * (itemHeight / gridSize);
+      Timer.periodic(Duration(milliseconds: seconds), (timer) {
+        timer.cancel(); // Stop the timer after calculating TRR
+      });
       return GridView.builder(
         key: _gridKey,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -229,6 +239,39 @@ class _ImageGrid extends State<ImageGrid> {
               setState(() {
                 _tapCount++;
               });
+
+              Map<String, dynamic> TapData = {
+                'TapPressTime': _tapPressTime,
+                'TapReleaseTime': _tapReleaseTime,
+                'TapDuration': tapDataCollectionService.calculateTapDuration(
+                    _tapPressTime!, _tapReleaseTime!),
+                'TapInitialGlobalLocationX': _tapGlobalInitialLocation!.dx,
+                'TapInitialGlobalLocationY': _tapGlobalInitialLocation!.dy,
+                'TapFinalGlobalLocationX': _tapGlobalFinalLocation!.dx,
+                'TapFinalGlobalLocationY': _tapGlobalFinalLocation!.dy,
+                'TapInitialLocallLocationX': _tapLocalInitialLocation!.dx,
+                'TapInitialLocalLocationY': _tapLocalInitialLocation!.dy,
+                'TapFinalLocalLocationX': _tapLocalFinalLocation!.dx,
+                'TapFinalLocalLocationY': _tapLocalFinalLocation!.dy,
+                'TapGlobalMovementX':
+                    _tapGlobalFinalLocation!.dx - _tapGlobalInitialLocation!.dx,
+                'TapGlobalMovementY':
+                    _tapGlobalFinalLocation!.dy - _tapGlobalInitialLocation!.dy,
+                'TapLocalMovementX':
+                    _tapLocalFinalLocation!.dx - _tapLocalInitialLocation!.dx,
+                'TapLocalMovementY':
+                    _tapLocalFinalLocation!.dy - _tapLocalInitialLocation!.dy,
+                'tapDrift': tapDataCollectionService.calculateTapDrift(
+                    _intendedTapLocation!, _tapGlobalInitialLocation!),
+                'Latency': tapDataCollectionService.calculateTapLatency(
+                    _responseTime!, _tapPressTime!),
+                'TapSpeed': tapDataCollectionService.calculateTapSpeed(
+                    _tapPressTime!, _responseTime!),
+                'TapTimeofTheDay': _tapTimeofDay,
+                '_targetSizeAre': _targetSizeArea,
+                'TapRepeatRate/2Seconds': _tapRepeatRate,
+              };
+              tapData.add(TapData);
             },
             onTapUp: (details) {
               _tapReleaseTime =
