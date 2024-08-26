@@ -33,6 +33,7 @@ class _PicPick extends State<PicPick> {
       appBar: AppBar(
         title: Text(
           'Pic Pick :${difficulties[difficulty]}',
+          //tap the center of the images that are not distorted
           style: const TextStyle(
             fontFamily: "assets/fonts/Poppins-Regular.ttf",
             fontSize: 25,

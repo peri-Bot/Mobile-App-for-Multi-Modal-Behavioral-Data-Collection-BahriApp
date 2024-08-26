@@ -1,5 +1,9 @@
+import 'dart:async';
+import 'dart:ffi' as ffi;
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 class ImageGrid extends StatefulWidget {
   final int gridSize;
@@ -22,6 +26,28 @@ class _ImageGrid extends State<ImageGrid> {
   late String intensityLevel;
   late List<String> currentImages;
   late int score;
+  double? _tapPressTime;
+  double? _tapReleaseTime;
+  double? _responseTime;
+  Offset? _tapLocalInitialLocation;
+  Offset? _tapGlobalInitialLocation;
+  Offset? _intendedTapLocation;
+  DateTime? _tapTimeofDay;
+  double? _targetSizeArea;
+  Size? screenSize;
+  double? screenWidth;
+  double? screenHeight;
+  double? screenDiagonalLength;
+  int _tapCount = 0;
+  Timer? _timer;
+  double _tapRepeatRate = 0.0;
+  final int _timeFrame = 1; // 1 second
+  Offset? _tapGlobalFinalLocation;
+  Offset? _tapLocalFinalLocation;
+  final GlobalKey _gridKey = GlobalKey();
+
+  //double? _tapForce;
+  double? _tapSurfaceArea;
 
   List<String> images = [
     'assets/pic_pick_images/Image(1).jpg',
@@ -147,31 +173,89 @@ class _ImageGrid extends State<ImageGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: gridSize,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 6,
-      ),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: gridSize * gridSize,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _onImageTap(index),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(11),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: Image.asset(
-                currentImages[index],
-                key: ValueKey(currentImages[index]),
-                fit: BoxFit.cover,
+    return LayoutBuilder(builder: (context, constraints) {
+      double itemWidth = constraints.maxWidth / gridSize;
+      double itemHeight = constraints.maxHeight / gridSize;
+      _targetSizeArea = (itemWidth / gridSize) * (itemHeight / gridSize);
+      return GridView.builder(
+        key: _gridKey,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: gridSize,
+          crossAxisSpacing: 6,
+          mainAxisSpacing: 6,
+        ),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: gridSize * gridSize,
+        itemBuilder: (context, index) {
+          double x = (index % 2) * itemWidth;
+          double y = (index ~/ 2) * itemHeight;
+          // Calculate the intended tap location (center of the item)
+          _intendedTapLocation = Offset(x + itemWidth / 2, y + itemHeight / 2);
+          return GestureDetector(
+            onTapDown: (details) {
+              _tapPressTime = DateTime.now().millisecondsSinceEpoch as double?;
+              _tapGlobalInitialLocation = details.globalPosition;
+              _tapLocalInitialLocation = details.localPosition;
+              screenSize = MediaQuery.of(context).size;
+              screenWidth = screenSize!.width;
+              screenHeight = screenSize!.height;
+              screenDiagonalLength =
+                  sqrt(pow(screenWidth!, 2) + pow(screenHeight!, 2));
+
+              // Get the global position of the tap
+
+              // Normalize the tap position by the screen size
+              double normalizedX =
+                  _tapGlobalInitialLocation!.dx / screenSize!.width;
+              double normalizedY =
+                  _tapGlobalInitialLocation!.dy / screenSize!.height;
+              // Assuming force and surface area can be captured from details if supported
+              //_tapForce = details.pressure;
+              // _tapSurfaceArea = details;
+            },
+            onTap: () {
+              _responseTime = DateTime.now().millisecondsSinceEpoch as double?;
+              _tapTimeofDay = DateTime.now();
+
+              if (_timer == null || !_timer!.isActive) {
+                _tapCount = 0;
+                _timer = Timer.periodic(Duration(seconds: _timeFrame), (timer) {
+                  _tapRepeatRate = _tapCount / _timeFrame;
+                  timer.cancel(); // Stop the timer after calculating TRR
+                });
+              }
+              _onImageTap(index);
+              setState(() {
+                _tapCount++;
+              });
+            },
+            onTapUp: (details) {
+              _tapReleaseTime =
+                  DateTime.now().millisecondsSinceEpoch as double?;
+              _tapGlobalFinalLocation = details.globalPosition;
+              _tapLocalFinalLocation = details.localPosition;
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: Image.asset(
+                  currentImages[index],
+                  key: ValueKey(currentImages[index]),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }
