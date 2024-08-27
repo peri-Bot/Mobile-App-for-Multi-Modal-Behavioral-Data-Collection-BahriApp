@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import '../services/pic_pick_services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ImageGrid extends StatefulWidget {
   final int gridSize;
@@ -29,9 +30,9 @@ class _ImageGrid extends State<ImageGrid> {
   late List<String> currentImages;
   late int score;
   late int seconds;
-  double? _tapPressTime;
-  double? _tapReleaseTime;
-  double? _responseTime;
+  late int _tapPressTime;
+  late int _tapReleaseTime;
+  late int _responseTime;
   Offset? _tapLocalInitialLocation;
   Offset? _tapGlobalInitialLocation;
   Offset? _intendedTapLocation;
@@ -49,8 +50,18 @@ class _ImageGrid extends State<ImageGrid> {
   Offset? _tapLocalFinalLocation;
   final GlobalKey _gridKey = GlobalKey();
   List<Map<String, dynamic>> tapData = [];
+  late Map<String, dynamic> gameInfo;
+  bool gameEnded = false;
+  Timer? gameTimer;
+
   TapDataCollectionService tapDataCollectionService =
       TapDataCollectionService();
+  String? uid;
+  Future<void> fetchUserId() async {
+    uid = await getUserId();
+    print("User ID is set: ==$uid");
+    setState(() {});
+  }
 
   //double? _tapForce;
   double? _tapSurfaceArea;
@@ -116,6 +127,25 @@ class _ImageGrid extends State<ImageGrid> {
     score = 0;
     seconds = widget.seconds;
     _initializeGrid();
+    fetchUserId();
+    gameInfo = {
+      'gridSize': '$gridSize x $gridSize',
+      'difficulty': intensityLevel,
+      'startTime': DateTime.now().toIso8601String(),
+    };
+    gameTimer = Timer(Duration(milliseconds: seconds), endGame);
+  }
+
+  void endGame() {
+    if (!gameEnded) {
+      gameEnded = true;
+      gameInfo['endTime'] = DateTime.now().toIso8601String();
+      gameInfo['uid'] = uid;
+      // Use a microtask to ensure this runs after the current build cycle
+      Future.microtask(() {
+        tapDataCollectionService.saveTapData(tapData, gameInfo);
+      });
+    }
   }
 
   void _initializeGrid() {
@@ -183,10 +213,7 @@ class _ImageGrid extends State<ImageGrid> {
     return LayoutBuilder(builder: (context, constraints) {
       double itemWidth = constraints.maxWidth / gridSize;
       double itemHeight = constraints.maxHeight / gridSize;
-      _targetSizeArea = (itemWidth / gridSize) * (itemHeight / gridSize);
-      Timer.periodic(Duration(milliseconds: seconds), (timer) {
-        timer.cancel(); // Stop the timer after calculating TRR
-      });
+      _targetSizeArea = ((itemWidth / gridSize) * (itemHeight / gridSize));
       return GridView.builder(
         key: _gridKey,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -204,7 +231,7 @@ class _ImageGrid extends State<ImageGrid> {
           _intendedTapLocation = Offset(x + itemWidth / 2, y + itemHeight / 2);
           return GestureDetector(
             onTapDown: (details) {
-              _tapPressTime = DateTime.now().millisecondsSinceEpoch as double?;
+              _tapPressTime = DateTime.now().millisecondsSinceEpoch as int;
               _tapGlobalInitialLocation = details.globalPosition;
               _tapLocalInitialLocation = details.localPosition;
               screenSize = MediaQuery.of(context).size;
@@ -225,7 +252,7 @@ class _ImageGrid extends State<ImageGrid> {
               // _tapSurfaceArea = details;
             },
             onTap: () {
-              _responseTime = DateTime.now().millisecondsSinceEpoch as double?;
+              _responseTime = DateTime.now().millisecondsSinceEpoch;
               _tapTimeofDay = DateTime.now();
 
               if (_timer == null || !_timer!.isActive) {
@@ -244,12 +271,12 @@ class _ImageGrid extends State<ImageGrid> {
                 'TapPressTime': _tapPressTime,
                 'TapReleaseTime': _tapReleaseTime,
                 'TapDuration': tapDataCollectionService.calculateTapDuration(
-                    _tapPressTime!, _tapReleaseTime!),
+                    _tapPressTime, _tapReleaseTime),
                 'TapInitialGlobalLocationX': _tapGlobalInitialLocation!.dx,
                 'TapInitialGlobalLocationY': _tapGlobalInitialLocation!.dy,
                 'TapFinalGlobalLocationX': _tapGlobalFinalLocation!.dx,
                 'TapFinalGlobalLocationY': _tapGlobalFinalLocation!.dy,
-                'TapInitialLocallLocationX': _tapLocalInitialLocation!.dx,
+                'TapInitialLocalLocationX': _tapLocalInitialLocation!.dx,
                 'TapInitialLocalLocationY': _tapLocalInitialLocation!.dy,
                 'TapFinalLocalLocationX': _tapLocalFinalLocation!.dx,
                 'TapFinalLocalLocationY': _tapLocalFinalLocation!.dy,
@@ -264,18 +291,17 @@ class _ImageGrid extends State<ImageGrid> {
                 'tapDrift': tapDataCollectionService.calculateTapDrift(
                     _intendedTapLocation!, _tapGlobalInitialLocation!),
                 'Latency': tapDataCollectionService.calculateTapLatency(
-                    _responseTime!, _tapPressTime!),
+                    _responseTime, _tapPressTime),
                 'TapSpeed': tapDataCollectionService.calculateTapSpeed(
-                    _tapPressTime!, _responseTime!),
-                'TapTimeofTheDay': _tapTimeofDay,
+                    _tapPressTime, _responseTime),
+                'TapTimeofTheDay': '${_tapTimeofDay}Z',
                 '_targetSizeAre': _targetSizeArea,
                 'TapRepeatRate/2Seconds': _tapRepeatRate,
               };
               tapData.add(TapData);
             },
             onTapUp: (details) {
-              _tapReleaseTime =
-                  DateTime.now().millisecondsSinceEpoch as double?;
+              _tapReleaseTime = DateTime.now().millisecondsSinceEpoch;
               _tapGlobalFinalLocation = details.globalPosition;
               _tapLocalFinalLocation = details.localPosition;
             },
@@ -298,7 +324,14 @@ class _ImageGrid extends State<ImageGrid> {
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
+  }
+
+  Future<String?> getUserId() async {
+    const secureStorage = FlutterSecureStorage();
+
+    await secureStorage.read(key: 'uid');
+
+    return await secureStorage.read(key: 'uid');
   }
 }
