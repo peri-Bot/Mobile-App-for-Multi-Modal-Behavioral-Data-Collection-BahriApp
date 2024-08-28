@@ -72,6 +72,8 @@ flutter:
     - ./assets/legal_and_others/Expert_skill.md
     - .env
     - ./assets/slide_game/
+    - ./assets/slide_game/countries/
+    - ./assets/slide_game/veggies/
 
 
   #   - ./assets/images/logo2.png

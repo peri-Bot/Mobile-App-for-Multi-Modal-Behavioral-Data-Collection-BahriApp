@@ -65,19 +65,51 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       _questions = [
         {'image': 'assets/slide_game/dog.jpg', 'questionType': 'mammal', 'answer': true},
         {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/mole.jpg', 'questionType': 'mammal', 'answer': false},
+        {'image': 'assets/slide_game/enshelalit.jpg', 'questionType': 'mammal', 'answer': false},
+        {'image': 'assets/slide_game/frog.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/hipoo.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/monkey.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/OIP.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/squierl.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/seal.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/sheep.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/horse.jpg', 'questionType': 'mammal', 'answer': true},
+        {'image': 'assets/slide_game/bird.jpg', 'questionType': 'mammal', 'answer': true},
         {'image': 'assets/slide_game/mole.jpg', 'questionType': 'mammal', 'answer': true},
       ];
     } else if (level == 2) {
       _questions = [
-        {'image': 'assets/slide_game/cambodia.jpg', 'questionType': 'flag', 'answer': false},
-        {'image': 'assets/slide_game/wales.jpg', 'questionType': 'flag', 'answer': false},
-        {'image': 'assets/slide_games/kenya.jpg', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/cambodia.jpg', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/slide_game/countries/wales.jpg', 'questionType': 'flag', 'answer': false},
+        {'image': 'assets/slide_game/countries/uganda.jpg', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/scotland.jpg', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/angola.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/Armenia.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/Austria.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/ethiopia.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/tunisia.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/Austria.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/moroco.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/denmark.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/rwanda.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/bhutan.png', 'questionType': 'flag', 'answer': true},
+        {'image': 'assets/slide_game/countries/burkina.png', 'questionType': 'flag', 'answer': true},
+
       ];
     } else if (level == 3) {
       _questions = [
-        {'image': 'assets/apple.jpg', 'questionType': 'fruit', 'answer': true},
-        {'image': 'assets/carrot.jpg', 'questionType': 'fruit', 'answer': false},
-        {'image': 'assets/banana.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/orange.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/gomen.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/papper.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/tomato.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/apple.jpg', 'questionType': 'fruit', 'answer': false},
+        {'image': 'assets/slide_game/veggies/cuccumber.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/banana.jpg', 'questionType': 'fruit', 'answer': false},
+        {'image': 'assets/slide_game/veggies/cucember.png', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/cabbage.jpg', 'questionType': 'fruit', 'answer': true},
+        {'image': 'assets/slide_game/veggies/fruit.jpg', 'questionType': 'fruit', 'answer': true},
+
       ];
     }
   }
@@ -285,7 +317,31 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
                   _swipeData.add(swipeData);
 
-                  _checkAnswer(details.velocity.pixelsPerSecond.dx > 0); // Swiped right (True) or left (False) yes yes yes
+                  // Determine swipe direction
+                  // Determine swipe directions
+                  bool isSwipeRight = details.velocity.pixelsPerSecond.dx > 0;
+                  bool isSwipeLeft = details.velocity.pixelsPerSecond.dx < 0;
+                  bool isSwipeUp = details.velocity.pixelsPerSecond.dy < 0;
+                  bool isSwipeDown = details.velocity.pixelsPerSecond.dy > 0;
+
+                  if (widget.level == 3) {
+                    // Handle up/down swipes for level 3
+                    if (isSwipeUp) {
+                      _checkAnswer(true);  // Swipe up
+                    } else if (isSwipeDown) {
+                      _checkAnswer(false);  // Swipe down
+                    }
+                  } else {
+                    // Handle left/right swipes for levels 1 and 2
+                    if (isSwipeRight) {
+                      _checkAnswer(true);  // Swiped right
+                    } else if (isSwipeLeft) {
+                      _checkAnswer(false);  // Swiped left
+                    }
+                  }
+
+                  // Check swipe direction
+                  //_checkAnswer(details.velocity.pixelsPerSecond.dx > 0); // Swiped right (True) or left (False) yes yes yes
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -307,9 +363,12 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 10),
                       const Icon(Icons.swipe, size: 40, color: Colors.white),
-                      const Text(
-                        "Swipe Left or Right",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+                       Text(
+                          widget.level == 3
+                              ? "Swipe Up or Down"
+                              : "Swipe Left or Right",
+                          style: TextStyle(fontSize: 18, color: Colors.white)
+
                       ),
                     ],
                   ),
