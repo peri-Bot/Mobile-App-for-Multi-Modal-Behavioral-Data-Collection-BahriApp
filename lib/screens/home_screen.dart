@@ -1,3 +1,5 @@
+import 'package:bahri_app/screens/game_screens/key_stroke_lvl_screen.dart';
+import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:bahri_app/screens/game_screens/pic_pick_screen.dart';
 import 'package:flutter/material.dart';
 import 'game_screens/pic_pick_lvl_screen.dart';
@@ -65,7 +67,8 @@ class HomeScreen extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const PicPickLvlScreen()));
+                              builder: (context) =>
+                                  const KeyStrokeLvlScreen()));
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.black,

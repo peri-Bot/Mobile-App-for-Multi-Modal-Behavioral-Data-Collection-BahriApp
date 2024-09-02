@@ -32,14 +32,15 @@ class BahriApp extends StatelessWidget {
       title: 'Bahri App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // colorScheme: ColorScheme.fromSeed(
-        //     seedColor: Colors.blue,
-        //     brightness: Brightness.light,
-        //     dynamicSchemeVariant: DynamicSchemeVariant.rainbow),
-        // useMaterial3: true,
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+          // colorScheme: ColorScheme.fromSeed(
+          //     seedColor: Colors.blue,
+          //     brightness: Brightness.light,
+          //     dynamicSchemeVariant: DynamicSchemeVariant.rainbow),
+          // useMaterial3: true,
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          bottomSheetTheme:
+              BottomSheetThemeData(backgroundColor: Colors.white70)),
       home: const SplashScreen(),
     );
   }
