@@ -35,7 +35,6 @@ class StartScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // GIF inside a larger bordered container with no padding
             Container(
               width: 220,
               height: 220,

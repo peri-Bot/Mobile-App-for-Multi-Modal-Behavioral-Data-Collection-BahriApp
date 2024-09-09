@@ -28,19 +28,17 @@ class GyroData {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Function to calculate tilt angle (roll and pitch)
   void calculateTiltAngle(double gyroX, double gyroY, double gyroZ) {
     roll = atan2(gyroY, gyroZ) * 180 / pi; // Rotation around x-axis
     pitch = atan2(-gyroX, sqrt(gyroY * gyroY + gyroZ * gyroZ)) * 180 / pi; // Rotation around y-axis
   }
 
-  // Function to calculate tilt speed
   void calculateTiltSpeed(double gyroX, double gyroY, DateTime currentTime) {
     if (lastTimestamp != null) {
       double deltaTime = currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
       tiltSpeed = sqrt(gyroX * gyroX + gyroY * gyroY) / deltaTime;
 
-      // Calculate acceleration and jerk based on the change in speed
+
       if (lastTiltSpeed != null) {
         tiltAcceleration = (tiltSpeed - lastTiltSpeed!) / deltaTime;
         jerk = (tiltAcceleration - tiltDeceleration) / deltaTime;
@@ -51,7 +49,7 @@ class GyroData {
     lastTimestamp = currentTime;
   }
 
-  // Function to calculate tilt stability based on sudden changes in gyroscope data
+
   double calculateTiltStability(double gyroX, double gyroY, double gyroZ) {
     if (lastGyroX != null && lastGyroY != null && lastGyroZ != null) {
       double deltaX = (gyroX - lastGyroX!).abs();
@@ -67,7 +65,7 @@ class GyroData {
     return 0.0;
   }
 
-  // Function to calculate rotation direction consistency
+
   void calculateRotationDirection(double gyroX, DateTime currentTime) {
     if (lastRotationDirection != null && lastTimestamp != null) {
       double deltaTime = currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
@@ -82,17 +80,15 @@ class GyroData {
     lastTimestamp = currentTime;
   }
 
-  // Function to measure micro-adjustments (small, quick changes in tilt)
+
   double calculateMicroAdjustments(double gyroX, double gyroY, double gyroZ) {
     return sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
   }
 
-  // Function to measure rotational path straightness (how smooth is the rotation)
   double calculateRotationPathStraightness(double gyroX, double gyroY, double gyroZ) {
     return (gyroX.abs() + gyroY.abs() + gyroZ.abs()) / 3.0;
   }
 
-  // Function to calculate how long the device remains in a specific tilt (rotation duration)
   void calculateRotationDuration(double gyroX, DateTime currentTime) {
     if (lastTimestamp != null) {
       double deltaTime = currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;

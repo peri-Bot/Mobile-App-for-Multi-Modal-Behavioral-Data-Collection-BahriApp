@@ -67,7 +67,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
             GyroData gyroData = GyroData();
 
-// Inside your gyroscope data listener or game loop
           gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
           gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
           gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
@@ -75,33 +74,24 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
           gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
           gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
           gyroData.calculateRotationDuration(gyroX, DateTime.now());
-
-// Optional: Print the metrics for debugging
           gyroData.printMetrics();
-
-// Store the data in Firestore
           gyroData.storeDataInFirestore(gyroX, gyroY, gyroZ);
 
 
 
           setState(() {
-            // Adjust the sensitivity for X (horizontal) and Y (vertical) direction separately
-            double horizontalSensitivity = 20.0; // Fine-tune for horizontal movement
-            double verticalSensitivity = 30.0; // Fine-tune for vertical movement
+            double horizontalSensitivity = 20.0;
+            double verticalSensitivity = 30.0;
 
             posX += sensorEvent.data[1] * horizontalSensitivity;
             posY += sensorEvent.data[0] * verticalSensitivity;
 
-            // Ensure the ball stays within the screen borders
             posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
             posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10); // Adjusted to stay above the bottom border
 
-            // Check for collision with obstacles
             if (_checkCollision()) {
               _gameOver();
             }
-
-            // Check if the ball reached the goal
             if (_checkGoal()) {
               _gameWon();
             }
@@ -190,7 +180,7 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _continueToNextLevel(); // Go to the next level
+                _continueToNextLevel();
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
@@ -199,11 +189,11 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Exit the dialog
-                Navigator.of(context).pop(); // Go back to the previous screen
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
               },
               style: TextButton.styleFrom(
-                backgroundColor: Colors.redAccent, // Red color for Quit button
+                backgroundColor: Colors.redAccent,
               ),
               child: const Text('Quit', style: TextStyle(color: Colors.white)),
             ),
@@ -393,7 +383,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               ),
             ),
           ),
-          // Adding "Continue" and "Back" buttons when the game is won
           if (isGameWon)
             Center(
               child: Row(
@@ -404,17 +393,17 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
                       _continueToNextLevel();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal, // Button color
+                      backgroundColor: Colors.teal,
                     ),
                     child: const Text('Continue to Next Level'),
                   ),
                   const SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Pop the screen to the previous screen
+                      Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal, // Button color
+                      backgroundColor: Colors.teal,
                     ),
                     child: const Text('Back'),
                   ),

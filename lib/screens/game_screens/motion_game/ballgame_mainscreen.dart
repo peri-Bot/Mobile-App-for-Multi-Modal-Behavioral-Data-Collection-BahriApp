@@ -34,14 +34,13 @@ class GyroScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // GIF inside a larger bordered container with no padding
             Container(
               width: 220,
               height: 220,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Colors.white, // Color of the border
-                  width: 8, // Increased width of the border
+                  color: Colors.white,
+                  width: 8,
                 ),
                 borderRadius: BorderRadius.circular(15), // Rounded corners
               ),
@@ -49,14 +48,13 @@ class GyroScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15), // Ensure image follows the border's rounded corners
                 child: Image.asset(
                   'assets/Motion_Game/ball.gif',
-                  fit: BoxFit.cover, // Make the image fill the container
+                  fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            // New motivational text below the image
             const Text(
               'Move the ball through the obstacles toward the goal by titlting you phone in differnt direction '
                   'and reach the goal',
