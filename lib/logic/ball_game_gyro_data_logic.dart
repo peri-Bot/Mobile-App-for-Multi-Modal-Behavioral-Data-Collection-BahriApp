@@ -6,7 +6,7 @@ class GyroData {
   double? lastGyroX, lastGyroY, lastGyroZ;
   DateTime? lastTimestamp;
 
-  final double movementThreshold = 0.05; // Adjust based on sensitivity you need
+  final double movementThreshold = 0.0; // Adjust based on sensitivity you need
   final Duration delayBetweenSaves = const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
   double roll = 0.0;
