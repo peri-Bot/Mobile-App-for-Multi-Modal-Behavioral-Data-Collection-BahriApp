@@ -1,3 +1,4 @@
+import 'package:bahri_app/logic/ball_game_gyro_data_logic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'dart:async';
@@ -5,11 +6,15 @@ import 'dart:async';
 class BallGame extends StatefulWidget {
   const BallGame({super.key});
 
+
   @override
   _BallGameState createState() => _BallGameState();
 }
 
+
 class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin {
+
+  final GyroData gyroData=GyroData();
   double posX = 0.0;
   double posY = 0.0;
   double ballSize = 50.0;
@@ -55,6 +60,30 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
       _sensorSubscription = stream.listen((sensorEvent) {
         if (!isGameOver && !isGameWon) {
+            DateTime currentTime = DateTime.now();
+            double gyroX = sensorEvent.data[0];
+            double gyroY = sensorEvent.data[1];
+            double gyroZ = sensorEvent.data[2];
+
+            GyroData gyroData = GyroData();
+
+// Inside your gyroscope data listener or game loop
+          gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
+          gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
+          gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
+          gyroData.calculateRotationDirection(gyroX, DateTime.now());
+          gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
+          gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
+          gyroData.calculateRotationDuration(gyroX, DateTime.now());
+
+// Optional: Print the metrics for debugging
+          gyroData.printMetrics();
+
+// Store the data in Firestore
+          gyroData.storeDataInFirestore(gyroX, gyroY, gyroZ);
+
+
+
           setState(() {
             // Adjust the sensitivity for X (horizontal) and Y (vertical) direction separately
             double horizontalSensitivity = 20.0; // Fine-tune for horizontal movement

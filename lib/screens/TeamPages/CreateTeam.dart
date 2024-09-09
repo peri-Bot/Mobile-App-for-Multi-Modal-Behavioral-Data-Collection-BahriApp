@@ -161,7 +161,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                             ),
                             child: const Text(
                               'Cancel',
-                              style: TextStyle(color: const Color(0xFFB19EF0)),
+                              style: TextStyle(color: Color(0xFFB19EF0)),
                             ),
                           ),
                           ElevatedButton(
