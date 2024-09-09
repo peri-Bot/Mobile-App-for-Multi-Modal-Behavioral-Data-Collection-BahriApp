@@ -18,6 +18,8 @@ class _PicPick extends State<PicPick> {
   late int difficulty;
   List<String> difficulties = [" Easy", " Medium", " Hard"];
   List<int> timeLimits = [12000, 10000, 10000];
+  final GlobalKey<LinearTimerState> _timerKey = GlobalKey<LinearTimerState>();
+
   int _score = 0;
   @override
   void initState() {
@@ -78,20 +80,24 @@ class _PicPick extends State<PicPick> {
                   children: [
                     const SizedBox(height: 56),
                     LinearTimer(
-                        durationMiliseconds: timeLimits[difficulty],
-                        onTimerFinish: () {
-                          showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return ShowScorePopup(
-                                score: _score,
-                                highScore: 22,
-                              );
-                            },
-                          );
-                          ;
-                        }),
+                      key: _timerKey,
+                      durationMiliseconds: timeLimits[difficulty],
+                      onTimerFinish: () {
+                        showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (context) {
+                            return ShowScorePopup(
+                              score: _score,
+                              highScore: 22,
+                            );
+                          },
+                        );
+                      },
+                      onTimerStop: (elapsedTime) {
+                        print('Timer stopped after $elapsedTime milliseconds.');
+                      },
+                    ),
                     const SizedBox(height: 56),
                     Container(
                         padding: const EdgeInsets.all(13),

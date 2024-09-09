@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  const KeyStrokeLvlScreen()));
+                                  const KeyStrokeLevelScreen()));
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.black,

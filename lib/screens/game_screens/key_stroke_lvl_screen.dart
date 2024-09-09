@@ -1,10 +1,21 @@
+import 'dart:ffi' as ffi;
+//import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
+
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:stroke_text/stroke_text.dart';
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 
-class KeyStrokeLvlScreen extends StatelessWidget {
-  const KeyStrokeLvlScreen({super.key});
+class KeyStrokeLevelScreen extends StatefulWidget {
+  const KeyStrokeLevelScreen({super.key});
 
+  @override
+  State<KeyStrokeLevelScreen> createState() => KeyStrokeLvlScreen();
+}
+
+class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
+  bool firstSwitchValue = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,6 +99,33 @@ class KeyStrokeLvlScreen extends StatelessWidget {
                         //   ),
                         // ),
                         const SizedBox(height: 36),
+                        AnimatedToggleSwitch<bool>.size(
+                          current: firstSwitchValue,
+                          values: const [false, true],
+                          iconOpacity: 0.2,
+                          indicatorSize: const Size.fromWidth(100),
+                          customIconBuilder: (context, local, global) => Text(
+                            local.value ? "Amharic" : "English",
+                            style: TextStyle(
+                                color: Color.lerp(Colors.black, Colors.white,
+                                    local.animationValue)),
+                          ),
+                          animationDuration: const Duration(milliseconds: 75),
+
+                          borderWidth: 5.0,
+                          iconAnimationType: AnimationType.onHover,
+                          style: ToggleStyle(
+                            backgroundColor: Colors.white,
+                            indicatorColor: Colors.black,
+                            borderColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+// ToggleStyle
+                          selectedIconScale: 1.0,
+                          onChanged: (value) =>
+                              setState(() => firstSwitchValue = value),
+                        ),
+                        const SizedBox(height: 36),
                         const Text(
                           'Note: The game will start right when you choose a difficulty',
                           style: TextStyle(
@@ -103,8 +141,9 @@ class KeyStrokeLvlScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const KeyStrokeScreen(difficulty: 0)));
+                                    builder: (context) => KeyStrokeScreen(
+                                        difficulty: 0,
+                                        isAmharic: firstSwitchValue)));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
@@ -147,8 +186,9 @@ class KeyStrokeLvlScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const KeyStrokeScreen(difficulty: 1)));
+                                    builder: (context) => KeyStrokeScreen(
+                                        difficulty: 1,
+                                        isAmharic: firstSwitchValue)));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
@@ -191,8 +231,10 @@ class KeyStrokeLvlScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const KeyStrokeScreen(difficulty: 2)));
+                                    builder: (context) => KeyStrokeScreen(
+                                          difficulty: 2,
+                                          isAmharic: firstSwitchValue,
+                                        )));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:

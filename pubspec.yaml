@@ -49,6 +49,7 @@ dependencies:
   #asset_fill: ^2.0.0
   stroke_text: ^0.0.3 
   artistic_multilingual_keyboards: ^0.0.4
+  animated_toggle_switch: ^0.8.3
 
 dev_dependencies:
   flutter_lints: ^3.0.0

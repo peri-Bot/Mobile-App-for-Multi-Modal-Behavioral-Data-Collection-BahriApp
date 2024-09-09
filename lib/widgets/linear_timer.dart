@@ -5,19 +5,24 @@ import 'package:flutter/material.dart';
 class LinearTimer extends StatefulWidget {
   final int durationMiliseconds;
   final Function onTimerFinish;
+  final Function(int) onTimerStop;
 
-  const LinearTimer(
-      {super.key,
-      required this.durationMiliseconds,
-      required this.onTimerFinish});
+  const LinearTimer({
+    super.key,
+    required this.durationMiliseconds,
+    required this.onTimerFinish,
+    required this.onTimerStop, // Pass callback to report elapsed time when stopped
+  });
 
   @override
-  State<LinearTimer> createState() => _LinearTimerState();
+  State<LinearTimer> createState() => LinearTimerState();
 }
 
-class _LinearTimerState extends State<LinearTimer> {
+class LinearTimerState extends State<LinearTimer> {
   late int _milisecondsRemaining;
   late double _barWidth;
+  Timer? _timer;
+
   int durationMiliseconds = 17;
 
   @override
@@ -25,11 +30,13 @@ class _LinearTimerState extends State<LinearTimer> {
     super.initState();
     _milisecondsRemaining = widget.durationMiliseconds;
     _barWidth = 1.0;
+
     startTimer();
   }
 
   void startTimer() {
-    Timer.periodic(Duration(milliseconds: durationMiliseconds), (timer) {
+    _timer =
+        Timer.periodic(Duration(milliseconds: durationMiliseconds), (timer) {
       setState(() {
         if (_milisecondsRemaining > 0) {
           _milisecondsRemaining -= durationMiliseconds;
@@ -42,6 +49,21 @@ class _LinearTimerState extends State<LinearTimer> {
         }
       });
     });
+  }
+
+  void stopTimer() {
+    if (_timer != null && _timer!.isActive) {
+      _milisecondsRemaining;
+      _timer!.cancel();
+      widget.onTimerStop(
+          _milisecondsRemaining); // Call the callback to report the elapsed time
+    }
+  }
+
+  @override
+  void dispose() {
+    stopTimer(); // Ensure timer stops when the widget is disposed
+    super.dispose();
   }
 
   @override
