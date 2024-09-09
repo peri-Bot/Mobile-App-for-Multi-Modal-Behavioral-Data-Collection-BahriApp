@@ -113,6 +113,10 @@ class GyroData {
     double deltaY = (gyroY - lastGyroY!).abs();
     double deltaZ = (gyroZ - lastGyroZ!).abs();
 
+    // Debug prints
+    print('deltaX: $deltaX, deltaY: $deltaY, deltaZ: $deltaZ');
+    print('movementThreshold: $movementThreshold');
+
     // Update the last gyroscope values for future comparisons
     lastGyroX = gyroX;
     lastGyroY = gyroY;
@@ -122,6 +126,7 @@ class GyroData {
     return deltaX > movementThreshold || deltaY > movementThreshold || deltaZ > movementThreshold;
   }
 
+
   Future<void> storeDataInFirestore(double gyroX, double gyroY, double gyroZ) async {
     if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
       DateTime now = DateTime.now();
@@ -129,9 +134,8 @@ class GyroData {
       try {
         await _firestore.collection('users')
             .doc('1')
-            .collection('userdetails')
-            .doc('motion_data')
-            .set({
+            .collection('gyrodata')
+            .add({
           'gyroX': gyroX,
           'gyroY': gyroY,
           'gyroZ': gyroZ,
@@ -142,21 +146,26 @@ class GyroData {
           'jerk': jerk,
           'rotationDuration': rotationDuration,
           'rotationDirectionConsistency': rotationDirectionConsistency,
-          'timestamp': DateTime.now(),
-        }, SetOptions(merge: true));
+          'timestamp': now,
+        });
 
         lastSavedTime = now;
         if (kDebugMode) {
-          print(
-              'Gyroscope data stored successfully under users->1->userdetails->motion_data!');
+          print('Gyroscope data stored successfully under users->1->gyrodata!');
         }
       } catch (e) {
         if (kDebugMode) {
           print('Error storing data: $e');
         }
       }
+    } else {
+      if (kDebugMode) {
+        print('No significant movement detected, data not stored.');
+      }
     }
   }
+
+
   void printMetrics() {
     print('Gyroscope Data: X = $lastGyroX, Y = $lastGyroY, Z = $lastGyroZ');
     print('Tilt Angle: Roll = $roll, Pitch = $pitch');

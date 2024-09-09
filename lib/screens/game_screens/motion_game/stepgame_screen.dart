@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../services/stepgame_logic.dart';
-
+import '../../../logic/stepgame_logic.dart';
+import 'package:flutter/services.dart'; // For vibration feedback
 
 class StepCounterGamePage extends StatefulWidget {
   const StepCounterGamePage({super.key});
@@ -15,6 +15,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
   bool _isSensorAvailable = false;
   int _stepCount = 0;
   bool _isWalking = false;
+  bool _isPaused = false;
   Timer? _timer;
   int _elapsedSeconds = 0;
 
@@ -30,6 +31,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
         setState(() {
           _stepCount++;
         });
+        HapticFeedback.vibrate();  // Vibration feedback for each step
       },
     );
     setState(() {
@@ -39,9 +41,11 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _elapsedSeconds++;
-      });
+      if (!_isPaused) {
+        setState(() {
+          _elapsedSeconds++;
+        });
+      }
     });
   }
 
@@ -49,21 +53,33 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
     _timer?.cancel();
   }
 
+  void _pauseGame() {
+    setState(() {
+      _isPaused = true;
+    });
+  }
+
+  void _resumeGame() {
+    setState(() {
+      _isPaused = false;
+    });
+  }
+
   void _showCompletionDialog() {
     String resultMessage;
     int score;
 
     if (_stepCount < 10) {
-      resultMessage = "You have taken less than 10 steps.boo!";
+      resultMessage = "You have taken less than 10 steps. Boo!";
       score = 5;
     } else if (_stepCount < 20) {
-      resultMessage = "You have taken more than 10 steps.keep moving";
+      resultMessage = "You have taken more than 10 steps. Keep moving!";
       score = 10;
     } else if (_stepCount < 30) {
-      resultMessage = "You have taken more than 20 steps.more data more score";
+      resultMessage = "You have taken more than 20 steps. More data, more score!";
       score = 15;
     } else {
-      resultMessage = "You have taken more than 30 steps.";
+      resultMessage = "You have taken more than 30 steps!";
       score = 20;
     }
 
@@ -92,6 +108,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
       _stepCount = 0;
       _elapsedSeconds = 0;
       _isWalking = false;
+      _isPaused = false;
     });
     _stopTimer();
     _stepCounter.reset();
@@ -100,6 +117,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
   void _startWalking() {
     setState(() {
       _isWalking = true;
+      _isPaused = false;
     });
     _startTimer();
   }
@@ -181,6 +199,12 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
                 ),
                 onPressed: _startWalking,
                 child: const Text('Start Walking'),
+              ),
+            const SizedBox(height: 20),
+            if (_isWalking)
+              ElevatedButton(
+                onPressed: _isPaused ? _resumeGame : _pauseGame,
+                child: Text(_isPaused ? 'Resume' : 'Pause'),
               ),
           ],
         ),
