@@ -102,28 +102,7 @@ class GyroData {
   }
 
   bool isSignificantMovement(double gyroX, double gyroY, double gyroZ) {
-    if (lastGyroX == null || lastGyroY == null || lastGyroZ == null) {
-      lastGyroX = gyroX;
-      lastGyroY = gyroY;
-      lastGyroZ = gyroZ;
-      return false; // Skip the first reading since we have no basis for comparison
-    }
-
-    double deltaX = (gyroX - lastGyroX!).abs();
-    double deltaY = (gyroY - lastGyroY!).abs();
-    double deltaZ = (gyroZ - lastGyroZ!).abs();
-
-    // Debug prints
-    print('deltaX: $deltaX, deltaY: $deltaY, deltaZ: $deltaZ');
-    print('movementThreshold: $movementThreshold');
-
-    // Update the last gyroscope values for future comparisons
-    lastGyroX = gyroX;
-    lastGyroY = gyroY;
-    lastGyroZ = gyroZ;
-
-    // Return true if any axis movement exceeds the threshold
-    return deltaX > movementThreshold || deltaY > movementThreshold || deltaZ > movementThreshold;
+   return true;
   }
 
 
