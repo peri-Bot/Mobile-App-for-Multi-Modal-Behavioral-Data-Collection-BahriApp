@@ -43,6 +43,7 @@ dependencies:
   cloud_firestore: ^4.14.0
   intl: ^0.18.0
   firebase_auth: ^4.16.0
+  flutter_sensors:
 
 dev_dependencies:
   flutter_lints: ^3.0.0
@@ -61,6 +62,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - ./assets/Motion_Game/
     - ./assets/images/logo.png
     - ./assets/legal_and_others/Privacy__Policy.md
     - ./assets/legal_and_others/Terms_and_Conditions.md

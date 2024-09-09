@@ -1,3 +1,4 @@
+import 'package:bahri_app/screens/game_screens/motion_game/motion_game_main.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -59,7 +60,11 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: SizedBox.expand(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                      MotionGamesMain())
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.black,
                       backgroundColor: Colors.white, // Text color
