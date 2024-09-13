@@ -6,7 +6,7 @@ class GyroData {
   double? lastGyroX, lastGyroY, lastGyroZ;
   DateTime? lastTimestamp;
 
-  final double movementThreshold = 0.0; // Adjust based on sensitivity you need
+  final double movementThreshold = 1.5; // Adjust this threshold to control sensitivity
   final Duration delayBetweenSaves = const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
   double roll = 0.0;
@@ -26,6 +26,11 @@ class GyroData {
   double? lastRotationDirection;
   DateTime? lastSavedTime;
 
+  // New variables for event-triggered sampling
+  bool isEventActive = false;
+  Duration eventCooldown = const Duration(seconds: 1); // Time window after an event where data will still be stored
+  DateTime? lastEventTime;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void calculateTiltAngle(double gyroX, double gyroY, double gyroZ) {
@@ -38,7 +43,6 @@ class GyroData {
       double deltaTime = currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
       tiltSpeed = sqrt(gyroX * gyroX + gyroY * gyroY) / deltaTime;
 
-
       if (lastTiltSpeed != null) {
         tiltAcceleration = (tiltSpeed - lastTiltSpeed!) / deltaTime;
         jerk = (tiltAcceleration - tiltDeceleration) / deltaTime;
@@ -48,7 +52,6 @@ class GyroData {
     }
     lastTimestamp = currentTime;
   }
-
 
   double calculateTiltStability(double gyroX, double gyroY, double gyroZ) {
     if (lastGyroX != null && lastGyroY != null && lastGyroZ != null) {
@@ -65,7 +68,6 @@ class GyroData {
     return 0.0;
   }
 
-
   void calculateRotationDirection(double gyroX, DateTime currentTime) {
     if (lastRotationDirection != null && lastTimestamp != null) {
       double deltaTime = currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
@@ -79,7 +81,6 @@ class GyroData {
     lastRotationDirection = gyroX > 0 ? 1.0 : -1.0;
     lastTimestamp = currentTime;
   }
-
 
   double calculateMicroAdjustments(double gyroX, double gyroY, double gyroZ) {
     return sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
@@ -97,10 +98,28 @@ class GyroData {
     lastTimestamp = currentTime;
   }
 
-  bool isSignificantMovement(double gyroX, double gyroY, double gyroZ) {
-   return true;
-  }
 
+  bool isSignificantMovement(double gyroX, double gyroY, double gyroZ) {
+
+    double movementMagnitude = sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
+
+    if (movementMagnitude > movementThreshold) {
+      isEventActive = true;
+      lastEventTime = DateTime.now();
+      return true; // Significant movement detected
+    }
+
+
+    if (isEventActive && lastEventTime != null) {
+      if (DateTime.now().difference(lastEventTime!) < eventCooldown) {
+        return true;
+      } else {
+        isEventActive = false;
+      }
+    }
+
+    return false; // No significant movement
+  }
 
   Future<void> storeDataInFirestore(double gyroX, double gyroY, double gyroZ) async {
     if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
@@ -139,7 +158,6 @@ class GyroData {
       }
     }
   }
-
 
   void printMetrics() {
     print('Gyroscope Data: X = $lastGyroX, Y = $lastGyroY, Z = $lastGyroZ');
