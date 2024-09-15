@@ -44,7 +44,7 @@ class LinearTimerState extends State<LinearTimer> {
               ? 0
               : _milisecondsRemaining / widget.durationMiliseconds;
         } else {
-          widget.onTimerFinish();
+          widget.onTimerFinish(_milisecondsRemaining);
           timer.cancel();
         }
       });

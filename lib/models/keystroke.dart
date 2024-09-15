@@ -1,33 +1,29 @@
-import '../widgets/keyboard/artistic_multilingual_keyboard.dart';
+import 'package:flutter/gestures.dart';
+import 'package:bahri_app/widgets/keyboard/utils/types.dart';
 
 class Keystroke {
-  String keyText;
-  KeyTypes keyType;
-  DateTime pressTime;
-  DateTime releaseTime;
-  Duration holdTime;
-  Duration flightTime;
-  Duration interKeyTime;
+  final String keyText;
+  final KeyTypes keyType;
+  final DateTime pressTime;
+  late final DateTime releaseTime;
+  final DateTime screenAppearanceTime;
 
   Keystroke({
     required this.keyText,
     required this.keyType,
     required this.pressTime,
     required this.releaseTime,
-    required this.holdTime,
-    required this.flightTime,
-    required this.interKeyTime,
+    required this.screenAppearanceTime,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'keyText': keyText,
-      'keyType': keyType.toString(),
-      'pressTime': pressTime.toIso8601String(),
-      'releaseTime': releaseTime.toIso8601String(),
-      'holdTime': holdTime.inMilliseconds,
-      'flightTime': flightTime.inMilliseconds,
-      'interKeyTime': interKeyTime.inMilliseconds,
-    };
-  }
+  // Calculated attributes
+  Duration get holdTime => releaseTime.difference(pressTime);
+  Duration get latency => screenAppearanceTime.difference(pressTime);
+
+  // These will be calculated in the service class
+  Duration? flightTime;
+  Duration? interKeyTime;
+  Duration? seekTime;
+  double? holdFlightTimeRatio;
+  double? flightToHoldRatio;
 }

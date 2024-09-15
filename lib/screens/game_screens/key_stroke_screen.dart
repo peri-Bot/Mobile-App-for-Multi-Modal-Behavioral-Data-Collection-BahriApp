@@ -1,9 +1,13 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:bahri_app/widgets/linear_timer.dart';
 import 'package:bahri_app/widgets/show_score_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import '../../models/keystroke.dart';
+import '../../services/keystroke_services.dart';
+
 import '../../widgets/keyboard/artistic_multilingual_keyboard.dart';
 //import 'package:artistic_multilingual_keyboards/artistic_multilingual_keyboard.dart';
 
@@ -33,6 +37,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
   List<int> timeLimitsAmh = [40000, 120000, 120000];
   int _totalKeystrokes = 0;
   late List<bool?> correctnessBoolArray;
+  final KeystrokeService keystrokeService = KeystrokeService();
+  late Map<String, dynamic> gameInfo;
 
   int _score = 0;
   TextSpan? richtxt;
@@ -147,7 +153,12 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
     //     });
     //   });
     // }
-
+    gameInfo = {
+      'Sentence': '$_targetSentence',
+      'difficulty': difficulties[difficulty],
+      'startTime': DateTime.now().toIso8601String(),
+    };
+    keystrokeService.fetchUserId();
     focusNode.addListener(() {
       setState(() {
         if (focusNode.hasFocus) {
@@ -258,6 +269,10 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                             : timeLimitsEng[difficulty],
                         onTimerStop: (remainingTime) {
                           _setScore(remainingTime);
+                          gameInfo['endTime'] =
+                              DateTime.now().toIso8601String();
+                          keystrokeService.saveKeyStrokeData(gameInfo);
+
                           showDialog(
                             barrierDismissible: false,
                             context: context,
@@ -270,7 +285,12 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                           );
                         },
                         onTimerFinish: (remainingTime) {
+                          debugPrint("yoo");
                           _setScore(remainingTime);
+                          onTypingComplete();
+                          gameInfo['endTime'] =
+                              DateTime.now().toIso8601String();
+                          keystrokeService.saveKeyStrokeData(gameInfo);
 
                           showDialog(
                             barrierDismissible: false,
@@ -430,12 +450,21 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
         }
       },
       onButtonPressed: (keyText, keyType) {
+        keystrokeService.onButtonPressed(getKeyText(keyText, keyType), keyType);
+        debugPrint(getKeyText(keyText, keyType));
         _buildTextSpan(tEController.text);
         //_buildtxt(tEController.text);
       },
-      onKeyTapDown: (details) {},
+      onKeyTapDown: (details) {
+        debugPrint("inside tapDOwn");
+        keystrokeService.onKeyTapDown(details);
+      },
 
-      onKeyTapUp: (details) {},
+      onKeyTapUp: (details) {
+        debugPrint("inside tapUP");
+
+        keystrokeService.onKeyTapUp(details);
+      },
     );
   }
 
@@ -449,5 +478,42 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
     if (_score < 0) {
       _score = 0;
     }
+  }
+
+  String getKeyText(String originalKeyText, KeyTypes keyType) {
+    switch (keyType) {
+      case KeyTypes.backSpace:
+        return "backspace";
+      case KeyTypes.doneKey:
+        return "Done";
+      case KeyTypes.changeKeyboardKey:
+        return "ChangeKeyboard";
+      case KeyTypes.changeLanguageKey:
+        return "ChangeLangauge";
+      case KeyTypes.newLineKey:
+        return "NewLine";
+      case KeyTypes.nextKey:
+        return "NextKey";
+      case KeyTypes.textKey:
+        return originalKeyText;
+      default:
+        return originalKeyText;
+    }
+  }
+
+  void onTypingComplete() {
+    List<Map<String, dynamic>> data = keystrokeService.getKeystrokeData();
+    Map<String, double> metrics = keystrokeService.getAllMetrics();
+
+    // Use the collected data and metrics as needed
+    debugPrint("Data of the collected keystroke");
+    //String jsonString = jsonEncode(data);
+    print(
+        const JsonEncoder.withIndent('  ').convert(data)); // Pretty-print JSON
+    debugPrint('Metrics: $metrics');
+
+    // You can also access individual metrics if needed
+    debugPrint(
+        'Average Key Press Duration: ${keystrokeService.calculateAKPD()}');
   }
 }

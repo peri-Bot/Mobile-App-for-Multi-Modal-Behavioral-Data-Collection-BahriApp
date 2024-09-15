@@ -160,6 +160,7 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
                   widget.currentKeyboardsType == KeyboardsTypes.numericKeyboard
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
+                          //mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             _getKeyboardRow(
                                 list: keys.sublist(0, 4),
@@ -178,10 +179,13 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
                               _getKeyboardRow(
                                   list: keys.sublist(0, 10),
                                   horizontalPadding: 10),
+                              const SizedBox(height: 10),
                               _getKeyboardRow(
                                   list: keys.sublist(10, 19),
                                   horizontalPadding: 20),
+                              const SizedBox(height: 10),
                               _getKeyboardThirdRow(),
+                              const SizedBox(height: 10),
                               _getKeyboardLastRow(),
                             ] else ...[
                               if (amharicAlphabets
@@ -197,13 +201,17 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
                                     fidel: selectedAmharicfidel,
                                     horizontalPadding: 10),
                               ],
+                              const SizedBox(height: 10),
                               _getKeyboardRow(
                                   list: keys.sublist(0, 11),
                                   horizontalPadding: 10),
+                              const SizedBox(height: 10),
                               _getKeyboardRow(
                                   list: keys.sublist(11, 22),
                                   horizontalPadding: 12),
+                              const SizedBox(height: 10),
                               _getKeyboardThirdRow(),
+                              const SizedBox(height: 10),
                               _getKeyboardLastRow(),
                             ],
                           ],
@@ -428,6 +436,7 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _getKey(
               keyText: numericKeyText,
@@ -464,90 +473,131 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
         //   color: keysBackgroundColor,
         //   boxShadow: keysShadow
         // ),
-        child: GestureDetector(
-          //onTap: (){},
+
+        //elevated button implemntation
+
+        //onTap: (){},
+
+        // child: ElevatedButton(
+        //   onPressed: (keyType == KeyTypes.textKey && keyText.isEmpty)
+        //       ? null
+        //       : () {
+        //           _onKeyPressed(keyText: keyText, keyType: keyType);
+
+        //           widget.onButtonPressed!(keyText, keyType);
+        //         },
+        //   style: ButtonStyle(
+        //     overlayColor: WidgetStateProperty.resolveWith<Color?>(
+        //         (Set<WidgetState> states) {
+        //       if (states.contains(WidgetState.pressed) &&
+        //           widget.keyTextStyle.color != null) {
+        //         return widget.keyTextStyle.color!.withAlpha(30);
+        //       }
+        //       return null;
+        //     }),
+        //     backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+        //         (Set<WidgetState> states) {
+        //       return widget.keysBackgroundColor;
+        //     }),
+        //     shape: WidgetStateProperty.resolveWith<OutlinedBorder>(
+        //         (Set<WidgetState> states) {
+        //       return RoundedRectangleBorder(
+        //           borderRadius:
+        //               widget.keyBorderRadius ?? BorderRadius.circular(0));
+        //     }),
+        //     elevation: WidgetStateProperty.resolveWith<double>(
+        //         (Set<WidgetState> states) {
+        //       return widget.keyElevation;
+        //     }),
+        //     shadowColor: WidgetStateProperty.resolveWith<Color?>(
+        //         (Set<WidgetState> states) {
+        //       return widget.keyShadowColor;
+        //     }),
+        //     // primary: widget.keysBackgroundColor,
+        //     maximumSize: WidgetStateProperty.resolveWith<Size>(
+        //         (Set<WidgetState> states) {
+        //       return Size.infinite;
+        //     }),
+        //     // minimumSize: Size.zero, // Set this
+        //     padding: WidgetStateProperty.resolveWith<EdgeInsetsGeometry>(
+        //         (Set<WidgetState> states) {
+        //       return const EdgeInsets.symmetric(horizontal: 0, vertical: 12);
+        //     }),
+        //     // tapTargetSize: MaterialTapTargetSize.padded// and this
+        //   ),
+        //   child: (keyType == KeyTypes.textKey ||
+        //           keyType == KeyTypes.spaceKey ||
+        //           keyType == KeyTypes.numericKeyboard ||
+        //           (keyText.isNotEmpty &&
+        //               keyType == KeyTypes.changeKeyboardKey &&
+        //               widget.currentKeyboardLanguage !=
+        //                   KeyboardLanguages.english))
+        //       ? Text(
+        //           keyText,
+        //           textAlign: TextAlign.center,
+        //           style: widget.keyTextStyle,
+        //         )
+        //       : Icon(
+        //           keyType == KeyTypes.nextKey
+        //               ? Icons.arrow_forward
+        //               : keyType == KeyTypes.newLineKey
+        //                   ? Icons.subdirectory_arrow_left_rounded
+        //                   : keyType == KeyTypes.changeKeyboardKey
+        //                       ? CupertinoIcons.arrow_up_circle
+        //                       : keyType == KeyTypes.changeLanguageKey
+        //                           ? CupertinoIcons.globe
+        //                           : keyType == KeyTypes.backSpace
+        //                               ? CupertinoIcons.delete_left
+        //                               : Icons.done,
+        //           size: 22,
+        //           color: widget.keyTextStyle.color,
+        //         ),
+        // ),
+        child: InkWell(
+          onTap: () {
+            if (keyType != KeyTypes.textKey || keyText.isNotEmpty) {
+              _onKeyPressed(keyText: keyText, keyType: keyType);
+              widget.onButtonPressed!(keyText, keyType);
+            }
+          },
           onTapDown: (details) {
             widget.onKeyTapDown!(details);
           },
           onTapUp: (details) {
             widget.onKeyTapUp!(details);
           },
-          child: ElevatedButton(
-            onPressed: (keyType == KeyTypes.textKey && keyText.isEmpty)
-                ? null
-                : () {
-                    developer.log('log 1',
-                        name: 'called onKeyPressed inside the button');
-                    _onKeyPressed(keyText: keyText, keyType: keyType);
-
-                    widget.onButtonPressed!(keyText, keyType);
-                  },
-            style: ButtonStyle(
-              overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                  (Set<MaterialState> states) {
-                if (states.contains(MaterialState.pressed) &&
-                    widget.keyTextStyle.color != null) {
-                  return widget.keyTextStyle.color!.withAlpha(30);
-                }
-                return null;
-              }),
-              backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                  (Set<MaterialState> states) {
-                return widget.keysBackgroundColor;
-              }),
-              shape: MaterialStateProperty.resolveWith<OutlinedBorder>(
-                  (Set<MaterialState> states) {
-                return RoundedRectangleBorder(
-                    borderRadius:
-                        widget.keyBorderRadius ?? BorderRadius.circular(0));
-              }),
-              elevation: MaterialStateProperty.resolveWith<double>(
-                  (Set<MaterialState> states) {
-                return widget.keyElevation;
-              }),
-              shadowColor: MaterialStateProperty.resolveWith<Color?>(
-                  (Set<MaterialState> states) {
-                return widget.keyShadowColor;
-              }),
-              // primary: widget.keysBackgroundColor,
-              maximumSize: MaterialStateProperty.resolveWith<Size>(
-                  (Set<MaterialState> states) {
-                return Size.infinite;
-              }),
-              // minimumSize: Size.zero, // Set this
-              padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                  (Set<MaterialState> states) {
-                return const EdgeInsets.symmetric(horizontal: 0, vertical: 12);
-              }),
-              // tapTargetSize: MaterialTapTargetSize.padded// and this
+          splashColor:
+              widget.keyTextStyle.color?.withAlpha(30), // Splash effect color
+          borderRadius: widget.keyBorderRadius ??
+              BorderRadius.circular(0), // Border radius
+          child: Ink(
+            decoration: BoxDecoration(
+              color: widget.keysBackgroundColor, // Background color
+              borderRadius: widget.keyBorderRadius ??
+                  BorderRadius.circular(0), // Border radius
             ),
-            child: (keyType == KeyTypes.textKey ||
-                    keyType == KeyTypes.spaceKey ||
-                    keyType == KeyTypes.numericKeyboard ||
-                    (keyText.isNotEmpty &&
-                        keyType == KeyTypes.changeKeyboardKey &&
-                        widget.currentKeyboardLanguage !=
-                            KeyboardLanguages.english))
-                ? Text(
-                    keyText,
-                    textAlign: TextAlign.center,
-                    style: widget.keyTextStyle,
-                  )
-                : Icon(
-                    keyType == KeyTypes.nextKey
-                        ? Icons.arrow_forward
-                        : keyType == KeyTypes.newLineKey
-                            ? Icons.subdirectory_arrow_left_rounded
-                            : keyType == KeyTypes.changeKeyboardKey
-                                ? CupertinoIcons.arrow_up_circle
-                                : keyType == KeyTypes.changeLanguageKey
-                                    ? CupertinoIcons.globe
-                                    : keyType == KeyTypes.backSpace
-                                        ? CupertinoIcons.delete_left
-                                        : Icons.done,
-                    size: 22,
-                    color: widget.keyTextStyle.color,
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Center(
+                child: (keyType == KeyTypes.textKey ||
+                        keyType == KeyTypes.spaceKey ||
+                        keyType == KeyTypes.numericKeyboard ||
+                        (keyText.isNotEmpty &&
+                            keyType == KeyTypes.changeKeyboardKey &&
+                            widget.currentKeyboardLanguage !=
+                                KeyboardLanguages.english))
+                    ? Text(
+                        keyText,
+                        textAlign: TextAlign.center,
+                        style: widget.keyTextStyle,
+                      )
+                    : Icon(
+                        _getIconForKeyType(keyType),
+                        size: 22,
+                        color: widget.keyTextStyle.color,
+                      ),
+              ),
+            ),
           ),
         ),
       ),
@@ -576,6 +626,23 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
       return "!@#";
     }
     return "";
+  }
+
+  IconData _getIconForKeyType(KeyTypes keyType) {
+    switch (keyType) {
+      case KeyTypes.nextKey:
+        return Icons.arrow_forward;
+      case KeyTypes.newLineKey:
+        return Icons.subdirectory_arrow_left_rounded;
+      case KeyTypes.changeKeyboardKey:
+        return CupertinoIcons.arrow_up_circle;
+      case KeyTypes.changeLanguageKey:
+        return CupertinoIcons.globe;
+      case KeyTypes.backSpace:
+        return CupertinoIcons.delete_left;
+      default:
+        return Icons.done; // Default icon if none match
+    }
   }
 
   /// Returns Key Text for numeric key keyboard
