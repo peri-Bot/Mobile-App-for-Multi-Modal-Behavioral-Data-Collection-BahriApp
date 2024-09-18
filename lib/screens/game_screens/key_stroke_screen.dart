@@ -209,21 +209,21 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.refresh,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              FocusScope.of(context).unfocus(); // Unfocus from the text field
+          // IconButton(
+          //   icon: const Icon(
+          //     Icons.refresh,
+          //     color: Colors.black,
+          //   ),
+          //   onPressed: () {
+          //     FocusScope.of(context).unfocus(); // Unfocus from the text field
 
-              Future.delayed(const Duration(milliseconds: 100), () {
-                _getRandomSentence(); // Select a new random sentence
-                tEController
-                    .clear(); // Clear the text field after the focus has been removed
-              });
-            }, // Refreshes the sentence
-          ),
+          //     Future.delayed(const Duration(milliseconds: 100), () {
+          //       _getRandomSentence(); // Select a new random sentence
+          //       tEController
+          //           .clear(); // Clear the text field after the focus has been removed
+          //     });
+          //   }, // Refreshes the sentence
+          // ),
         ],
         backgroundColor: Colors.transparent,
         //elevation: 0,
@@ -271,6 +271,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                           _setScore(remainingTime);
                           gameInfo['endTime'] =
                               DateTime.now().toIso8601String();
+                          gameInfo['completeUserInput'] =
+                              currentKeyboardTEController.text;
                           keystrokeService.saveKeyStrokeData(gameInfo);
 
                           showDialog(
@@ -290,6 +292,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                           onTypingComplete();
                           gameInfo['endTime'] =
                               DateTime.now().toIso8601String();
+                          gameInfo['completeUserInput'] =
+                              currentKeyboardTEController.text;
                           keystrokeService.saveKeyStrokeData(gameInfo);
 
                           showDialog(
