@@ -115,6 +115,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
     });
     _stopTimer();
     _stepCounter.reset();
+    _initGame();
   }
 
   void _startWalking() {
@@ -144,7 +145,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Step Counter Game'),
+        title: const Text('Accelerometer Game'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),

@@ -103,7 +103,6 @@ class StepCounter {
       return newCount;
     });
   }
-
   void _storeDataInFirestore() async {
     _sessionId ??= (await _getNextSessionId()) as String?;
 
@@ -118,11 +117,10 @@ class StepCounter {
             'standardDeviation': getStandardDeviation(),
             'verticalOscillation': getVerticalOscillation(),
             'jerk': getJerk(_lastMagnitude),
-            'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
-            'averageStepDuration': getAverageStepDuration(),
+            'stepDuration': _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
+            'averageStepDuration': '${getAverageStepDuration()} ms',
             'stepFrequency': getStepFrequency(),
             'totalSteps': _totalSteps,
-            'endTime': null,  // Session end time will be updated later
           }
         }
       }, SetOptions(merge: true));
@@ -140,6 +138,7 @@ class StepCounter {
         'stepData': {
           _sessionId.toString(): {
             'endTime': FieldValue.serverTimestamp(),
+            'sessionDuration': '${DateTime.now().difference(_lastStepTime!).inMilliseconds} ms',
           }
         }
       }, SetOptions(merge: true));

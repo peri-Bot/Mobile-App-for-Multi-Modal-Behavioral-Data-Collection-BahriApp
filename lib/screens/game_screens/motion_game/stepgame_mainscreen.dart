@@ -11,7 +11,7 @@ class StartScreen extends StatelessWidget {
       child: Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Walking Game'),
+        title: const Text('Accelero Game'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
