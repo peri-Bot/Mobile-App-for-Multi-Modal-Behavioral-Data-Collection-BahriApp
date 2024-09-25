@@ -1,4 +1,4 @@
-import 'package:bahri_app/logic/ball_game_gyro_data_logic.dart';
+import 'package:bahri_app/services/ball_game_gyro_data_logic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'dart:async';

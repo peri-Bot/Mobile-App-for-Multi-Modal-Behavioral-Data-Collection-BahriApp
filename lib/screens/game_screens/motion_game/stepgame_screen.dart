@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../logic/stepgame_logic.dart';
+import '../../../services/stepgame_logic.dart';
 import 'package:flutter/services.dart'; // For vibration feedback
 
 class StepCounterGamePage extends StatefulWidget {
