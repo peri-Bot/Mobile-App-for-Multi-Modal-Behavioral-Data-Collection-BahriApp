@@ -61,7 +61,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   void _loadQuestionsForLevel(int level) {
-    if (level == 1) {
+    if (level == 3) {
       _questions = [
         {'image': 'assets/slide_game/dog.jpg', 'questionType': 'mammal', 'answer': true},
         {'image': 'assets/slide_game/fox.jpg', 'questionType': 'mammal', 'answer': true},
@@ -97,7 +97,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         {'image': 'assets/slide_game/countries/burkina.png', 'questionType': 'flag', 'answer': true},
 
       ];
-    } else if (level == 3) {
+    } else if (level == 1) {
       _questions = [
         {'image': 'assets/slide_game/veggies/orange.jpg', 'questionType': 'fruit', 'answer': true},
         {'image': 'assets/slide_game/veggies/gomen.jpg', 'questionType': 'fruit', 'answer': true},

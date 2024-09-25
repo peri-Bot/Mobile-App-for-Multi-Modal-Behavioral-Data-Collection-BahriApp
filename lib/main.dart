@@ -34,7 +34,7 @@ class BahriApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const LevelSelectionScreen(),
+      home:  LevelSelectionScreen(userId: '1',),
     );
   }
 }
