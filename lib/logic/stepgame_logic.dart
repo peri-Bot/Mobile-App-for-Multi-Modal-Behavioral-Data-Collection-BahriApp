@@ -10,6 +10,7 @@ class StepCounter {
   final double _stepThreshold = 0.5;
   final double _lowPassFilterFactor = 0.3;
   bool _isMovingUp = false;
+  bool _isDataCollectionEnabled = false;
   final List<double> _accelerationData = [];
   double _peakAcceleration = 0;
   double _minAcceleration = double.infinity;
@@ -19,6 +20,9 @@ class StepCounter {
   List<double> _verticalOscillationData = [];
   List<double> _stepDurations = [];
   int _totalSteps = 0;
+
+  // Firestore session-based fields
+  String? _sessionId;
 
   // Initialize the sensor
   Future<bool> initSensor({required Function onStepDetected}) async {
@@ -31,8 +35,12 @@ class StepCounter {
       );
 
       _subscription = stream.listen((SensorEvent event) {
-        _processAccelerometerData(event.data, onStepDetected);
+        if (_isDataCollectionEnabled) {
+          _processAccelerometerData(event.data, onStepDetected);
+        }
       });
+
+      _sessionId = DateTime.now().millisecondsSinceEpoch.toString(); // Initialize session ID
     }
     return sensorAvailable;
   }
@@ -71,26 +79,73 @@ class StepCounter {
 
     _lastMagnitude = magnitude;
   }
+  void startDataCollection() {
+    _isDataCollectionEnabled = true;
+  }
 
-  // Calculate and store metrics in Firestore
+  void stopDataCollection() {
+    _isDataCollectionEnabled = false;
+  }
+  // Calculate and store metrics in Firestore using session-based approach
+
+  Future<int> _getNextSessionId() async {
+    DocumentReference counterRef = FirebaseFirestore.instance.collection('counters').doc('sessionCounter');
+    return FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(counterRef);
+
+      if (!snapshot.exists) {
+        counterRef.set({'count': 1});
+        return 1;
+      }
+
+      int newCount = snapshot['count'] + 1;
+      transaction.update(counterRef, {'count': newCount});
+      return newCount;
+    });
+  }
+
   void _storeDataInFirestore() async {
+    _sessionId ??= (await _getNextSessionId()) as String?;
+
     try {
-      await FirebaseFirestore.instance.collection('users').doc('1').collection('accelerometerData').add({
-        'timestamp': FieldValue.serverTimestamp(),
-        'averageAcceleration': getAverageAcceleration(),
-        'peakAcceleration': _peakAcceleration,
-        'minAcceleration': _minAcceleration,
-        'standardDeviation': getStandardDeviation(),
-        'verticalOscillation': getVerticalOscillation(),
-        'jerk': getJerk(_lastMagnitude),
-        'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
-        'averageStepDuration': getAverageStepDuration(),
-        'stepFrequency': getStepFrequency(),
-        'totalSteps': _totalSteps,
-      });
-      print("Data stored successfully");
+      await FirebaseFirestore.instance.collection('users').doc('1').set({
+        'stepData': {
+          _sessionId.toString(): {
+            'timestamp': FieldValue.serverTimestamp(),
+            'averageAcceleration': getAverageAcceleration(),
+            'peakAcceleration': _peakAcceleration,
+            'minAcceleration': _minAcceleration,
+            'standardDeviation': getStandardDeviation(),
+            'verticalOscillation': getVerticalOscillation(),
+            'jerk': getJerk(_lastMagnitude),
+            'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
+            'averageStepDuration': getAverageStepDuration(),
+            'stepFrequency': getStepFrequency(),
+            'totalSteps': _totalSteps,
+            'endTime': null,  // Session end time will be updated later
+          }
+        }
+      }, SetOptions(merge: true));
+      print("Data stored successfully in Firestore");
     } catch (e) {
       print("Error storing data: $e");
+    }
+  }
+
+  void updateSessionEndTime() async {
+    if (_sessionId == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc('1').set({
+        'stepData': {
+          _sessionId.toString(): {
+            'endTime': FieldValue.serverTimestamp(),
+          }
+        }
+      }, SetOptions(merge: true));
+      print("Session end time updated successfully");
+    } catch (e) {
+      print("Failed to update session end time: $e");
     }
   }
 
@@ -155,6 +210,7 @@ class StepCounter {
     _verticalOscillationData.clear();
     _stepDurations.clear();
     _totalSteps = 0;
+    _sessionId = null;
   }
 
   // Cancel the sensor subscription

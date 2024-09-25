@@ -56,12 +56,15 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
   void _pauseGame() {
     setState(() {
       _isPaused = true;
+      _stepCounter.stopDataCollection();
+
     });
   }
 
   void _resumeGame() {
     setState(() {
       _isPaused = false;
+      _stepCounter.startDataCollection();
     });
   }
 
@@ -119,10 +122,12 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
       _isWalking = true;
       _isPaused = false;
     });
+    _stepCounter.startDataCollection();
     _startTimer();
   }
 
   void _stopWalking() {
+    _stepCounter.stopDataCollection();
     _stopTimer();
     _showCompletionDialog();
   }
