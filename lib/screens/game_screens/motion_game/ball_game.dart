@@ -331,14 +331,14 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal[50],
+      backgroundColor: Colors.blue[40],
       body: Stack(
         children: [
           // Border
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.teal, width: 20),
+              border: Border.all(color: Colors.blueAccent, width: 20),
             ),
           ),
           // Ball
@@ -363,7 +363,7 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               child: Container(
                 width: obstacle.width,
                 height: obstacle.height,
-                color: Colors.teal[400],
+                color: Colors.blue,
               ),
             ),
           // Goal area

@@ -137,16 +137,22 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Step Counter Game'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.tealAccent, Colors.teal],
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -161,7 +167,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 80),
             const Text(
               'Walk while holding your phone, press stop when you are done walking.',
               style: TextStyle(
@@ -194,7 +200,7 @@ class _StepCounterGamePageState extends State<StepCounterGamePage> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   textStyle: const TextStyle(fontSize: 20),
-                  backgroundColor: Colors.greenAccent,
+                  backgroundColor: Colors.white70,
                   foregroundColor: Colors.teal,
                 ),
                 onPressed: _startWalking,

@@ -7,10 +7,12 @@ class StartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(
+      child: Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Walking Game'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Container(
@@ -18,7 +20,11 @@ class StartScreen extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.tealAccent, Colors.teal],
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -86,6 +92,6 @@ class StartScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
