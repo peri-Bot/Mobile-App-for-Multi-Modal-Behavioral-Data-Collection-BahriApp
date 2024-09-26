@@ -1,4 +1,4 @@
-import 'package:bahri_app/screens/game_screens/motion_game/stepgame_screen.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/acceleroGame.dart';
 import 'package:flutter/material.dart';
 
 
@@ -84,7 +84,7 @@ class StartScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const StepCounterGamePage()),
+                  MaterialPageRoute(builder: (context) => const AccelerometerGames()),
                 );
               },
               child: const Text('Start Game'),

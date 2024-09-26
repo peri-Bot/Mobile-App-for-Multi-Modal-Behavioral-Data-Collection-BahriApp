@@ -1,8 +1,8 @@
-import 'package:bahri_app/screens/game_screens/motion_game/stepgame_mainscreen.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/accelerogame_mainscreen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../services/game_card.dart';
-import 'ballgame_mainscreen.dart';
+import 'gyroGame_mainScreen.dart';
 
 
 class MotionGamesMain extends StatefulWidget {

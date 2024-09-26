@@ -14,6 +14,7 @@ class StepCounter {
   final List<double> _accelerationData = [];
   double _peakAcceleration = 0;
   double _minAcceleration = double.infinity;
+  String? _currentActivity;
 
   // New fields
   DateTime? _lastStepTime;
@@ -23,9 +24,12 @@ class StepCounter {
 
   // Firestore session-based fields
   String? _sessionId;
-
+  void updateCurrentActivity(String newActivity) {
+    _currentActivity = newActivity;
+  }
   // Initialize the sensor
-  Future<bool> initSensor({required Function onStepDetected}) async {
+  Future<bool> initSensor({required Function onStepDetected, required String currentActivity}) async {
+    _currentActivity = currentActivity;
     bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
 
     if (sensorAvailable) {
@@ -36,11 +40,12 @@ class StepCounter {
 
       _subscription = stream.listen((SensorEvent event) {
         if (_isDataCollectionEnabled) {
-          _processAccelerometerData(event.data, onStepDetected);
+          _processAccelerometerData(event.data, onStepDetected, currentActivity);
         }
       });
 
-      _sessionId = DateTime.now().millisecondsSinceEpoch.toString(); // Initialize session ID
+      _sessionId = (await _getNextSessionId()).toString();
+      // Initialize session ID
     }
     return sensorAvailable;
   }
@@ -51,7 +56,7 @@ class StepCounter {
   }
 
   // Process the accelerometer data and detect steps
-  void _processAccelerometerData(List<double> data, Function onStepDetected) {
+  void _processAccelerometerData(List<double> data, Function onStepDetected, String currentActivity) {
     double x = data[0], y = data[1], z = data[2];
     double magnitude = sqrt(x * x + y * y + z * z);
 
@@ -86,10 +91,11 @@ class StepCounter {
   void stopDataCollection() {
     _isDataCollectionEnabled = false;
   }
+
   // Calculate and store metrics in Firestore using session-based approach
 
   Future<int> _getNextSessionId() async {
-    DocumentReference counterRef = FirebaseFirestore.instance.collection('counters').doc('sessionCounter');
+    DocumentReference counterRef = FirebaseFirestore.instance.collection('session_counters').doc('Accelerometer_sessionCounter');
     return FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot snapshot = await transaction.get(counterRef);
 
@@ -97,31 +103,34 @@ class StepCounter {
         counterRef.set({'count': 1});
         return 1;
       }
-
       int newCount = snapshot['count'] + 1;
       transaction.update(counterRef, {'count': newCount});
       return newCount;
     });
   }
   void _storeDataInFirestore() async {
-    _sessionId ??= (await _getNextSessionId()) as String?;
-
     try {
+      Map<String, dynamic> data = {
+        'timestamp': FieldValue.serverTimestamp(),
+        'averageAcceleration': getAverageAcceleration(),
+        'peakAcceleration': _peakAcceleration,
+        'minAcceleration': _minAcceleration,
+        'standardDeviation': getStandardDeviation(),
+        'verticalOscillation': getVerticalOscillation(),
+        'jerk': getJerk(_lastMagnitude),
+        'stepDuration': _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
+        'averageStepDuration': '${getAverageStepDuration()} ms',
+        'stepFrequency': getStepFrequency(),
+        'activityType': _currentActivity,
+      };
+
+      if (_currentActivity != 'sitting') {
+        data['totalSteps'] = _totalSteps;
+      }
+
       await FirebaseFirestore.instance.collection('users').doc('1').set({
-        'stepData': {
-          _sessionId.toString(): {
-            'timestamp': FieldValue.serverTimestamp(),
-            'averageAcceleration': getAverageAcceleration(),
-            'peakAcceleration': _peakAcceleration,
-            'minAcceleration': _minAcceleration,
-            'standardDeviation': getStandardDeviation(),
-            'verticalOscillation': getVerticalOscillation(),
-            'jerk': getJerk(_lastMagnitude),
-            'stepDuration': _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
-            'averageStepDuration': '${getAverageStepDuration()} ms',
-            'stepFrequency': getStepFrequency(),
-            'totalSteps': _totalSteps,
-          }
+        'Data_accelerometerData': {
+          _sessionId.toString(): data,
         }
       }, SetOptions(merge: true));
       print("Data stored successfully in Firestore");

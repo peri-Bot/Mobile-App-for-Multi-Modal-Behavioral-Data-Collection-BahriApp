@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ball_game.dart';
+import 'gyroGame.dart';
 
 class GyroScreen extends StatelessWidget {
   const GyroScreen({super.key});

@@ -30,6 +30,8 @@ class GyroData {
   bool isEventActive = false;
   Duration eventCooldown = const Duration(seconds: 1); // Time window after an event where data will still be stored
   DateTime? lastEventTime;
+  String? _sessionId;
+
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -120,28 +122,49 @@ class GyroData {
 
     return false; // No significant movement
   }
+  Future<int> _getNextSessionId() async {
+    DocumentReference counterRef = _firestore.collection('session_counters').doc('Gyro_sessionCounter');
+    return _firestore.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(counterRef);
 
+      if (!snapshot.exists) {
+        counterRef.set({'count': 1});
+        return 1;
+      }
+      int newCount = snapshot['count'] + 1;
+      transaction.update(counterRef, {'count': newCount});
+      return newCount;
+    });
+  }
+
+  // Initialize the session ID
+  Future<void> initSession() async {
+    _sessionId = (await _getNextSessionId()).toString();
+  }
+
+  // Update the storeDataInFirestore method to use the session-based approach
   Future<void> storeDataInFirestore(double gyroX, double gyroY, double gyroZ) async {
     if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
       DateTime now = DateTime.now();
 
       try {
-        await _firestore.collection('users')
-            .doc('1')
-            .collection('gyrodata')
-            .add({
-          'gyroX': gyroX,
-          'gyroY': gyroY,
-          'gyroZ': gyroZ,
-          'roll': roll,
-          'pitch': pitch,
-          'tiltSpeed': tiltSpeed,
-          'tiltAcceleration': tiltAcceleration,
-          'jerk': jerk,
-          'rotationDuration': rotationDuration,
-          'rotationDirectionConsistency': rotationDirectionConsistency,
-          'timestamp': now,
-        });
+        await _firestore.collection('users').doc('1').set({
+          'Data_gyroData': {
+            _sessionId.toString(): {
+              'timestamp': FieldValue.serverTimestamp(),
+              'gyroX': gyroX,
+              'gyroY': gyroY,
+              'gyroZ': gyroZ,
+              'roll': roll,
+              'pitch': pitch,
+              'tiltSpeed': tiltSpeed,
+              'tiltAcceleration': tiltAcceleration,
+              'jerk': jerk,
+              'rotationDuration': rotationDuration,
+              'rotationDirectionConsistency': rotationDirectionConsistency,
+            }
+          }
+        }, SetOptions(merge: true));
 
         lastSavedTime = now;
         if (kDebugMode) {
