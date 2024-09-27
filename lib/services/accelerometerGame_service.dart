@@ -18,8 +18,8 @@ class StepCounter {
 
   // New fields
   DateTime? _lastStepTime;
-  List<double> _verticalOscillationData = [];
-  List<double> _stepDurations = [];
+  final List<double> _verticalOscillationData = [];
+  final List<double> _stepDurations = [];
   int _totalSteps = 0;
 
   // Firestore session-based fields

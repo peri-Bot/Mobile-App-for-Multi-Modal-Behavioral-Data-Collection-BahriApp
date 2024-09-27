@@ -264,9 +264,9 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
               ),
             ),
             const SizedBox(height: 80),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: const Text(
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
                 'choose an activity to do; Walk, jog, or sit while holding your phone, '
                     'press stop when you are done.',
                 style: TextStyle(
@@ -277,8 +277,8 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 textAlign: TextAlign.center,
               ),
             ),
-            SizedBox(height: 25,),
-            Text("Choose an Activity",
+            const SizedBox(height: 25,),
+            const Text("Choose an Activity",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -286,7 +286,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
             ),
             ),
             const SizedBox(height: 25),
-            SizedBox(height: 20,),
+            const SizedBox(height: 20,),
             // Walking button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,
@@ -302,7 +302,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 child: const Text('Start Walking'),
               ),
             ),
-            SizedBox(height: 20,),
+            const SizedBox(height: 20,),
             // Jogging button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,
@@ -318,7 +318,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 child: const Text('Start Jogging'),
               ),
             ),
-             SizedBox(height: 20,),
+             const SizedBox(height: 20,),
             // Sitting button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,

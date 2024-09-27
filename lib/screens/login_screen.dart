@@ -1,4 +1,3 @@
-import 'package:bahri_app/screens/home_screen.dart';
 import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/services/firebase_login_services.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print("Login Successful");
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => BaseScreen()),
+          MaterialPageRoute(builder: (context) => const BaseScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
