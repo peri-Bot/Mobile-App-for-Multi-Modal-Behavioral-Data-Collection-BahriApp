@@ -9,13 +9,12 @@ class LevelSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Swipe Game'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      extendBodyBehindAppBar: true,appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      automaticallyImplyLeading: true, // This makes sure the back button appears
+    ),
+
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -31,30 +30,52 @@ class LevelSelectionScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Add the Select Level text
+            const SizedBox(height: 10), // Add spacing to push content down
+
+            // Title (Pic Pick)
             const Text(
-              'Select Level',
+              'Swipe Game',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
+                shadows: [
+                  Shadow(
+                    offset: Offset(5.0, 5.0),
+                    blurRadius: 3.0,
+                    color: Colors.black,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 40), // Add spacing between the text and buttons
 
-            // The level selection buttons
-            _buildLevelButton(context, 'Easy', 1),
-            const SizedBox(height: 20), // Add spacing between the buttons
-            _buildLevelButton(context, 'Medium', 2),
-            const SizedBox(height: 20), // Add spacing between the buttons
-            _buildLevelButton(context, 'Hard', 3),
+            // Subtitle (Note)
+            const Padding(
+              padding: EdgeInsets.only(top: 10, bottom: 40),
+              child: Text(
+                'Note: The game will start right when you choose a difficulty',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+
+            // The level selection buttons with HighScore label
+            _buildLevelButton(context, 'Easy', 1, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton(context, 'Medium', 2, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton(context, 'Hard', 3, 'HighScore:'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLevelButton(BuildContext context, String levelName, int level) {
+  // Modified _buildLevelButton function to include the "HighScore" text
+  Widget _buildLevelButton(
+      BuildContext context, String levelName, int level, String highScoreText) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -64,7 +85,6 @@ class LevelSelectionScreen extends StatelessWidget {
               level: level, // Pass the selected level
               userId: userId, // Pass the userId
               onLevelComplete: (score) {
-                // Define what to do when level is complete
                 print('Level complete with score: $score');
               },
             ),
@@ -72,27 +92,44 @@ class LevelSelectionScreen extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0), // Wider padding
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
         child: Container(
-          width: double.infinity, // Make the button full width
-          height: 80, // Adjust the height of the boxes
+          width: double.infinity,
+          height: 80,
           decoration: BoxDecoration(
-            color: Colors.white70,
-            borderRadius: BorderRadius.circular(20), // Adjust border radius
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.black, // Add a black border
-              width: 3, // Adjust the border thickness
+              color: Colors.white,
+              width: 2.5,
             ),
           ),
-          child: Center(
-            child: Text(
-              levelName,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child: Text(
+                  levelName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: Text(
+                  highScoreText,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

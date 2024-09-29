@@ -207,14 +207,20 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     }
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('Level ${widget.level}'),
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.lightBlueAccent, Colors.blueAccent, Colors.lightBlue],
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
