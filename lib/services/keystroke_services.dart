@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'dart:math';
 import './../widgets/keyboard/utils/types.dart';
 import 'package:http/http.dart' as http;
@@ -44,6 +46,8 @@ class KeystrokeService {
     if (currentKeystroke != null) {
       currentKeystroke!['keyText'] = keyText;
       currentKeystroke!['keyType'] = keyType.toString();
+      currentKeystroke!['TimeStamp'] = DateTime.now().toIso8601String();
+
       keystrokeData.add(currentKeystroke!);
       if (keyType == KeyTypes.textKey) {
         totalCharactersTyped++;
@@ -253,9 +257,14 @@ class KeystrokeService {
     }
   }
 
+  Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox('offlineKeystrokeData');
+  }
+
   Future<String> saveKeyStrokeData(Map<String, dynamic> gameInfo) async {
     bool isOnline = await isConnectedToInternet();
-    if (!isOnline) return 'fail';
+
     gameInfo['uid'] = uid;
 
     final Map<String, dynamic> requestData = {
@@ -264,9 +273,16 @@ class KeystrokeService {
       'averageKeyStrokeMetrics': getAverageMetrics(),
     };
 
-    print('Request Data:');
-    print('Game Info: ${requestData['gameInfo']}');
-    print('keystroke Data: ${requestData['keystrokeData']}');
+    debugPrint('Request Data:');
+    debugPrint('Game Info: ${requestData['gameInfo']}');
+    debugPrint('keystroke Data: ${requestData['keystrokeData']}');
+    if (!isOnline) {
+      // Save data to Hive if offline
+      var box = Hive.box('offlineKeystrokeData');
+      await box.add(requestData);
+      debugPrint('Data saved locally (offline).');
+      return 'saved_locally';
+    }
 
     final url = Uri.parse(
         'http://15.184.243.127:8080/collect_keystroke_data'); // Use your Dart Frog server address
@@ -280,15 +296,15 @@ class KeystrokeService {
 
       if (response.statusCode == 200) {
         // User registered successfully
-        print('  keyStroke Data added');
+        debugPrint('  keyStroke Data added');
         return 'success';
       } else {
         // Handle error
-        print('Could not add keyStroke data: ${response.body}');
+        debugPrint('Could not add keyStroke data: ${response.body}');
         return 'fail';
       }
     } catch (e) {
-      print('Error occurred keyStroke : $e');
+      debugPrint('Error occurred keyStroke : $e');
       return 'fail';
     }
   }

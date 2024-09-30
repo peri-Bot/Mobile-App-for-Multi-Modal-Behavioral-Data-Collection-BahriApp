@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
 
 class TapDataCollectionService {
@@ -39,20 +41,32 @@ class TapDataCollectionService {
     }
   }
 
+  Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox('offlineTapData');
+  }
+
   Future<String> saveTapData(
       List<Map<String, dynamic>> tapData, Map<String, dynamic> gameInfo) async {
     bool isOnline = await isConnectedToInternet();
-    if (!isOnline) return 'fail';
+    //if (!isOnline) return 'fail';
 
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
       'tapData': tapData,
     };
 
-    print('Request Data:');
-    print('Game Info: ${requestData['gameInfo']}');
-    print('Tap Data: ${requestData['tapData']}');
+    debugPrint('Request Data:');
+    debugPrint('Game Info: ${requestData['gameInfo']}');
+    debugPrint('Tap Data: ${requestData['tapData']}');
 
+    if (!isOnline) {
+      // Save data to Hive if offline
+      var box = Hive.box('offlineTapData');
+      await box.add(requestData);
+      debugPrint('Data saved locally (offline).');
+      return 'saved_locally';
+    }
     final url = Uri.parse(
         'http://15.184.243.127:8080/collect_tap_data'); // Use your Dart Frog server address
 
@@ -65,15 +79,15 @@ class TapDataCollectionService {
 
       if (response.statusCode == 200) {
         // User registered successfully
-        print('Tap Data Successfully added');
+        debugPrint('Tap Data Successfully added');
         return 'success';
       } else {
         // Handle error
-        print('Could not add tap data: ${response.body}');
+        debugPrint('Could not add tap data: ${response.body}');
         return 'fail';
       }
     } catch (e) {
-      print('Error occurred: $e');
+      debugPrint('Error occurred: $e');
       return 'fail';
     }
   }

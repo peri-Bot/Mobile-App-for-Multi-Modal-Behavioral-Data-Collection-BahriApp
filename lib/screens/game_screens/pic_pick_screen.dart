@@ -82,7 +82,7 @@ class _PicPick extends State<PicPick> {
                     LinearTimer(
                       key: _timerKey,
                       durationMiliseconds: timeLimits[difficulty],
-                      onTimerFinish: () {
+                      onTimerFinish: (elapsedTime) {
                         showDialog(
                           barrierDismissible: false,
                           context: context,
@@ -95,7 +95,8 @@ class _PicPick extends State<PicPick> {
                         );
                       },
                       onTimerStop: (elapsedTime) {
-                        print('Timer stopped after $elapsedTime milliseconds.');
+                        debugPrint(
+                            'Timer stopped after $elapsedTime milliseconds.');
                       },
                     ),
                     const SizedBox(height: 56),

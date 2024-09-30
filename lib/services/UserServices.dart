@@ -88,7 +88,7 @@ class UserServices {
     if (!isOnline) return 'fail';
     final url = Uri.parse(
         'http://15.184.243.127:8080/register_user'); // Use your Dart Frog server address
-    print("ipgiven");
+    debugPrint("ipgiven");
 
     try {
       final response = await http.post(
@@ -109,15 +109,15 @@ class UserServices {
 
       if (response.statusCode == 200) {
         // User registered successfully
-        print('User registered successfully');
+        debugPrint('User registered successfully');
         return 'sucess';
       } else {
         // Handle error
-        print('Failed to register user: ${response.body}');
+        debugPrint('Failed to register user: ${response.body}');
         return 'fail';
       }
     } catch (e) {
-      print('Error occurred: $e');
+      debugPrint('Error occurred: $e');
       return 'fail';
     }
   }
@@ -135,7 +135,7 @@ class UserServices {
   Future<String> loginDartFrog(String email, String password) async {
     bool isOnline = await isConnectedToInternet();
     if (!isOnline) return 'fail';
-    print("User is online: sending data");
+    debugPrint("User is online: sending data");
 
     try {
       final response = await http.post(
@@ -158,13 +158,13 @@ class UserServices {
         await _secureStorage.write(key: 'authToken', value: token);
         await _secureStorage.write(key: 'uid', value: uid);
 
-        print("Login Successful: Token stored securely");
+        debugPrint("Login Successful: Token stored securely");
         return 'sucess';
       } else {
         return 'fail;';
       }
     } catch (e) {
-      print("Error during login: $e");
+      debugPrint("Error during login: $e");
       return 'fail';
     }
   }
@@ -252,6 +252,6 @@ class UserServices {
     await _secureStorage.delete(key: 'authToken');
     await _secureStorage.delete(key: 'uid');
 
-    print("User logged out: Token deleted");
+    debugPrint("User logged out: Token deleted");
   }
 }

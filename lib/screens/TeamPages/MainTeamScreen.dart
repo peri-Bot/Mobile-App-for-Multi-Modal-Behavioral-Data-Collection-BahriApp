@@ -6,16 +6,20 @@ class TeamInfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Team Information'),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        centerTitle: true,
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        // ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -51,10 +55,12 @@ class TeamInfoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Table(
-                  border: TableBorder.all(color: Colors.grey),
+                  border: TableBorder.all(
+                      color: const Color.fromARGB(255, 0, 0, 0)),
                   children: const [
                     TableRow(
-                      decoration: BoxDecoration(color: Colors.grey),
+                      decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 255, 255, 255)),
                       children: [
                         Padding(
                           padding: EdgeInsets.all(8.0),
@@ -136,10 +142,13 @@ class TeamInfoPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    backgroundColor: Colors.red,
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: const Text('Leave Team'),
+                  child: const Text(
+                    'Leave Team',
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
@@ -150,10 +159,13 @@ class TeamInfoPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: const Text('Manage Team'),
+                  child: const Text(
+                    'Manage Team',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),

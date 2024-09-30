@@ -35,6 +35,8 @@ class _ImageGrid extends State<ImageGrid> {
   late int _responseTime;
   Offset? _tapLocalInitialLocation;
   Offset? _tapGlobalInitialLocation;
+  double? normalizedX;
+  double? normalizedY;
   Offset? _intendedTapLocation;
   DateTime? _tapTimeofDay;
   double? _targetSizeArea;
@@ -128,6 +130,7 @@ class _ImageGrid extends State<ImageGrid> {
     seconds = widget.seconds;
     _initializeGrid();
     fetchUserId();
+    tapDataCollectionService.initHive();
     gameInfo = {
       'gridSize': '$gridSize x $gridSize',
       'difficulty': intensityLevel,
@@ -243,10 +246,8 @@ class _ImageGrid extends State<ImageGrid> {
               // Get the global position of the tap
 
               // Normalize the tap position by the screen size
-              double normalizedX =
-                  _tapGlobalInitialLocation!.dx / screenSize!.width;
-              double normalizedY =
-                  _tapGlobalInitialLocation!.dy / screenSize!.height;
+              normalizedX = _tapGlobalInitialLocation!.dx / screenSize!.width;
+              normalizedY = _tapGlobalInitialLocation!.dy / screenSize!.height;
               // Assuming force and surface area can be captured from details if supported
               //_tapForce = details.pressure;
               // _tapSurfaceArea = details;
@@ -288,6 +289,8 @@ class _ImageGrid extends State<ImageGrid> {
                     _tapLocalFinalLocation!.dx - _tapLocalInitialLocation!.dx,
                 'TapLocalMovementY':
                     _tapLocalFinalLocation!.dy - _tapLocalInitialLocation!.dy,
+                'normalizedX': normalizedX,
+                'normalizedY': normalizedY,
                 'tapDrift': tapDataCollectionService.calculateTapDrift(
                     _intendedTapLocation!, _tapGlobalInitialLocation!),
                 'Latency': tapDataCollectionService.calculateTapLatency(

@@ -159,6 +159,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
       'startTime': DateTime.now().toIso8601String(),
     };
     keystrokeService.fetchUserId();
+    keystrokeService.initHive();
     focusNode.addListener(() {
       setState(() {
         if (focusNode.hasFocus) {

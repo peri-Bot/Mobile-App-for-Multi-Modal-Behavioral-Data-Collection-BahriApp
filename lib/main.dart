@@ -1,14 +1,8 @@
-import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
-import 'package:bahri_app/screens/base_screen.dart';
-import 'package:bahri_app/screens/home_screen.dart';
-import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/screens/splash_screen.dart';
-import 'package:bahri_app/screens/welcome_screen.dart';
+import 'package:bahri_app/services/network_manager.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'package:bahri_app/screens/login_screen.dart';
 
 import 'services/firebase_options.dart';
 
@@ -18,6 +12,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  NetworkManager networkManager = NetworkManager(); // Create an instance
+  await networkManager
+      .setupOfflineStorageAndNetworkMonitoring(); // Call the setup method
 
   runApp(const BahriApp());
 }
@@ -40,7 +37,7 @@ class BahriApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
           bottomSheetTheme:
-              BottomSheetThemeData(backgroundColor: Colors.white70)),
+              const BottomSheetThemeData(backgroundColor: Colors.white70)),
       home: const SplashScreen(),
     );
   }
