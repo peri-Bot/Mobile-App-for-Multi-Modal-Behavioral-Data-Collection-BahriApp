@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'swipe_game_screen.dart'; // Import your game screen here
 
 class LevelSelectionScreen extends StatelessWidget {
-  final String userId; // Pass userId to keep consistency
+  // Pass userId to keep consistency
 
-  LevelSelectionScreen({super.key, required this.userId});
+  LevelSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      automaticallyImplyLeading: true, // This makes sure the back button appears
-    ),
-
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading:
+            true, // This makes sure the back button appears
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -83,7 +84,7 @@ class LevelSelectionScreen extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => GameScreen(
               level: level, // Pass the selected level
-              userId: userId, // Pass the userId
+              // Pass the userId
               onLevelComplete: (score) {
                 print('Level complete with score: $score');
               },

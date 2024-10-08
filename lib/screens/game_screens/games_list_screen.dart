@@ -3,7 +3,11 @@ import 'dart:ffi' as ffi;
 
 import 'package:bahri_app/screens/game_screens/key_stroke_lvl_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/acceleroGame.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/accelerogame_mainscreen.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/gyroGame_mainScreen.dart';
 import 'package:bahri_app/screens/game_screens/pic_pick_lvl_screen.dart';
+import 'package:bahri_app/screens/game_screens/swipe_level_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -161,7 +165,7 @@ class GamesList extends State<GamesListScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "Pic Pick",
+                                  "Tap Game",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -239,7 +243,13 @@ class GamesList extends State<GamesListScreen> {
                                       fontWeight: FontWeight.w500),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                LevelSelectionScreen()));
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.white,
                                     elevation: 7,
@@ -351,7 +361,7 @@ class GamesList extends State<GamesListScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "Ball Game",
+                                  "Gyro Game",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -359,7 +369,13 @@ class GamesList extends State<GamesListScreen> {
                                       fontWeight: FontWeight.w500),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const GyroScreen()));
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.white,
                                     elevation: 7,
@@ -415,7 +431,7 @@ class GamesList extends State<GamesListScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "Walking Game",
+                                  "Activity Game",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -423,7 +439,13 @@ class GamesList extends State<GamesListScreen> {
                                       fontWeight: FontWeight.w500),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const StartScreen()));
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     elevation: 7,
                                     backgroundColor: Colors.white,
