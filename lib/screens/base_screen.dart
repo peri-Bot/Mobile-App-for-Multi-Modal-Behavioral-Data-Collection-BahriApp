@@ -22,9 +22,7 @@ class _BaseScreenState extends State<BaseScreen> {
     const Center(
         child:
             Text('Leaderboard Screen')), // Placeholder for Leaderboard Screen
-    const Center(
-        child: Text(
-            'Pending Actions Screen')), // Placeholder for Pending Actions Screen
+    // Placeholder for Pending Actions Screen
   ];
   @override
   Widget build(BuildContext context) {
@@ -90,7 +88,6 @@ class _BaseScreenState extends State<BaseScreen> {
           Icon(Icons.home),
           Icon(Icons.groups),
           Icon(Icons.leaderboard),
-          Icon(Icons.pending_actions),
         ],
         onTap: (value) {
           setState(() {
