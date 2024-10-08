@@ -45,6 +45,8 @@ dependencies:
   connectivity_plus: ^6.0.5
   intl: ^0.18.0
   firebase_auth: ^4.16.0
+  animated_text_kit: ^4.2.2
+  firebase_database: ^10.4.0
 
   http: ^1.2.2
   #asset_fill: ^2.0.0
@@ -83,7 +85,14 @@ flutter:
     - ./assets/Motion_Game/
 
     - .env
+
     - android\app\google-services.json
+
+    - ./assets/slide_game/
+    - ./assets/slide_game/countries/
+    - ./assets/slide_game/veggies/
+
+
 
   #   - ./assets/images/logo2.png
   # An image asset can refer to one or more resolution-specific "variants", see

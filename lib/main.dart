@@ -4,6 +4,12 @@ import 'package:bahri_app/screens/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:bahri_app/screens/game_screens/swipe_level_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'services/firebase_options.dart';
 
 void main() async {
@@ -29,6 +35,7 @@ class BahriApp extends StatelessWidget {
       title: 'Bahri App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+
           // colorScheme: ColorScheme.fromSeed(
           //     seedColor: Colors.blue,
           //     brightness: Brightness.light,
