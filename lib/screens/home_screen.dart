@@ -2,6 +2,7 @@ import 'package:bahri_app/screens/game_screens/games_list_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_lvl_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:bahri_app/screens/game_screens/pic_pick_screen.dart';
+import 'package:bahri_app/screens/game_screens/motion_game/motion_game_main.dart';
 import 'package:flutter/material.dart';
 import 'game_screens/pic_pick_lvl_screen.dart';
 
