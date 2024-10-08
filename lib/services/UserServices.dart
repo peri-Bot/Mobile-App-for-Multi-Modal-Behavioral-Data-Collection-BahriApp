@@ -1,10 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:bahri_app/models/user.dart';
+
 import 'firestore.dart';
 
 class UserServices {
   late final User newUser;
+  final _secureStorage = const FlutterSecureStorage();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -12,9 +20,9 @@ class UserServices {
 
   String? validateUsername(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Username cannot be empty';
+      return 'Email cannot be empty';
     } else if (value.length < 4) {
-      return 'Username must be at least 4 characters long';
+      return 'Emmail must be at least 4 characters long';
     }
     return null;
   }
@@ -22,8 +30,8 @@ class UserServices {
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password cannot be empty';
-    } else if (value.length < 6) {
-      return 'Password must be at least 6 characters long';
+    } else if (value.length < 8) {
+      return 'Password must be at least 8 characters long';
     }
     return null;
   }
@@ -63,9 +71,8 @@ class UserServices {
   }
 
   Future<void> registerUser() async {
-    FirestoreServive firestoreServive = FirestoreServive();
-    firestoreServive.AddUser(
-        newUser.id,
+    FirestoreService firestoreService = FirestoreService();
+    firestoreService.addUser(
         newUser.firstName,
         newUser.lastName,
         newUser.dOB,
@@ -74,6 +81,92 @@ class UserServices {
         newUser.email,
         newUser.skillLevel,
         newUser.password);
+  }
+
+  Future<String> registerUserDartFrog(BuildContext context) async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return 'fail';
+    final url = Uri.parse(
+        'http://15.184.243.127:8080/register_user'); // Use your Dart Frog server address
+    debugPrint("ipgiven");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'firstName': newUser.firstName,
+          'lastName': newUser.lastName,
+          'dOB': newUser.dOB.toString(),
+          'gender': newUser.gender,
+          'userName': newUser.userName,
+          'email': newUser.email,
+          'skillLevel': newUser.skillLevel,
+          'password': newUser.password,
+          'created_at': DateTime.timestamp().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // User registered successfully
+        debugPrint('User registered successfully');
+        return 'sucess';
+      } else {
+        // Handle error
+        debugPrint('Failed to register user: ${response.body}');
+        return 'fail';
+      }
+    } catch (e) {
+      debugPrint('Error occurred: $e');
+      return 'fail';
+    }
+  }
+
+  Future<bool> isConnectedToInternet() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<String> loginDartFrog(String email, String password) async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return 'fail';
+    debugPrint("User is online: sending data");
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://15.184.243.127:8080/login'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        String token = responseBody['idToken'];
+        String uid = responseBody['uid'];
+
+        // Store the token securely using flutter_secure_storage
+        await _secureStorage.write(key: 'authToken', value: token);
+        await _secureStorage.write(key: 'uid', value: uid);
+
+        debugPrint("Login Successful: Token stored securely");
+        return 'sucess';
+      } else {
+        return 'fail;';
+      }
+    } catch (e) {
+      debugPrint("Error during login: $e");
+      return 'fail';
+    }
   }
 
   // Method to validate user input fields
@@ -153,5 +246,12 @@ class UserServices {
     }
 
     return error;
+  }
+
+  void logout() async {
+    await _secureStorage.delete(key: 'authToken');
+    await _secureStorage.delete(key: 'uid');
+
+    debugPrint("User logged out: Token deleted");
   }
 }

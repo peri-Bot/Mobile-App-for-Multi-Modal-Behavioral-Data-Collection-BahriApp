@@ -1,3 +1,6 @@
+import 'package:bahri_app/screens/TeamPages/CreateTeam.dart';
+import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
+import 'package:bahri_app/screens/profile_screen.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
@@ -58,12 +61,20 @@ class _BaseScreenState extends State<BaseScreen> {
           color: Colors.white,
           size: 25,
         ),
-        actions: const [
+        actions: [
           Padding(
             padding: EdgeInsets.all(15.0),
-            child: Icon(
-              Icons.account_circle,
-              size: 25,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
+              child: const Icon(
+                Icons.account_circle,
+                size: 25,
+              ),
             ),
           )
         ],

@@ -1,3 +1,4 @@
+import 'package:bahri_app/screens/login_screen.dart';
 import 'package:bahri_app/widgets/PopupDialogBox.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,9 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   int _currentStep = 0;
   bool _visibleBackBtn = false;
+  bool _isBackBtnDIsabled = false;
+  bool _isContinueBtnDIsabled = false;
+
   String? _error;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -114,43 +118,51 @@ class _SignupScreenState extends State<SignupScreen> {
                   widthFactor: 0.9,
                   child: ElevatedButton(
                     onPressed: () {
-                      setState(() {
-                        var errRetrun = validate(_currentStep);
-                        if (_currentStep == 7) {
-                          UserServices newSrvc = UserServices();
-                          Random rng = Random();
-                          final dateString = _birthdateController.text;
-                          final dateFormat = DateFormat('yyyy-MM-dd');
-                          DateTime dateti = dateFormat.parse(dateString);
+                      _isContinueBtnDIsabled
+                          ? null
+                          : setState(() {
+                              var errRetrun = validate(_currentStep);
+                              if (_currentStep == 7) {
+                                _isBackBtnDIsabled = true;
+                                _isContinueBtnDIsabled = true;
+                                UserServices newSrvc = UserServices();
+                                Random rng = Random();
+                                final dateString = _birthdateController.text;
+                                final dateFormat = DateFormat('yyyy-MM-dd');
+                                DateTime dateti = dateFormat.parse(dateString);
 
-                          newSrvc.newUser = newSrvc.createUser(
-                              id: rng.nextInt(100).toDouble(),
-                              firstName:
-                                  _nameController.text.trim().split(" ")[0],
-                              lastName:
-                                  _nameController.text.trim().split(" ")[1],
-                              dOB: dateti,
-                              gender: _selectedGender![0],
-                              userName: "userName${rng.nextInt(100)}",
-                              email: _emailController.text.trim(),
-                              skillLevel: _selectedSkill!,
-                              password: _passwordController.text,
-                              progress: rng.nextInt(100).toDouble());
-                          newSrvc.registerUser();
-                        } else if (errRetrun.isEmpty || errRetrun == "") {
-                          if (_currentStep < 7) {
-                            _currentStep++;
-                          }
-                          if (_currentStep > 0) {
-                            _visibleBackBtn = true;
-                          } else if (_currentStep <= 0) {
-                            _visibleBackBtn = false;
-                          }
-                          _error = null;
-                        } else {
-                          _error = errRetrun;
-                        }
-                      });
+                                newSrvc.newUser = newSrvc.createUser(
+                                    id: rng.nextInt(100).toDouble(),
+                                    firstName: _nameController.text
+                                        .trim()
+                                        .split(" ")[0],
+                                    lastName: _nameController.text
+                                        .trim()
+                                        .split(" ")[1],
+                                    dOB: dateti,
+                                    gender: _selectedGender![0],
+                                    userName: "userName${rng.nextInt(100)}",
+                                    email: _emailController.text.trim(),
+                                    skillLevel: _selectedSkill!,
+                                    password: _passwordController.text,
+                                    progress: rng.nextInt(100).toDouble());
+                                var result =
+                                    newSrvc.registerUserDartFrog(context);
+                                confirmregister(result);
+                              } else if (errRetrun.isEmpty || errRetrun == "") {
+                                if (_currentStep < 7) {
+                                  _currentStep++;
+                                }
+                                if (_currentStep > 0) {
+                                  _visibleBackBtn = true;
+                                } else if (_currentStep <= 0) {
+                                  _visibleBackBtn = false;
+                                }
+                                _error = null;
+                              } else {
+                                _error = errRetrun;
+                              }
+                            });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB19EF0),
@@ -177,15 +189,17 @@ class _SignupScreenState extends State<SignupScreen> {
                     visible: _visibleBackBtn,
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          _currentStep--;
-                          if (_currentStep > 0) {
-                            _visibleBackBtn = true;
-                          } else if (_currentStep <= 0) {
-                            _visibleBackBtn = false;
-                          }
-                          _error = null;
-                        });
+                        _isBackBtnDIsabled
+                            ? null
+                            : setState(() {
+                                _currentStep--;
+                                if (_currentStep > 0) {
+                                  _visibleBackBtn = true;
+                                } else if (_currentStep <= 0) {
+                                  _visibleBackBtn = false;
+                                }
+                                _error = null;
+                              });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
@@ -654,5 +668,19 @@ class _SignupScreenState extends State<SignupScreen> {
         error = "";
     }
     return error;
+  }
+
+  void confirmregister(Future<String> result) async {
+    String res = await result;
+    if (!mounted) return;
+    if (res == 'sucess') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Something went wrong, Please try again later}")));
+    }
   }
 }

@@ -41,8 +41,17 @@ dependencies:
   curved_navigation_bar: ^1.0.6
   pinput: ^5.0.0
   cloud_firestore: ^4.14.0
+  flutter_secure_storage: ^8.0.0
+  connectivity_plus: ^6.0.5
   intl: ^0.18.0
   firebase_auth: ^4.16.0
+  http: ^1.2.2
+  #asset_fill: ^2.0.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  stroke_text: ^0.0.3 
+  artistic_multilingual_keyboards: ^0.0.4
+  animated_toggle_switch: ^0.8.3
 
 dev_dependencies:
   flutter_lints: ^3.0.0
@@ -61,14 +70,12 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - ./assets/images/logo.png
-    - ./assets/legal_and_others/Privacy__Policy.md
-    - ./assets/legal_and_others/Terms_and_Conditions.md
-    - ./assets/legal_and_others/Basic_Skill.md
-    - ./assets/legal_and_others/Intermediate_Skill.md
-    - ./assets/legal_and_others/Advanced_Skill.md
-    - ./assets/legal_and_others/Expert_skill.md
+    - assets/fonts/
+    - assets/images/
+    - assets/legal_and_others/
+    - assets/pic_pick_images/
     - .env
+    - android\app\google-services.json
 
   #   - ./assets/images/logo2.png
   # An image asset can refer to one or more resolution-specific "variants", see

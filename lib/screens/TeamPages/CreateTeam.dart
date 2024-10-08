@@ -1,4 +1,7 @@
+import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
+import 'package:bahri_app/services/teams_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CreateTeamPage extends StatefulWidget {
   const CreateTeamPage({super.key});
@@ -18,6 +21,24 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
     _teamNameController.dispose();
     _teamDescriptionController.dispose();
     super.dispose();
+  }
+
+  String? uid;
+  Future<void> fetchUserId() async {
+    uid = await getUserId();
+    debugPrint("User ID is set: ==$uid");
+  }
+
+  Future<String?> getUserId() async {
+    const secureStorage = FlutterSecureStorage();
+    return await secureStorage.read(key: 'uid');
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    fetchUserId();
+    super.initState();
   }
 
   @override
@@ -71,7 +92,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        'Give name, description, Picture and members',
+                        'Give name and description of the team you want to create',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
@@ -120,29 +141,6 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          const Icon(Icons.person_add,
-                              color: Color.fromARGB(255, 255, 255, 255)),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'Add members',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.arrow_drop_down,
-                                color: Color.fromARGB(255, 0, 0, 0)),
-                            onPressed: () {
-                              // Add your add member logic here
-                            },
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -161,21 +159,24 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                             ),
                             child: const Text(
                               'Cancel',
-                              style: TextStyle(color: const Color(0xFFB19EF0)),
+                              style: TextStyle(color: Color(0xFFB19EF0)),
                             ),
                           ),
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 // Process data here
-                                final String teamName =
-                                    _teamNameController.text;
-                                final String teamDescription =
-                                    _teamDescriptionController.text;
+
+                                TeamsServices teamsServices = TeamsServices(
+                                    teamName: _teamNameController.text,
+                                    teamDescription:
+                                        _teamDescriptionController.text,
+                                    adminUid: uid);
+                                var result =
+                                    teamsServices.createTeamDartFrog(context);
+                                confirmTeamCreation(result);
 
                                 // Implement team creation logic
-                                print('Team Name: $teamName');
-                                print('Team Description: $teamDescription');
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -201,5 +202,22 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
         ],
       ),
     );
+  }
+
+  void confirmTeamCreation(Future<String> result) async {
+    String res = await result;
+    if (!mounted) return;
+    if (res == 'sucess') {
+      const secureStorage = FlutterSecureStorage();
+      //await secureStorage.read(key: 'uid');
+      //Do some shady bussiness
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const TeamInfoPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Something went wrong, Please try again later}")));
+    }
   }
 }

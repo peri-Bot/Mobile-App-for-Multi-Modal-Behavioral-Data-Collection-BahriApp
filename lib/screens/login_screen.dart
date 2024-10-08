@@ -1,9 +1,11 @@
+import 'package:bahri_app/screens/base_screen.dart';
 import 'package:bahri_app/screens/home_screen.dart';
 import 'package:bahri_app/screens/signup_screen.dart';
 import 'package:bahri_app/services/firebase_login_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/services/UserServices.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:path/path.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,31 +15,26 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final FirebaseLoginServices _auth = FirebaseLoginServices();
+  //final FirebaseLoginServices _auth = FirebaseLoginServices();
   final loginValidate = UserServices();
 
-  void _login() async {
+  void _login(BuildContext context) async {
     String email = loginValidate.usernameController.text;
     String password = loginValidate.passwordController.text;
-
-    try {
-      User? user = await _auth.signInWithEmailPassword(email, password);
-      if (user != null) {
-        print("Login Successful");
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      } else {
+    UserServices userServices = UserServices();
+    String response = await userServices.loginDartFrog(email, password);
+    if (context.mounted && response == 'sucess') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BaseScreen()),
+      );
+    } else {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to sign in")),
+          const SnackBar(
+              content: Text("Failed to sign in: Please try again later")),
         );
       }
-    } catch (e) {
-      print("Error during login: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign in: $e")),
-      );
     }
   }
 
@@ -166,7 +163,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               SizedBox(height: constraints.maxHeight * 0.02),
                               ElevatedButton(
-                                onPressed: _login,
+                                onPressed: () {
+                                  _login(context);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 55),
                                   shape: RoundedRectangleBorder(
