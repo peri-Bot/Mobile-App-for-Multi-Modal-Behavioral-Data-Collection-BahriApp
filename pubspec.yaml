@@ -57,6 +57,8 @@ dependencies:
   animated_toggle_switch: ^0.8.3
 
   flutter_sensors:
+  url_launcher:
+  mailto:
 
 
 dev_dependencies:
