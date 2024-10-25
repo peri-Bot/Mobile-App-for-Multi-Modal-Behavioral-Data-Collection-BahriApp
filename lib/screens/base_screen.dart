@@ -1,11 +1,18 @@
+
+
+
 import 'package:bahri_app/screens/TeamPages/CreateTeam.dart';
 import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
 import 'package:bahri_app/screens/TeamPages/check_team_screen.dart';
 import 'package:bahri_app/screens/profile_screen.dart';
+
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
-import 'package:bahri_app/screens/home_screen.dart';
+
+import 'TeamPages/NoTeamPage.dart';
+import 'home_screen.dart';
+import 'menu_screen.dart';
+import 'profile_screen.dart';
 
 class BaseScreen extends StatefulWidget {
   const BaseScreen({super.key});
@@ -16,23 +23,23 @@ class BaseScreen extends StatefulWidget {
 
 class _BaseScreenState extends State<BaseScreen> {
   int _selectedIndex = 0;
+
   final List<Widget> _screens = [
     const HomeScreen(),
     // Add other screens here, e.g. SecondScreen(), ThirdScreen(), etc.
     const CheckTeamScreen(), // Placeholder for Groups Screen
     const Center(
-        child:
-            Text('Leaderboard Screen')), // Placeholder for Leaderboard Screen
-    // Placeholder for Pending Actions Screen
+        child: Text('Leaderboard Screen')), // Placeholder for Leaderboard Screen
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
+      drawer: MenuDrawer(), // Add this line
       body: Stack(
         children: [
-          // Gradient background
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -46,7 +53,6 @@ class _BaseScreenState extends State<BaseScreen> {
               ),
             ),
           ),
-          // Content goes here
           SafeArea(
             child: _screens[_selectedIndex],
           ),
@@ -55,10 +61,15 @@ class _BaseScreenState extends State<BaseScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const Icon(
-          Icons.menu,
-          color: Colors.white,
-          size: 25,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.white,
+              size: 25,
+            ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
         actions: [
           Padding(
@@ -80,10 +91,7 @@ class _BaseScreenState extends State<BaseScreen> {
       ),
       bottomNavigationBar: CurvedNavigationBar(
         height: 53,
-        backgroundColor:
-            Colors.transparent, // Make navigation bar background transparent
-        //color: Colors.transparent,
-        //animationCurve: Curves.ease,
+        backgroundColor: Colors.transparent,
         animationDuration: const Duration(milliseconds: 150),
         items: const [
           Icon(Icons.home),
@@ -99,4 +107,3 @@ class _BaseScreenState extends State<BaseScreen> {
     );
   }
 }
-//backgroundColor: const Color.fromRGBO(172, 185, 255, 1),
