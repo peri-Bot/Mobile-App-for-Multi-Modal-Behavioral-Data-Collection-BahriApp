@@ -8,7 +8,7 @@ class AboutScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('About BahriApp'),
+        title: const Text('About BahriApp'),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -22,12 +22,14 @@ class AboutScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+        child: const SingleChildScrollView(
+          padding: EdgeInsets.all(16.0),
+          child: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 120), // Add padding to push content below the transparent app bar
+              SizedBox(
+                  height:
+                      120), // Add padding to push content below the transparent app bar
               Text(
                 'BahriApp',
                 style: TextStyle(

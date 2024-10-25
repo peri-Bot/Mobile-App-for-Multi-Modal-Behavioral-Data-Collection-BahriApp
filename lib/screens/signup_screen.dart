@@ -603,21 +603,21 @@ class _SignupScreenState extends State<SignupScreen> {
         return StatefulBuilder(
           builder:
               (BuildContext context, void Function(void Function()) setState) {
-            return Column(
+            return const Column(
               children: [
                 Center(
                   child: Text(
-                    "Enter the code sent to ${_emailController.text}",
-                    style: const TextStyle(
+                    "Press Continue to confirm signup",
+                    style: TextStyle(
                       fontFamily: "assets/fonts/Poppins-Bold.ttf",
                     ),
                   ),
                 ),
-                const Divider(color: Colors.transparent),
-                const Pinput(
-                  length: 4,
-                  //defaultPinTheme: PinTheme(colors),
-                )
+                Divider(color: Colors.transparent),
+                // const Pinput(
+                //   length: 4,
+                //   //defaultPinTheme: PinTheme(colors),
+                // )
               ],
             );
           },

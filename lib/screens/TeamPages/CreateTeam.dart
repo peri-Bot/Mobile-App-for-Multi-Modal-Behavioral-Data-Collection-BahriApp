@@ -163,7 +163,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                                       teamName: _teamNameController.text,
                                       teamDescription:
                                           _teamDescriptionController.text,
-                                      adminUid: adminUid);
+                                      adminUid: _teamsServices.uid);
                                   var result = _teamsServices
                                       .createTeamDartFrog(context);
                                   confirmTeamCreation(result);

@@ -2,6 +2,7 @@ import 'package:bahri_app/screens/TeamPages/CreateTeam.dart';
 import 'package:bahri_app/screens/TeamPages/Jointeam.dart';
 import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
 import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
+import 'package:bahri_app/screens/TeamPages/check_team_screen.dart';
 import 'package:bahri_app/screens/about_screen.dart';
 import 'package:bahri_app/screens/base_screen.dart';
 import 'package:bahri_app/screens/home_screen.dart';
@@ -31,47 +32,50 @@ class MenuDrawer extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.transparent,
               ),
               child: Text(
                 'Menu',
                 style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold
-                ),
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.account_circle, color: Colors.black),
-              title: Text('Profile', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.account_circle, color: Colors.black),
+              title:
+                  const Text('Profile', style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                ProfilePage()
-                ));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProfilePage()));
               },
             ),
             ListTile(
-              leading: Icon(Icons.home, color: Colors.black),
-              title: Text('Home', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.home, color: Colors.black),
+              title: const Text('Home', style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                    BaseScreen()
-                ));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const BaseScreen()));
               },
             ),
             ListTile(
-              leading: Icon(Icons.groups, color: Colors.black),
-              title: Text('Group', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.groups, color: Colors.black),
+              title: const Text('Team', style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                    InitialScreen()
-                ));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CheckTeamScreen()));
               },
             ),
-           /* ListTile(
+            /* ListTile(
               leading: Icon(Icons.leaderboard, color: Colors.black),
               title: Text('Leaderboard', style: TextStyle(color: Colors.black)),
               onTap: () {
@@ -80,16 +84,19 @@ class MenuDrawer extends StatelessWidget {
                 ));
               },
             ),*/
-            Divider(color: Colors.white), // Add a divider for the settings section
-            ListTile(
+            const Divider(
+                color: Colors.white), // Add a divider for the settings section
+            const ListTile(
               title: Text(
                 'Settings',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.report, color: Colors.black),
-              title: Text('Report', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.report, color: Colors.black),
+              title:
+                  const Text('Report', style: TextStyle(color: Colors.black)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -98,17 +105,17 @@ class MenuDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.info, color: Colors.black),
-              title: Text('About', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.info, color: Colors.black),
+              title: const Text('About', style: TextStyle(color: Colors.black)),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                    AboutScreen()
-                ));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => AboutScreen()));
               },
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app, color: Colors.black),
-              title: Text('Logout', style: TextStyle(color: Colors.black)),
+              leading: const Icon(Icons.exit_to_app, color: Colors.black),
+              title:
+                  const Text('Logout', style: TextStyle(color: Colors.black)),
               onTap: () {
                 UserServices userServices = UserServices();
                 userServices.logout();
@@ -116,7 +123,7 @@ class MenuDrawer extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => const WelcomeScreen()),
-                      (Route<dynamic> route) => false, // Remove all routes
+                  (Route<dynamic> route) => false, // Remove all routes
                 );
               },
             ),
