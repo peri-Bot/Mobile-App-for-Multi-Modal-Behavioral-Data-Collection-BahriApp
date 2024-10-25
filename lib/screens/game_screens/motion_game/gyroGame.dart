@@ -1,20 +1,19 @@
 import 'package:bahri_app/services/gyroGame_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'dart:async';
 
 class BallGame extends StatefulWidget {
   const BallGame({super.key});
 
-
   @override
   _BallGameState createState() => _BallGameState();
 }
 
-
-class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin {
-
-  final GyroData gyroData=GyroData();
+class _BallGameState extends State<BallGame>
+    with SingleTickerProviderStateMixin {
+  final GyroData gyroData = GyroData();
   double posX = 0.0;
   double posY = 0.0;
   double ballSize = 50.0;
@@ -31,10 +30,21 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
   late Timer _timer;
   int currentLevel = 1;
   List<Rect> obstacles = [];
+  String? uid;
+  Future<void> fetchUserId() async {
+    uid = await getUserId();
+    debugPrint("User ID is set: ==$uid");
+  }
+
+  Future<String?> getUserId() async {
+    const secureStorage = FlutterSecureStorage();
+    return await secureStorage.read(key: 'uid');
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchUserId();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 100),
       vsync: this,
@@ -42,7 +52,9 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-        posY = MediaQuery.of(context).size.height - ballSize - 20; // Start above the bottom border
+        posY = MediaQuery.of(context).size.height -
+            ballSize -
+            20; // Start above the bottom border
         _setLevel(currentLevel);
       });
     });
@@ -60,12 +72,12 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
       _sensorSubscription = stream.listen((sensorEvent) {
         if (!isGameOver && !isGameWon) {
-            DateTime currentTime = DateTime.now();
-            double gyroX = sensorEvent.data[0];
-            double gyroY = sensorEvent.data[1];
-            double gyroZ = sensorEvent.data[2];
+          DateTime currentTime = DateTime.now();
+          double gyroX = sensorEvent.data[0];
+          double gyroY = sensorEvent.data[1];
+          double gyroZ = sensorEvent.data[2];
 
-            GyroData gyroData = GyroData();
+          GyroData gyroData = GyroData();
 
           gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
           gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
@@ -77,8 +89,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
           gyroData.printMetrics();
           gyroData.storeDataInFirestore(gyroX, gyroY, gyroZ);
 
-
-
           setState(() {
             double horizontalSensitivity = 20.0;
             double verticalSensitivity = 30.0;
@@ -86,8 +96,13 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
             posX += sensorEvent.data[1] * horizontalSensitivity;
             posY += sensorEvent.data[0] * verticalSensitivity;
 
-            posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-            posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10); // Adjusted to stay above the bottom border
+            posX =
+                posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+            posY = posY.clamp(
+                0.0,
+                MediaQuery.of(context).size.height -
+                    ballSize -
+                    10); // Adjusted to stay above the bottom border
 
             if (_checkCollision()) {
               _gameOver();
@@ -95,8 +110,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
             if (_checkGoal()) {
               _gameWon();
             }
-            print('Gyroscope data: x=${sensorEvent.data[0]}, y=${sensorEvent
-                .data[1]}, z=${sensorEvent.data[2]}');
+            print(
+                'Gyroscope data: x=${sensorEvent.data[0]}, y=${sensorEvent.data[1]}, z=${sensorEvent.data[2]}');
             print('Ball position: posX=$posX, posY=$posY');
           });
         }
@@ -145,7 +160,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -155,7 +171,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Restart', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Restart', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -175,7 +192,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('You Win!', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -202,7 +220,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
       },
     );
   }
-
 
   List<Rect> level1Obstacles = [
     const Rect.fromLTWH(50, 150, 200, 40),
@@ -285,7 +302,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
       score += 5;
       posX = (MediaQuery.of(context).size.width - ballSize) / 2;
       posY = MediaQuery.of(context).size.height - ballSize - 20;
-      isGameWon = false;score = 0;
+      isGameWon = false;
+      score = 0;
       currentLevel = (currentLevel % 5) + 1; // Move to the next level
     });
     _setLevel(currentLevel);
@@ -294,7 +312,8 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
   }
 
   void _checkGyroscope() async {
-    bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
+    bool sensorAvailable =
+        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
     if (!sensorAvailable) {
       _showGyroscopeNotAvailableDialog();
     }
@@ -350,7 +369,9 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               width: ballSize,
               height: ballSize,
               decoration: BoxDecoration(
-                color: isGameOver || isGameWon ? Colors.transparent : Colors.pinkAccent,
+                color: isGameOver || isGameWon
+                    ? Colors.transparent
+                    : Colors.pinkAccent,
                 shape: BoxShape.circle,
               ),
             ),
@@ -378,7 +399,10 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               child: const Center(
                 child: Text(
                   'GOAL',
-                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),

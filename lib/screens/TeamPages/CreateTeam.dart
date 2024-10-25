@@ -1,4 +1,5 @@
 import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
+import 'package:bahri_app/screens/base_screen.dart';
 import 'package:bahri_app/services/teams_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -15,7 +16,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
   final TextEditingController _teamNameController = TextEditingController();
   final TextEditingController _teamDescriptionController =
       TextEditingController();
-
+  TeamsServices _teamsServices = TeamsServices.empty();
   @override
   void dispose() {
     _teamNameController.dispose();
@@ -23,21 +24,12 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
     super.dispose();
   }
 
-  String? uid;
-  Future<void> fetchUserId() async {
-    uid = await getUserId();
-    debugPrint("User ID is set: ==$uid");
-  }
-
-  Future<String?> getUserId() async {
-    const secureStorage = FlutterSecureStorage();
-    return await secureStorage.read(key: 'uid');
-  }
-
+  String? adminUid;
   @override
   void initState() {
     // TODO: implement initState
-    fetchUserId();
+    _teamsServices.fetchUserId();
+    adminUid = _teamsServices.uid;
     super.initState();
   }
 
@@ -73,127 +65,128 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Center(
-              child: SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        'Create team',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Give name and description of the team you want to create',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 30),
-                      TextFormField(
-                        controller: _teamNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Team name',
-                          hintText: 'Name your team',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: UnderlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Create team',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a team name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _teamDescriptionController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          labelText: 'Description',
-                          hintText: 'Enter a team description',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: UnderlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Give name and description of the team you want to create',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a team description';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                  color: Color.fromARGB(255, 255, 255, 255)),
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                        const SizedBox(height: 30),
+                        TextFormField(
+                          controller: _teamNameController,
+                          decoration: InputDecoration(
+                            labelText: 'Team name',
+                            hintText: 'Name your team',
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: UnderlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a team name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _teamDescriptionController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            labelText: 'Description',
+                            hintText: 'Enter a team description',
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: UnderlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a team description';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: Color.fromARGB(255, 255, 255, 255)),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Color(0xFFB19EF0)),
                               ),
                             ),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(color: Color(0xFFB19EF0)),
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                // Process data here
+                            ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  // Process data here
+                                  _teamsServices = TeamsServices(
+                                      teamName: _teamNameController.text,
+                                      teamDescription:
+                                          _teamDescriptionController.text,
+                                      adminUid: adminUid);
+                                  var result = _teamsServices
+                                      .createTeamDartFrog(context);
+                                  confirmTeamCreation(result);
 
-                                TeamsServices teamsServices = TeamsServices(
-                                    teamName: _teamNameController.text,
-                                    teamDescription:
-                                        _teamDescriptionController.text,
-                                    adminUid: uid);
-                                var result =
-                                    teamsServices.createTeamDartFrog(context);
-                                confirmTeamCreation(result);
-
-                                // Implement team creation logic
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                  // Implement team creation logic
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                backgroundColor: const Color(0xFFB19EF0),
                               ),
-                              backgroundColor: const Color(0xFFB19EF0),
+                              child: const Text(
+                                'Create',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                              ),
                             ),
-                            child: const Text(
-                              'Create',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -208,12 +201,17 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
     String res = await result;
     if (!mounted) return;
     if (res == 'sucess') {
-      const secureStorage = FlutterSecureStorage();
       //await secureStorage.read(key: 'uid');
       //Do some shady bussiness
-      Navigator.push(
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const TeamInfoPage()),
+      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Team Created Successfully")));
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const TeamInfoPage()),
+        MaterialPageRoute(builder: (context) => const BaseScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
