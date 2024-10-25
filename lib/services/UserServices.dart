@@ -249,8 +249,7 @@ class UserServices {
   }
 
   void logout() async {
-    await _secureStorage.delete(key: 'authToken');
-    await _secureStorage.delete(key: 'uid');
+    await _secureStorage.deleteAll();
 
     debugPrint("User logged out: Token deleted");
   }

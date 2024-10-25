@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
 class StepCounter {
   // Fields for step counting and accelerometer data
@@ -15,6 +18,7 @@ class StepCounter {
   double _peakAcceleration = 0;
   double _minAcceleration = double.infinity;
   String? _currentActivity;
+  String? userId;
 
   // New fields
   DateTime? _lastStepTime;
@@ -27,10 +31,14 @@ class StepCounter {
   void updateCurrentActivity(String newActivity) {
     _currentActivity = newActivity;
   }
+
   // Initialize the sensor
-  Future<bool> initSensor({required Function onStepDetected, required String currentActivity}) async {
+  Future<bool> initSensor(
+      {required Function onStepDetected,
+      required String currentActivity}) async {
     _currentActivity = currentActivity;
-    bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
+    bool sensorAvailable =
+        await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
 
     if (sensorAvailable) {
       final stream = await SensorManager().sensorUpdates(
@@ -40,7 +48,8 @@ class StepCounter {
 
       _subscription = stream.listen((SensorEvent event) {
         if (_isDataCollectionEnabled) {
-          _processAccelerometerData(event.data, onStepDetected, currentActivity);
+          _processAccelerometerData(
+              event.data, onStepDetected, currentActivity);
         }
       });
 
@@ -56,7 +65,8 @@ class StepCounter {
   }
 
   // Process the accelerometer data and detect steps
-  void _processAccelerometerData(List<double> data, Function onStepDetected, String currentActivity) {
+  void _processAccelerometerData(
+      List<double> data, Function onStepDetected, String currentActivity) {
     double x = data[0], y = data[1], z = data[2];
     double magnitude = sqrt(x * x + y * y + z * z);
 
@@ -78,12 +88,14 @@ class StepCounter {
         _totalSteps++; // Increment step count
         onStepDetected();
         _storeDataInFirestore();
+        _sendDataToDartFrogServer(userId!);
         _logStepDuration(); // Calculate and log step duration
       }
     }
 
     _lastMagnitude = magnitude;
   }
+
   void startDataCollection() {
     _isDataCollectionEnabled = true;
   }
@@ -95,7 +107,9 @@ class StepCounter {
   // Calculate and store metrics in Firestore using session-based approach
 
   Future<int> _getNextSessionId() async {
-    DocumentReference counterRef = FirebaseFirestore.instance.collection('session_counters').doc('Accelerometer_sessionCounter');
+    DocumentReference counterRef = FirebaseFirestore.instance
+        .collection('session_counters')
+        .doc('Accelerometer_sessionCounter');
     return FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot snapshot = await transaction.get(counterRef);
 
@@ -108,6 +122,7 @@ class StepCounter {
       return newCount;
     });
   }
+
   void _storeDataInFirestore() async {
     try {
       Map<String, dynamic> data = {
@@ -118,7 +133,8 @@ class StepCounter {
         'standardDeviation': getStandardDeviation(),
         'verticalOscillation': getVerticalOscillation(),
         'jerk': getJerk(_lastMagnitude),
-        'stepDuration': _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
+        'stepDuration':
+            _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
         'averageStepDuration': '${getAverageStepDuration()} ms',
         'stepFrequency': getStepFrequency(),
         'activityType': _currentActivity,
@@ -133,9 +149,44 @@ class StepCounter {
           _sessionId.toString(): data,
         }
       }, SetOptions(merge: true));
-      print("Data stored successfully in Firestore");
+      debugPrint("Data stored successfully in Firestore");
     } catch (e) {
-      print("Error storing data: $e");
+      debugPrint("Error storing data: $e");
+    }
+  }
+
+  Future<void> _sendDataToDartFrogServer(String userId) async {
+    try {
+      Map<String, dynamic> data = {
+        'userId': userId,
+        'timestamp': DateTime.now().toIso8601String(),
+        'averageAcceleration': getAverageAcceleration(),
+        'peakAcceleration': _peakAcceleration,
+        'minAcceleration': _minAcceleration,
+        'standardDeviation': getStandardDeviation(),
+        'verticalOscillation': getVerticalOscillation(),
+        'jerk': getJerk(_lastMagnitude),
+        'stepDuration':
+            _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
+        'averageStepDuration': '${getAverageStepDuration()} ms',
+        'stepFrequency': getStepFrequency(),
+        'activityType': _currentActivity,
+        'totalSteps': _currentActivity != 'sitting' ? _totalSteps : null,
+      };
+
+      var response = await http.post(
+        Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint("Data sent successfully to Dart Frog server");
+      } else {
+        debugPrint("Failed to send data: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("Error sending data to server: $e");
     }
   }
 
@@ -147,7 +198,8 @@ class StepCounter {
         'stepData': {
           _sessionId.toString(): {
             'endTime': FieldValue.serverTimestamp(),
-            'sessionDuration': '${DateTime.now().difference(_lastStepTime!).inMilliseconds} ms',
+            'sessionDuration':
+                '${DateTime.now().difference(_lastStepTime!).inMilliseconds} ms',
           }
         }
       }, SetOptions(merge: true));
@@ -160,7 +212,8 @@ class StepCounter {
   // Detect and return vertical oscillation (average vertical movement)
   double getVerticalOscillation() {
     if (_verticalOscillationData.isEmpty) return 0;
-    return _verticalOscillationData.reduce((a, b) => a + b) / _verticalOscillationData.length;
+    return _verticalOscillationData.reduce((a, b) => a + b) /
+        _verticalOscillationData.length;
   }
 
   // Calculate jerk (rate of change of acceleration)
@@ -179,7 +232,9 @@ class StepCounter {
   // Calculate and return the standard deviation of acceleration
   double getStandardDeviation() {
     double mean = getAverageAcceleration();
-    num sumSquaredDiffs = _accelerationData.map((value) => pow(value - mean, 2)).reduce((a, b) => a + b);
+    num sumSquaredDiffs = _accelerationData
+        .map((value) => pow(value - mean, 2))
+        .reduce((a, b) => a + b);
     return sqrt(sumSquaredDiffs / _accelerationData.length);
   }
 
@@ -187,7 +242,8 @@ class StepCounter {
   void _logStepDuration() {
     if (_lastStepTime != null) {
       DateTime now = DateTime.now();
-      double stepDuration = now.difference(_lastStepTime!).inMilliseconds.toDouble();
+      double stepDuration =
+          now.difference(_lastStepTime!).inMilliseconds.toDouble();
       _stepDurations.add(stepDuration);
       print("Step duration: $stepDuration ms");
     }
@@ -203,7 +259,8 @@ class StepCounter {
   // Calculate the step frequency (steps per minute)
   double getStepFrequency() {
     if (_stepDurations.isEmpty) return 0;
-    double totalTime = _stepDurations.reduce((a, b) => a + b) / 1000; // Convert to seconds
+    double totalTime =
+        _stepDurations.reduce((a, b) => a + b) / 1000; // Convert to seconds
     return _totalSteps / (totalTime / 60); // Steps per minute
   }
 

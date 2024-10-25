@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/accelerometerGame_service.dart';
 import 'package:flutter/services.dart'; // For vibration feedback
 
@@ -22,16 +23,26 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   int _elapsedSeconds = 0;
   bool _isActive = false;
   String _currentActivity = '';
+  String? uid;
+  Future<void> fetchUserId() async {
+    uid = await getUserId();
+    debugPrint("User ID is set: ==$uid");
+  }
+
+  Future<String?> getUserId() async {
+    const secureStorage = FlutterSecureStorage();
+    return await secureStorage.read(key: 'uid');
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchUserId();
+    _stepCounter.userId = uid;
     _initGame();
   }
 
-  void _initGame() async {
-
-  }
+  void _initGame() async {}
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -71,11 +82,11 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
         score = 5;
       } else if (_stepCount < 20) {
         resultMessage =
-        "You have taken more than 10 steps while walking. Keep moving!";
+            "You have taken more than 10 steps while walking. Keep moving!";
         score = 10;
       } else if (_stepCount < 30) {
         resultMessage =
-        "You have taken more than 20 steps while walking. More data, more score!";
+            "You have taken more than 20 steps while walking. More data, more score!";
         score = 15;
       } else {
         resultMessage = "You have taken more than 30 steps while walking!";
@@ -90,30 +101,27 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
         score = 15;
       } else if (_elapsedSeconds < 90) {
         resultMessage =
-        "You jogged for $_elapsedSeconds seconds. You're a pro!";
+            "You jogged for $_elapsedSeconds seconds. You're a pro!";
         score = 20;
       } else {
         resultMessage =
-        "You jogged for $_elapsedSeconds seconds. Wow, you're a marathon runner!";
+            "You jogged for $_elapsedSeconds seconds. Wow, you're a marathon runner!";
         score = 25;
       }
     } else if (_currentActivity == 'sitting') {
-      double sittingStability = _stepCount /
-          (_elapsedSeconds > 0 ? _elapsedSeconds : 1);
+      double sittingStability =
+          _stepCount / (_elapsedSeconds > 0 ? _elapsedSeconds : 1);
       if (sittingStability < 0.5) {
         resultMessage =
-        "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability
-            .toStringAsFixed(2)}. Good job!";
+            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Good job!";
         score = 10;
       } else if (sittingStability < 1) {
         resultMessage =
-        "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability
-            .toStringAsFixed(2)}. Not bad!";
+            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Not bad!";
         score = 5;
       } else {
         resultMessage =
-        "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability
-            .toStringAsFixed(2)}. Try harder next time!";
+            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Try harder next time!";
         score = 2;
       }
     } else {
@@ -154,6 +162,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _stepCounter.reset();
     _initGame();
   }
+
   void _initSensor() async {
     bool sensorAvailable = await _stepCounter.initSensor(
       onStepDetected: () {
@@ -168,6 +177,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isSensorAvailable = sensorAvailable;
     });
   }
+
   void _startWalking() {
     setState(() {
       _isActive = true;
@@ -181,6 +191,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _stepCounter.startDataCollection();
     _startTimer();
   }
+
   void _startJogging() {
     setState(() {
       _isActive = true;
@@ -195,7 +206,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _startTimer();
   }
 
-
   void _startSitting() {
     setState(() {
       _isActive = true;
@@ -209,6 +219,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _stepCounter.startDataCollection();
     _startTimer();
   }
+
   void _stopActivity() {
     _stepCounter.stopDataCollection();
     _stopTimer();
@@ -268,7 +279,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
               padding: EdgeInsets.all(8.0),
               child: Text(
                 'choose an activity to do; Walk, jog, or sit while holding your phone, '
-                    'press stop when you are done.',
+                'press stop when you are done.',
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.white,
@@ -277,23 +288,27 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 25,),
-            const Text("Choose an Activity",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.deepPurple
+            const SizedBox(
+              height: 25,
             ),
+            const Text(
+              "Choose an Activity",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.deepPurple),
             ),
             const SizedBox(height: 25),
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             // Walking button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 50, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   textStyle: const TextStyle(fontSize: 20),
                   backgroundColor: Colors.white70,
                   foregroundColor: Colors.teal,
@@ -302,14 +317,16 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 child: const Text('Start Walking'),
               ),
             ),
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             // Jogging button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 50, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   textStyle: const TextStyle(fontSize: 20),
                   backgroundColor: Colors.white70,
                   foregroundColor: Colors.teal,
@@ -318,14 +335,16 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
                 child: const Text('Start Jogging'),
               ),
             ),
-             const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             // Sitting button
             Visibility(
               visible: !_isWalking && !_isJogging && !_isSitting,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 50, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   textStyle: const TextStyle(fontSize: 20),
                   backgroundColor: Colors.white70,
                   foregroundColor: Colors.teal,
@@ -341,8 +360,8 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
             if (_isWalking || _isJogging || _isSitting)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 50, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                   textStyle: const TextStyle(fontSize: 20),
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
