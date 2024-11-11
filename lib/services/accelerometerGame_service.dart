@@ -88,7 +88,7 @@ class StepCounter {
         _totalSteps++; // Increment step count
         onStepDetected();
         _storeDataInFirestore();
-        _sendDataToDartFrogServer(userId!);
+        //_sendDataToDartFrogServer(userId!);
         _logStepDuration(); // Calculate and log step duration
       }
     }
@@ -144,7 +144,7 @@ class StepCounter {
         data['totalSteps'] = _totalSteps;
       }
 
-      await FirebaseFirestore.instance.collection('users').doc('1').set({
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'Data_accelerometerData': {
           _sessionId.toString(): data,
         }

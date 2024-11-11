@@ -87,7 +87,7 @@ class _BallGameState extends State<BallGame>
           gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
           gyroData.calculateRotationDuration(gyroX, DateTime.now());
           gyroData.printMetrics();
-          gyroData.storeDataInFirestore(gyroX, gyroY, gyroZ);
+          gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ);
 
           setState(() {
             double horizontalSensitivity = 20.0;

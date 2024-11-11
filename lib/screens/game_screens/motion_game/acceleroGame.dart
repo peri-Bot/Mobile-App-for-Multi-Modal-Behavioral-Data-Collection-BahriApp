@@ -38,7 +38,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   void initState() {
     super.initState();
     fetchUserId();
-    _stepCounter.userId = uid;
+
     _initGame();
   }
 
@@ -187,6 +187,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isSitting = false;
       _isPaused = false;
     });
+    _stepCounter.userId = uid;
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
@@ -201,6 +202,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isSitting = false;
       _isPaused = false;
     });
+    _stepCounter.userId = uid;
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
@@ -215,6 +217,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isSitting = true;
       _isPaused = false;
     });
+    _stepCounter.userId = uid;
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
