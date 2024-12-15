@@ -55,6 +55,7 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
+    _firestoreService.initHive();
     _loadQuestionsForLevel(widget.level);
     _startTimer();
     fetchUserId();

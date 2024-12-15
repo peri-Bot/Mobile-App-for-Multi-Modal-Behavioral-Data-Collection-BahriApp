@@ -9,7 +9,7 @@ import 'dart:math';
 import './../widgets/keyboard/utils/types.dart';
 import 'package:http/http.dart' as http;
 
-class KeystrokeService {
+class FreeTextService {
   List<Map<String, dynamic>> keystrokeData = [];
   DateTime? lastReleaseTime;
   DateTime? typingStartTime;
@@ -259,33 +259,35 @@ class KeystrokeService {
 
   Future<void> initHive() async {
     await Hive.initFlutter();
-    await Hive.openBox('offlineKeystrokeData');
+    await Hive.openBox('offlineKeystrokeFreeTextData');
   }
 
-  Future<String> saveKeyStrokeData(Map<String, dynamic> gameInfo) async {
+  Future<String> saveKeyStrokeFreeTextData(
+      Map<String, dynamic> gameInfo) async {
     bool isOnline = await isConnectedToInternet();
 
     gameInfo['uid'] = uid;
 
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
-      'keystrokeData': keystrokeData,
-      'averageKeyStrokeMetrics': getAverageMetrics(),
+      'keystrokeFreeTextData': keystrokeData,
+      'averageKeyStrokeFreeTextMetrics': getAverageMetrics(),
     };
 
     debugPrint('Request Data:');
     debugPrint('Game Info: ${requestData['gameInfo']}');
-    debugPrint('keystroke Data: ${requestData['keystrokeData']}');
+    debugPrint(
+        'keystroke Data: ${requestData['keystrokekeystrokeFreeTextDataData']}');
     if (!isOnline) {
       // Save data to Hive if offline
-      var box = Hive.box('offlineKeystrokeData');
+      var box = Hive.box('offlineKeystrokeFreeTextData');
       await box.add(requestData);
       debugPrint('Data saved locally (offline).');
       return 'saved_locally';
     }
 
     final url = Uri.parse(
-        'http://15.184.243.127:8080/collect_keystroke_data'); // Use your Dart Frog server address
+        'http://15.184.243.127:8080/collect_keystroke_freetext_data'); // Use your Dart Frog server address
 
     try {
       final response = await http.post(
@@ -301,17 +303,17 @@ class KeystrokeService {
       } else {
         // Handle error
         debugPrint('Could not add keyStroke data: ${response.body}');
-        var box = Hive.box('offlineKeystrokeData');
+        var box = Hive.box('offlineKeystrokeFreeTextData');
         await box.add(requestData);
         debugPrint('Data saved locally (offline).');
-        return 'saved_locally';
+        return 'Server Error: saved_locally';
       }
     } catch (e) {
       debugPrint('Error occurred keyStroke : $e');
-      var box = Hive.box('offlineKeystrokeData');
+      var box = Hive.box('offlineKeystrokeFreeTextData');
       await box.add(requestData);
       debugPrint('Data saved locally (offline).');
-      return 'saved_locally';
+      return 'Server Error: saved_locally';
     }
   }
 }

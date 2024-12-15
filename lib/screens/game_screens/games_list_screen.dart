@@ -1,6 +1,7 @@
 import 'dart:ffi' as ffi;
 //import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
 
+import 'package:bahri_app/screens/game_screens/handwriting_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_lvl_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:bahri_app/screens/game_screens/motion_game/acceleroGame.dart';
@@ -25,6 +26,7 @@ class GamesList extends State<GamesListScreen> {
   //bool firstSwitchValue = false;
   bool _collapsedWalk = false;
   bool _collapsedSwipe = false;
+  bool firstSwitchValue = false;
 
   @override
   Widget build(BuildContext context) {
@@ -475,6 +477,107 @@ class GamesList extends State<GamesListScreen> {
                                       fontWeight: FontWeight.w400),
                                 ),
                               )
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        Card(
+                          child: ExpansionTile(
+                            collapsedBackgroundColor: Colors.white,
+                            //backgroundColor: Color.fromARGB(255, 231, 90, 90),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            backgroundColor: Colors.white,
+                            clipBehavior: Clip.antiAlias,
+                            collapsedShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+
+                            leading: const Icon(Icons.draw),
+                            onExpansionChanged: (value) {
+                              setState(() {
+                                _collapsedWalk = value;
+                              });
+                            },
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Handwriting",
+                                  style: TextStyle(
+                                      fontFamily:
+                                          "assets/fonts/Poppins-SemiBold.ttf",
+                                      fontSize: 21.0,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                HandwritingScreen(
+                                                    isAmharic:
+                                                        firstSwitchValue)));
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 7,
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      // side: const BorderSide(
+                                      //     color: Colors.black)
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "Play",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                )
+                              ],
+                            ),
+                            //trailing: ,
+                            tilePadding: const EdgeInsets.all(9),
+
+                            children: <Widget>[
+                              const ListTile(
+                                title: Text(
+                                  "write The Showen Letter in the Box Using Handwriting",
+                                  style: TextStyle(
+                                      fontFamily:
+                                          "assets/fonts/Poppins-SemiBold.ttf",
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              AnimatedToggleSwitch<bool>.size(
+                                current: firstSwitchValue,
+                                values: const [false, true],
+                                iconOpacity: 0.2,
+                                indicatorSize: const Size.fromWidth(100),
+                                customIconBuilder: (context, local, global) =>
+                                    Text(
+                                  local.value ? "Amharic" : "English",
+                                  style: TextStyle(
+                                      color: Color.lerp(Colors.black,
+                                          Colors.white, local.animationValue)),
+                                ),
+                                animationDuration:
+                                    const Duration(milliseconds: 75),
+
+                                borderWidth: 5.0,
+                                iconAnimationType: AnimationType.onHover,
+                                style: ToggleStyle(
+                                  backgroundColor: Colors.white,
+                                  indicatorColor: Colors.black,
+                                  borderColor: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+// ToggleStyle
+                                selectedIconScale: 1.0,
+                                onChanged: (value) =>
+                                    setState(() => firstSwitchValue = value),
+                              ),
                             ],
                           ),
                         )

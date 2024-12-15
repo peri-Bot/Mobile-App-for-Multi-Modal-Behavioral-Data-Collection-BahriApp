@@ -64,8 +64,8 @@ class TapDataCollectionService {
       // Save data to Hive if offline
       var box = Hive.box('offlineTapData');
       await box.add(requestData);
-      debugPrint('Data saved locally (offline).');
-      return 'saved_locally';
+      debugPrint('Tap Data saved locally (offline).');
+      return 'Tap Data saved_locally';
     }
     final url = Uri.parse(
         'http://15.184.243.127:8080/collect_tap_data'); // Use your Dart Frog server address
@@ -84,11 +84,17 @@ class TapDataCollectionService {
       } else {
         // Handle error
         debugPrint('Could not add tap data: ${response.body}');
-        return 'fail';
+        var box = Hive.box('offlineTapData');
+        await box.add(requestData);
+        debugPrint('Tap Data saved locally (offline).');
+        return 'Tap Data saved_locally';
       }
     } catch (e) {
       debugPrint('Error occurred: $e');
-      return 'fail';
+      var box = Hive.box('offlineTapData');
+      await box.add(requestData);
+      debugPrint('Tap Data saved locally (offline).');
+      return 'Tap Data saved_locally';
     }
   }
 }

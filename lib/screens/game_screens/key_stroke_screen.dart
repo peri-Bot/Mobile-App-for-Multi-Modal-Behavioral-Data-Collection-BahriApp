@@ -209,7 +209,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
             color: Colors.black,
           ),
         ),
-        actions: [
+        actions: const [
           // IconButton(
           //   icon: const Icon(
           //     Icons.refresh,
