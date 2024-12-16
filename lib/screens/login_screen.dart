@@ -19,6 +19,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   //final FirebaseLoginServices _auth = FirebaseLoginServices();
   final loginValidate = UserServices();
+  bool _isSignInPressed = false;
 
   void _login(BuildContext context) async {
     String email = loginValidate.usernameController.text;
@@ -27,12 +28,16 @@ class _LoginScreenState extends State<LoginScreen> {
     UserServices userServices = UserServices();
     String response = await userServices.loginDartFrog(email, password);
     if (context.mounted && response == 'sucess') {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const BaseScreen()),
       );
     } else {
       if (context.mounted) {
+        _isSignInPressed = false;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text("Failed to sign in: Please try again later")),
@@ -167,6 +172,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: constraints.maxHeight * 0.02),
                               ElevatedButton(
                                 onPressed: () {
+                                  setState(() {
+                                    _isSignInPressed = true;
+                                  });
                                   _login(context);
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -176,16 +184,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   backgroundColor: const Color(0xFFB19EF0),
                                 ),
-                                child: const Text(
-                                  'Sign in',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    fontFamily:
-                                        "assets/fonts/Poppins-SemiBold.ttf",
-                                    //fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: _isSignInPressed
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Sign in',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          //fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                               SizedBox(
                                 height: constraints.maxHeight * 0.02,

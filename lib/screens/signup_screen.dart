@@ -22,6 +22,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _visibleBackBtn = false;
   bool _isBackBtnDIsabled = false;
   bool _isContinueBtnDIsabled = false;
+  bool _isLoading = false;
 
   String? _error;
   final TextEditingController _emailController = TextEditingController();
@@ -171,15 +172,24 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Color.fromARGB(255, 255, 255, 255),
-                        fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                        //fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isContinueBtnDIsabled
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                              //fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const Divider(color: Colors.transparent),
@@ -209,15 +219,24 @@ class _SignupScreenState extends State<SignupScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                          //fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isBackBtnDIsabled
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
+                            )
+                          : const Text(
+                              'Back',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                                //fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 )
@@ -674,11 +693,16 @@ class _SignupScreenState extends State<SignupScreen> {
     String res = await result;
     if (!mounted) return;
     if (res == 'sucess') {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } else {
+      _isContinueBtnDIsabled = false;
+      _isBackBtnDIsabled = false;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Something went wrong, Please try again later}")));
     }

@@ -144,8 +144,8 @@ class UserServices {
           'Content-Type': 'application/json',
         },
         body: jsonEncode(<String, String>{
-          'email': email,
-          'password': password,
+          'email': email.trim(),
+          'password': password.trim(),
         }),
       );
 
