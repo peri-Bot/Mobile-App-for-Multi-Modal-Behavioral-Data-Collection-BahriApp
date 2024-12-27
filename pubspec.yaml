@@ -59,6 +59,7 @@ dependencies:
   flutter_sensors:
   url_launcher:
   mailto:
+  uuid:
 
 
 dev_dependencies:

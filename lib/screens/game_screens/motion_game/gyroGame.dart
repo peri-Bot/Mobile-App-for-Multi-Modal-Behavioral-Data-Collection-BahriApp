@@ -11,8 +11,7 @@ class BallGame extends StatefulWidget {
   _BallGameState createState() => _BallGameState();
 }
 
-class _BallGameState extends State<BallGame>
-    with SingleTickerProviderStateMixin {
+class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin {
   final GyroData gyroData = GyroData();
   double posX = 0.0;
   double posY = 0.0;
@@ -26,11 +25,36 @@ class _BallGameState extends State<BallGame>
   late AnimationController _controller;
   bool isGameOver = false;
   bool isGameWon = false;
+  bool isGameStarted = false;
   int score = 0;
   late Timer _timer;
-  int currentLevel = 1;
+  String currentDifficulty = '';
   List<Rect> obstacles = [];
   String? uid;
+
+  final Map<String, List<Rect>> difficultyLevels = {
+    'Easy': [
+      const Rect.fromLTWH(50, 150, 200, 40),
+      const Rect.fromLTWH(50, 320, 200, 40),
+      const Rect.fromLTWH(220, 550, 150, 40),
+    ],
+    'Medium': [
+      const Rect.fromLTWH(50, 150, 200, 30),
+      const Rect.fromLTWH(50, 240, 200, 30),
+      const Rect.fromLTWH(150, 500, 200, 30),
+      const Rect.fromLTWH(150, 600, 200, 30),
+    ],
+    'Hard': [
+      const Rect.fromLTWH(50, 100, 100, 25),
+      const Rect.fromLTWH(50, 200, 150, 25),
+      const Rect.fromLTWH(50, 300, 200, 25),
+      const Rect.fromLTWH(50, 400, 250, 25),
+      const Rect.fromLTWH(50, 500, 200, 25),
+      const Rect.fromLTWH(50, 600, 150, 25),
+      const Rect.fromLTWH(50, 700, 100, 25),
+    ],
+  };
+
   Future<void> fetchUserId() async {
     uid = await getUserId();
     debugPrint("User ID is set: ==$uid");
@@ -49,16 +73,27 @@ class _BallGameState extends State<BallGame>
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-        posY = MediaQuery.of(context).size.height -
-            ballSize -
-            20; // Start above the bottom border
-        _setLevel(currentLevel);
-      });
+  }
+
+  void startGame(String difficulty) async {
+    // Ensure UID is set
+    if (uid == null) {
+      await fetchUserId();
+    }
+
+    // Start a new gyro session when game starts
+    await gyroData.startNewSession(uid ?? 'anonymous');
+
+    setState(() {
+      isGameStarted = true;
+      currentDifficulty = difficulty;
+      obstacles = difficultyLevels[difficulty]!;
+      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
+      posY = MediaQuery.of(context).size.height - ballSize - 20;
+      isGameOver = false;
+      isGameWon = false;
+      score = 0;
     });
-    _checkGyroscope();
     _initializeSensors();
     _startScoreTimer();
   }
@@ -77,8 +112,7 @@ class _BallGameState extends State<BallGame>
           double gyroY = sensorEvent.data[1];
           double gyroZ = sensorEvent.data[2];
 
-          GyroData gyroData = GyroData();
-
+          // Use the class-level GyroData instance
           gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
           gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
           gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
@@ -86,7 +120,6 @@ class _BallGameState extends State<BallGame>
           gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
           gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
           gyroData.calculateRotationDuration(gyroX, DateTime.now());
-          gyroData.printMetrics();
           gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ);
 
           setState(() {
@@ -96,13 +129,8 @@ class _BallGameState extends State<BallGame>
             posX += sensorEvent.data[1] * horizontalSensitivity;
             posY += sensorEvent.data[0] * verticalSensitivity;
 
-            posX =
-                posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-            posY = posY.clamp(
-                0.0,
-                MediaQuery.of(context).size.height -
-                    ballSize -
-                    10); // Adjusted to stay above the bottom border
+            posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+            posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
 
             if (_checkCollision()) {
               _gameOver();
@@ -110,9 +138,6 @@ class _BallGameState extends State<BallGame>
             if (_checkGoal()) {
               _gameWon();
             }
-            print(
-                'Gyroscope data: x=${sensorEvent.data[0]}, y=${sensorEvent.data[1]}, z=${sensorEvent.data[2]}');
-            print('Ball position: posX=$posX, posY=$posY');
           });
         }
       });
@@ -131,7 +156,6 @@ class _BallGameState extends State<BallGame>
 
   bool _checkCollision() {
     Rect ballRect = Rect.fromLTWH(posX, posY, ballSize, ballSize);
-
     for (Rect obstacle in obstacles) {
       if (ballRect.overlaps(obstacle)) {
         return true;
@@ -146,33 +170,43 @@ class _BallGameState extends State<BallGame>
     return ballRect.overlaps(goalRect);
   }
 
-  void _gameOver() {
+  void _gameOver() async {
+    await gyroData.endSession();
     setState(() {
       isGameOver = true;
-      _sensorSubscription.cancel();
-      _timer.cancel();
-      score = 0; // Reset the score
-      currentLevel = 1; // Restart from level 1
     });
+    _sensorSubscription.cancel();
+    _timer.cancel();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _resetGame();
+                setState(() {
+                  isGameStarted = false;
+                });
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child:
-                  const Text('Restart', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                startGame(currentDifficulty);
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -180,30 +214,35 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  void _gameWon() {
+
+
+void _gameWon() async {
+    await gyroData.endSession();
     setState(() {
       isGameWon = true;
-      _sensorSubscription.cancel();
-      _timer.cancel();
     });
+    _sensorSubscription.cancel();
+    _timer.cancel();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('You Win!', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          title: const Text('Level Complete!', style: TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _continueToNextLevel();
+                setState(() {
+                  isGameStarted = false;
+                });
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Next', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
@@ -221,99 +260,8 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  List<Rect> level1Obstacles = [
-    const Rect.fromLTWH(50, 150, 200, 40),
-    const Rect.fromLTWH(50, 240, 200, 40),
-    const Rect.fromLTWH(50, 320, 200, 40),
-    const Rect.fromLTWH(50, 400, 130, 40),
-    const Rect.fromLTWH(220, 550, 150, 40),
-    const Rect.fromLTWH(220, 650, 150, 40),
-  ];
-  List<Rect> level2Obstacles = [
-    const Rect.fromLTWH(50, 150, 200, 30),
-    const Rect.fromLTWH(50, 240, 200, 30),
-    const Rect.fromLTWH(150, 500, 200, 30),
-    const Rect.fromLTWH(150, 600, 200, 30),
-  ];
-  List<Rect> level3Obstacles = [
-    const Rect.fromLTWH(50, 100, 100, 30),
-    const Rect.fromLTWH(100, 200, 100, 30),
-    const Rect.fromLTWH(50, 300, 100, 30),
-    const Rect.fromLTWH(280, 400, 100, 30),
-    const Rect.fromLTWH(180, 500, 100, 30),
-    const Rect.fromLTWH(280, 600, 100, 30),
-    const Rect.fromLTWH(50, 650, 100, 30),
-  ];
-  List<Rect> level4Obstacles = [
-    const Rect.fromLTWH(50, 100, 100, 25),
-    const Rect.fromLTWH(50, 200, 150, 25),
-    const Rect.fromLTWH(50, 300, 200, 25),
-    const Rect.fromLTWH(50, 400, 250, 25),
-    const Rect.fromLTWH(50, 500, 200, 25),
-    const Rect.fromLTWH(50, 600, 150, 25),
-    const Rect.fromLTWH(50, 700, 100, 25),
-  ];
-  List<Rect> level5Obstacles = [
-    const Rect.fromLTWH(50, 150, 100, 25),
-    const Rect.fromLTWH(200, 250, 150, 25),
-    const Rect.fromLTWH(50, 350, 100, 25),
-    const Rect.fromLTWH(250, 500, 100, 25),
-    const Rect.fromLTWH(50, 500, 100, 25),
-    const Rect.fromLTWH(200, 680, 150, 25),
-  ];
-
-  void _setLevel(int level) {
-    setState(() {
-      switch (level) {
-        case 1:
-          obstacles = level1Obstacles;
-          break;
-        case 2:
-          obstacles = level2Obstacles;
-          break;
-        case 3:
-          obstacles = level3Obstacles;
-          break;
-        case 4:
-          obstacles = level4Obstacles;
-          break;
-        case 5:
-          obstacles = level5Obstacles;
-          break;
-        default:
-          obstacles = level1Obstacles;
-      }
-    });
-  }
-
-  void _resetGame() {
-    setState(() {
-      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-      posY = MediaQuery.of(context).size.height - ballSize - 20;
-      isGameOver = false;
-      isGameWon = false;
-    });
-    _initializeSensors();
-    _startScoreTimer();
-  }
-
-  void _continueToNextLevel() {
-    setState(() {
-      score += 5;
-      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-      posY = MediaQuery.of(context).size.height - ballSize - 20;
-      isGameWon = false;
-      score = 0;
-      currentLevel = (currentLevel % 5) + 1; // Move to the next level
-    });
-    _setLevel(currentLevel);
-    _initializeSensors();
-    _startScoreTimer();
-  }
-
   void _checkGyroscope() async {
-    bool sensorAvailable =
-        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
+    bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
     if (!sensorAvailable) {
       _showGyroscopeNotAvailableDialog();
     }
@@ -339,28 +287,97 @@ class _BallGameState extends State<BallGame>
     );
   }
 
+  Widget buildDifficultyMenu() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.blue[200]!, Colors.blue[400]!],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Select Difficulty',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    blurRadius: 10.0,
+                    color: Colors.black26,
+                    offset: Offset(5.0, 5.0),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 50),
+            ...['Easy', 'Medium', 'Hard'].map((difficulty) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: difficulty == 'Easy'
+                      ? Colors.green
+                      : difficulty == 'Medium'
+                      ? Colors.orange
+                      : Colors.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  minimumSize: const Size(200, 60),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  elevation: 5,
+                ),
+                onPressed: () => startGame(difficulty),
+                child: Text(
+                  difficulty,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
-  void dispose() {
-    _sensorSubscription.cancel();
+  void dispose()async {
+    await gyroData.endSession();
     _controller.dispose();
-    _timer.cancel();
+    if (isGameStarted) {
+      _sensorSubscription.cancel();
+      _timer.cancel();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!isGameStarted) {
+      return Scaffold(
+        body: buildDifficultyMenu(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.blue[40],
       body: Stack(
         children: [
-          // Border
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.blueAccent, width: 20),
             ),
           ),
-          // Ball
           AnimatedPositioned(
             duration: const Duration(milliseconds: 100),
             left: posX,
@@ -369,14 +386,11 @@ class _BallGameState extends State<BallGame>
               width: ballSize,
               height: ballSize,
               decoration: BoxDecoration(
-                color: isGameOver || isGameWon
-                    ? Colors.transparent
-                    : Colors.pinkAccent,
+                color: isGameOver || isGameWon ? Colors.transparent : Colors.pinkAccent,
                 shape: BoxShape.circle,
               ),
             ),
           ),
-          // Obstacles
           for (Rect obstacle in obstacles)
             Positioned(
               left: obstacle.left,
@@ -387,7 +401,6 @@ class _BallGameState extends State<BallGame>
                 color: Colors.blue,
               ),
             ),
-          // Goal area
           Positioned(
             left: 20,
             right: 20,
@@ -400,40 +413,54 @@ class _BallGameState extends State<BallGame>
                 child: Text(
                   'GOAL',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
           ),
-          if (isGameWon)
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _continueToNextLevel();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Continue to Next Level'),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Back'),
-                  ),
-                ],
+          // Score display
+          Positioned(
+            top: 60,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Score: $score',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+          ),
+          // Difficulty display
+          Positioned(
+            top: 60,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Level: $currentDifficulty',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

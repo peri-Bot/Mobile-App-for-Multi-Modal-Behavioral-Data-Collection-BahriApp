@@ -8,10 +8,10 @@ class GyroData {
   double? lastGyroX, lastGyroY, lastGyroZ;
   DateTime? lastTimestamp;
 
-  final double movementThreshold =
-      1.5; // Adjust this threshold to control sensitivity
-  final Duration delayBetweenSaves =
-      const Duration(milliseconds: 200); // Optional: Add a delay between saves
+  final double movementThreshold = 0.5; // Adjust this threshold to control sensitivity
+  final double speedThreshold = 0.5; // Threshold for tilt speed
+  final double accelerationThreshold = 0.5; // Threshold for tilt acceleration
+  final Duration delayBetweenSaves = const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
   double roll = 0.0;
   double pitch = 0.0;
@@ -30,31 +30,52 @@ class GyroData {
   double? lastRotationDirection;
   DateTime? lastSavedTime;
 
-  // New variables for event-triggered sampling
   bool isEventActive = false;
-  Duration eventCooldown = const Duration(
-      seconds: 1); // Time window after an event where data will still be stored
+  Duration eventCooldown = const Duration(seconds: 1); // Time window after an event where data will still be stored
   DateTime? lastEventTime;
   String? _sessionId;
+  String? _userId;
+  bool _isSessionActive = false;
+  List<Map<String, dynamic>> _sessionData = [];
+  DateTime? _sessionStartTime;
+
+  Future<void> startNewSession(String userId) async {
+    _userId = userId;
+    _sessionId = _generateSessionId();
+    _sessionStartTime = DateTime.now();
+    _isSessionActive = true;
+    _sessionData = [];
+    debugPrint('Started new session: $_sessionId for user: $_userId');
+  }
+
+  Future<void> endSession() async {
+    if (_isSessionActive) {
+      await _sendSessionData();
+      _isSessionActive = false;
+      _sessionData = [];
+      debugPrint('Ended session: $_sessionId');
+    }
+  }
+
+  String _generateSessionId() {
+    return '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
+  }
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void calculateTiltAngle(double gyroX, double gyroY, double gyroZ) {
-    roll = atan2(gyroY, gyroZ) * 180 / pi; // Rotation around x-axis
-    pitch = atan2(-gyroX, sqrt(gyroY * gyroY + gyroZ * gyroZ)) *
-        180 /
-        pi; // Rotation around y-axis
+    roll = _handleNaN(atan2(gyroY, gyroZ) * 180 / pi); // Rotation around x-axis
+    pitch = _handleNaN(atan2(-gyroX, sqrt(gyroY * gyroY + gyroZ * gyroZ)) * 180 / pi); // Rotation around y-axis
   }
 
   void calculateTiltSpeed(double gyroX, double gyroY, DateTime currentTime) {
     if (lastTimestamp != null) {
-      double deltaTime =
-          currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
-      tiltSpeed = sqrt(gyroX * gyroX + gyroY * gyroY) / deltaTime;
+      double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
+      tiltSpeed = _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY) / deltaTime);
 
       if (lastTiltSpeed != null) {
-        tiltAcceleration = (tiltSpeed - lastTiltSpeed!) / deltaTime;
-        jerk = (tiltAcceleration - tiltDeceleration) / deltaTime;
+        tiltAcceleration = _handleNaN((tiltSpeed - lastTiltSpeed!) / deltaTime);
+        jerk = _handleNaN((tiltAcceleration - tiltDeceleration) / deltaTime);
       }
 
       lastTiltSpeed = tiltSpeed;
@@ -64,11 +85,11 @@ class GyroData {
 
   double calculateTiltStability(double gyroX, double gyroY, double gyroZ) {
     if (lastGyroX != null && lastGyroY != null && lastGyroZ != null) {
-      double deltaX = (gyroX - lastGyroX!).abs();
-      double deltaY = (gyroY - lastGyroY!).abs();
-      double deltaZ = (gyroZ - lastGyroZ!).abs();
+      double deltaX = _handleNaN((gyroX - lastGyroX!).abs());
+      double deltaY = _handleNaN((gyroY - lastGyroY!).abs());
+      double deltaZ = _handleNaN((gyroZ - lastGyroZ!).abs());
 
-      double stability = deltaX + deltaY + deltaZ;
+      double stability = _handleNaN(deltaX + deltaY + deltaZ);
       return stability;
     }
     lastGyroX = gyroX;
@@ -79,141 +100,67 @@ class GyroData {
 
   void calculateRotationDirection(double gyroX, DateTime currentTime) {
     if (lastRotationDirection != null && lastTimestamp != null) {
-      double deltaTime =
-          currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
+      double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
       double currentDirection = gyroX > 0 ? 1.0 : -1.0;
       if (currentDirection == lastRotationDirection) {
         consistentRotations++;
       }
       totalRotations++;
-      rotationDirectionConsistency = consistentRotations / totalRotations;
+      rotationDirectionConsistency = _handleNaN(consistentRotations / totalRotations);
     }
     lastRotationDirection = gyroX > 0 ? 1.0 : -1.0;
     lastTimestamp = currentTime;
   }
 
   double calculateMicroAdjustments(double gyroX, double gyroY, double gyroZ) {
-    return sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
+    return _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ));
   }
 
-  double calculateRotationPathStraightness(
-      double gyroX, double gyroY, double gyroZ) {
-    return (gyroX.abs() + gyroY.abs() + gyroZ.abs()) / 3.0;
+  double calculateRotationPathStraightness(double gyroX, double gyroY, double gyroZ) {
+    return _handleNaN((gyroX.abs() + gyroY.abs() + gyroZ.abs()) / 3.0);
   }
 
   void calculateRotationDuration(double gyroX, DateTime currentTime) {
     if (lastTimestamp != null) {
-      double deltaTime =
-          currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0;
+      double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
       rotationDuration += deltaTime;
     }
     lastTimestamp = currentTime;
   }
 
   bool isSignificantMovement(double gyroX, double gyroY, double gyroZ) {
-    double movementMagnitude =
-        sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
+    double movementMagnitude = sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
 
-    if (movementMagnitude > movementThreshold) {
-      isEventActive = true;
-      lastEventTime = DateTime.now();
-      return true; // Significant movement detected
-    }
-
-    if (isEventActive && lastEventTime != null) {
-      if (DateTime.now().difference(lastEventTime!) < eventCooldown) {
-        return true;
-      } else {
-        isEventActive = false;
-      }
-    }
-
-    return false; // No significant movement
-  }
-
-  Future<int> _getNextSessionId() async {
-    DocumentReference counterRef =
-        _firestore.collection('session_counters').doc('Gyro_sessionCounter');
-    return _firestore.runTransaction((transaction) async {
-      DocumentSnapshot snapshot = await transaction.get(counterRef);
-
-      if (!snapshot.exists) {
-        counterRef.set({'count': 1});
-        return 1;
-      }
-      int newCount = snapshot['count'] + 1;
-      transaction.update(counterRef, {'count': newCount});
-      return newCount;
-    });
-  }
-
-  // Initialize the session ID
-  Future<void> initSession() async {
-    _sessionId = (await _getNextSessionId()).toString();
-  }
-
-  // Update the storeDataInFirestore method to use the session-based approach
-  Future<void> storeDataInFirestore(
-      double gyroX, double gyroY, double gyroZ) async {
-    if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
-      DateTime now = DateTime.now();
-
-      try {
-        await _firestore.collection('users').doc('1').set({
-          'Data_gyroData': {
-            _sessionId.toString(): {
-              'timestamp': FieldValue.serverTimestamp(),
-              'gyroX': gyroX,
-              'gyroY': gyroY,
-              'gyroZ': gyroZ,
-              'roll': roll,
-              'pitch': pitch,
-              'tiltSpeed': tiltSpeed,
-              'tiltAcceleration': tiltAcceleration,
-              'jerk': jerk,
-              'rotationDuration': rotationDuration,
-              'rotationDirectionConsistency': rotationDirectionConsistency,
-            }
-          }
-        }, SetOptions(merge: true));
-
-        lastSavedTime = now;
-        if (kDebugMode) {
-          print('Gyroscope data stored successfully under users->1->gyrodata!');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error storing data: $e');
-        }
-      }
-    } else {
-      if (kDebugMode) {
-        print('No significant movement detected, data not stored.');
-      }
-    }
+    return movementMagnitude > movementThreshold ||
+        tiltSpeed > speedThreshold ||
+        tiltAcceleration > accelerationThreshold;
   }
 
   Future<void> storeGyroDataDartFrog(
-    String userId, // Only userId is added in addition to the gyro values
-    double gyroX,
-    double gyroY,
-    double gyroZ,
-  ) async {
-    // Check if the movement is significant
-    if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
-      DateTime now = DateTime.now(); // Get the current time
+      String userId,
+      double gyroX,
+      double gyroY,
+      double gyroZ,
+      ) async {
+    try {
+      if (!_isSessionActive) {
+        await startNewSession(userId);
+      }
 
-      try {
-        final url = Uri.parse('http://15.184.243.127:8080/collect_gyro_data');
+      DateTime now = DateTime.now();
+      // Calculate tilt and rotation data
+      calculateTiltAngle(gyroX, gyroY, gyroZ);
+      calculateTiltSpeed(gyroX, gyroY, now);
+      calculateRotationDirection(gyroX, now);
+      calculateRotationDuration(gyroX, now);
 
-        // Create the request body with only the required parameters
-        final body = jsonEncode({
-          'userId': userId,
-          'sessionId': _sessionId,
+      // Only store significant data points
+      if (isSignificantMovement(gyroX, gyroY, gyroZ)) {
+        Map<String, dynamic> dataPoint = {
+          'timestamp': now.toIso8601String(),
           'gyroX': gyroX,
           'gyroY': gyroY,
           'gyroZ': gyroZ,
-          'timestamp': "${now.toIso8601String()}Z", // Include the timestamp
           'roll': roll,
           'pitch': pitch,
           'tiltSpeed': tiltSpeed,
@@ -221,39 +168,60 @@ class GyroData {
           'jerk': jerk,
           'rotationDuration': rotationDuration,
           'rotationDirectionConsistency': rotationDirectionConsistency,
-        });
+        };
 
-        // Send the gyroscope data to the server
-        final response = await http.post(
-          url,
-          body: body,
-          headers: {'Content-Type': 'application/json'},
-        );
+        _sessionData.add(dataPoint);
 
-        if (response.statusCode == 200) {
-          lastSavedTime = now;
-          print('Gyroscope data sent to server successfully!');
-        } else {
-          print('Failed to send gyroscope data: ${response.body}');
+        // Send data after a batch size or delay
+        if (_sessionData.length >= 4) {
+          await _sendSessionData(); // Sends in batches of 4 data points
         }
-      } catch (e) {
-        print('Error occurred while sending gyroscope data: $e');
       }
-    } else {
-      print('No significant movement detected, data not stored.');
+    } catch (e) {
+      debugPrint('Error in storeGyroDataDartFrog: $e');
     }
   }
 
-  // Logic to check if the movement is significant
+  Future<void> _sendSessionData() async {
+    if (_sessionData.isEmpty) return;
 
-  void printMetrics() {
-    debugPrint(
-        'Gyroscope Data: X = $lastGyroX, Y = $lastGyroY, Z = $lastGyroZ');
-    debugPrint('Tilt Angle: Roll = $roll, Pitch = $pitch');
-    debugPrint('Tilt Speed: $tiltSpeed');
-    debugPrint('Tilt Acceleration: $tiltAcceleration');
-    debugPrint('Jerk: $jerk');
-    debugPrint('Rotation Duration: $rotationDuration');
-    debugPrint('Rotation Direction Consistency: $rotationDirectionConsistency');
+    try {
+      final url = Uri.parse('http://15.184.243.127:8080/collect_gyro_data');
+
+      final payload = {
+        'userId': _userId,
+        'sessionId': _sessionId,
+        'gyroData': _sessionData,
+      };
+
+      debugPrint('Sending data to server: ${jsonEncode(payload)}');
+
+      final response = await http.post(
+        url,
+        body: jsonEncode(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint('Successfully sent data. Session: $_sessionId, Points: ${_sessionData.length}');
+        _sessionData = []; // Clear sent data
+      } else {
+        debugPrint('Failed to send data. Status: ${response.statusCode} - Body: ${response.body}');
+        throw Exception('Failed to send  ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error sending  $e');
+      // Keep the data in _sessionData to try sending again later
+    }
+  }
+
+    double _handleNaN(double value) {
+    if (value.isNaN || value.isInfinite) {
+      return 0.0;
+    }
+    return value;
   }
 }

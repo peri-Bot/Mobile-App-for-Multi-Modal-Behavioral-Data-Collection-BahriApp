@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class StepCounter {
   // Fields for step counting and accelerometer data
@@ -25,9 +26,10 @@ class StepCounter {
   final List<double> _verticalOscillationData = [];
   final List<double> _stepDurations = [];
   int _totalSteps = 0;
+  final Uuid _uuid = Uuid();
+  String? _sessionId; //
 
   // Firestore session-based fields
-  String? _sessionId;
   void updateCurrentActivity(String newActivity) {
     _currentActivity = newActivity;
   }
@@ -52,8 +54,6 @@ class StepCounter {
               event.data, onStepDetected, currentActivity);
         }
       });
-
-      _sessionId = (await _getNextSessionId()).toString();
       // Initialize session ID
     }
     return sensorAvailable;
@@ -87,8 +87,8 @@ class StepCounter {
         _isMovingUp = false;
         _totalSteps++; // Increment step count
         onStepDetected();
-        _storeDataInFirestore();
-        //_sendDataToDartFrogServer(userId!);
+        //_storeDataInFirestore();
+        _sendDataToDartFrogServer(userId!);
         _logStepDuration(); // Calculate and log step duration
       }
     }
@@ -104,97 +104,80 @@ class StepCounter {
     _isDataCollectionEnabled = false;
   }
 
-  // Calculate and store metrics in Firestore using session-based approach
-
-  Future<int> _getNextSessionId() async {
-    DocumentReference counterRef = FirebaseFirestore.instance
-        .collection('session_counters')
-        .doc('Accelerometer_sessionCounter');
-    return FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentSnapshot snapshot = await transaction.get(counterRef);
-
-      if (!snapshot.exists) {
-        counterRef.set({'count': 1});
-        return 1;
-      }
-      int newCount = snapshot['count'] + 1;
-      transaction.update(counterRef, {'count': newCount});
-      return newCount;
-    });
-  }
-
-  void _storeDataInFirestore() async {
-    try {
-      Map<String, dynamic> data = {
-        'timestamp': FieldValue.serverTimestamp(),
-        'averageAcceleration': getAverageAcceleration(),
-        'peakAcceleration': _peakAcceleration,
-        'minAcceleration': _minAcceleration,
-        'standardDeviation': getStandardDeviation(),
-        'verticalOscillation': getVerticalOscillation(),
-        'jerk': getJerk(_lastMagnitude),
-        'stepDuration':
-            _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
-        'averageStepDuration': '${getAverageStepDuration()} ms',
-        'stepFrequency': getStepFrequency(),
-        'activityType': _currentActivity,
-      };
-
-      if (_currentActivity != 'sitting') {
-        data['totalSteps'] = _totalSteps;
-      }
-
-      await FirebaseFirestore.instance.collection('users').doc(userId).set({
-        'Data_accelerometerData': {
-          _sessionId.toString(): data,
-        }
-      }, SetOptions(merge: true));
-      debugPrint("Data stored successfully in Firestore");
-    } catch (e) {
-      debugPrint("Error storing data: $e");
-    }
+// Function to initialize the sessionId at the start of the session
+  void initializeSession() {
+    _sessionId = _uuid.v4(); // Generate a unique sessionId
   }
 
   Future<void> _sendDataToDartFrogServer(String userId) async {
+    // Validate the user ID
+    if (userId.isEmpty) {
+      debugPrint("User ID is null or empty. Data cannot be sent to the server.");
+      return;
+    }
+
+    // Ensure data collection is enabled
+    if (!_isDataCollectionEnabled) {
+      debugPrint("Data collection is disabled. No data will be sent.");
+      return;
+    }
+
     try {
+      // Prepare the data payload
       Map<String, dynamic> data = {
         'userId': userId,
+        'sessionId': _sessionId, // Use the same sessionId for the entire session
         'timestamp': DateTime.now().toIso8601String(),
         'averageAcceleration': getAverageAcceleration(),
-        'peakAcceleration': _peakAcceleration,
-        'minAcceleration': _minAcceleration,
+        'peakAcceleration': _peakAcceleration ?? 0.0, // Handle potential null
+        'minAcceleration': _minAcceleration ?? 0.0, // Handle potential null
         'standardDeviation': getStandardDeviation(),
         'verticalOscillation': getVerticalOscillation(),
-        'jerk': getJerk(_lastMagnitude),
-        'stepDuration':
-            _stepDurations.isNotEmpty ? '${_stepDurations.last} ms' : '0 ms',
-        'averageStepDuration': '${getAverageStepDuration()} ms',
+        'jerk': getJerk(_lastMagnitude ?? 0.0), // Handle potential null
+        'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
+        'averageStepDuration': getAverageStepDuration(),
         'stepFrequency': getStepFrequency(),
-        'activityType': _currentActivity,
-        'totalSteps': _currentActivity != 'sitting' ? _totalSteps : null,
+        'activityType': _currentActivity ?? 'unknown', // Handle potential null
+        'totalSteps': _currentActivity != 'sitting' ? _totalSteps : 0, // Handle potential null
       };
 
+      // Log the prepared payload for debugging
+      debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
+
+      // Send the data to the server
       var response = await http.post(
         Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
 
+      // Handle the server response
       if (response.statusCode == 200) {
-        debugPrint("Data sent successfully to Dart Frog server");
+        debugPrint("Data sent successfully to Dart Frog server.");
       } else {
-        debugPrint("Failed to send data: ${response.statusCode}");
+        debugPrint(
+            "Failed to send data. Status Code: ${response.statusCode}, Body: ${response.body}");
       }
     } catch (e) {
+      // Handle any exceptions
       debugPrint("Error sending data to server: $e");
     }
   }
+
+// Call `initializeSession()` at the start of the session
+  //initializeSession();
+
+// Example of calling `_sendDataToDartFrogServer` during the session
+  //_sendDataToDartFrogServer(userId);
+
+
+
 
   void updateSessionEndTime() async {
     if (_sessionId == null) return;
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc('1').set({
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
         'stepData': {
           _sessionId.toString(): {
             'endTime': FieldValue.serverTimestamp(),
