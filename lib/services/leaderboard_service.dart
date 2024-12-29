@@ -25,15 +25,6 @@ class LeaderboardService {
     return await secureStorage.read(key: 'uid');
   }
 
-  // Future<List<Map<String, dynamic>>> fetchUsers() async {
-  //   final response = await http.get(Uri.parse('$serverUrl/get_users'));
-  //   if (response.statusCode == 200) {
-  //     final data = jsonDecode(response.body) as Map<String, dynamic>;
-  //     return List<Map<String, dynamic>>.from(data['users']);
-  //   } else {
-  //     throw Exception('Failed to fetch users');
-  //   }
-  // }
   Future<List<Map<String, dynamic>>> fetchUsers() async {
     final response =
         await http.get(Uri.parse('$serverUrl/api/v2/get_user_leaderboard'));
@@ -49,6 +40,24 @@ class LeaderboardService {
       return leaderboard;
     } else {
       throw Exception('Failed to fetch users: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchLeaderboardData() async {
+    final response =
+        await http.get(Uri.parse('$serverUrl/api/v2/get_user_leaderboard'));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (!data.containsKey('userLeaderboard') || !data.containsKey('teams')) {
+        throw Exception('Invalid response format: missing required keys');
+      }
+
+      return data;
+    } else {
+      throw Exception(
+          'Failed to fetch leaderboard data: ${response.statusCode}');
     }
   }
 }
