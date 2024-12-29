@@ -136,6 +136,7 @@ class StepCounter {
     }
 
     try {
+      Map<String, double> orientationData = getOrientation();
       Map<String, dynamic> data = {
         'userId': userId,
         'sessionId': _sessionId,
@@ -151,7 +152,9 @@ class StepCounter {
         'stepFrequency': getStepFrequency(),
         'activityType': _currentActivity ?? 'unknown',
         //'totalSteps': _totalSteps,
-        'orientation': getOrientation(), // Add orientation data
+        'orientation_pitch': orientationData['pitch'],
+        'orientation_roll': orientationData['roll'],
+        'orientation_yaw': orientationData['yaw'], // Add orientation data
       };
 
       debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
