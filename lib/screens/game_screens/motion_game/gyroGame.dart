@@ -31,6 +31,11 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
   String currentDifficulty = '';
   List<Rect> obstacles = [];
   String? uid;
+  DateTime? _lastUpdateTime;
+  double _lastGyroX = 0.0;
+  double _lastGyroY = 0.0;
+  double _lastGyroZ = 0.0;
+  bool _isMoving = false;
 
   final Map<String, List<Rect>> difficultyLevels = {
     'Easy': [
@@ -112,33 +117,80 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
           double gyroY = sensorEvent.data[1];
           double gyroZ = sensorEvent.data[2];
 
-          // Use the class-level GyroData instance
-          gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
-          gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
-          gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationDirection(gyroX, DateTime.now());
-          gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationDuration(gyroX, DateTime.now());
-          gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ);
+          // Debug prints to verify sensor data
+          debugPrint('Raw Gyro Data - X: $gyroX, Y: $gyroY, Z: $gyroZ');
 
-          setState(() {
-            double horizontalSensitivity = 20.0;
-            double verticalSensitivity = 30.0;
+          // Calculate time delta
+          if (_lastUpdateTime != null) {
+            double deltaTime = currentTime.difference(_lastUpdateTime!).inMilliseconds / 1000.0;
 
-            posX += sensorEvent.data[1] * horizontalSensitivity;
-            posY += sensorEvent.data[0] * verticalSensitivity;
+            // Calculate all gyro metrics in sequence
+            // 1. Basic orientation and stability calculations
+            gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
+            gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
 
-            posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-            posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+            // 2. Motion and speed calculations
+            gyroData.calculateTiltSpeed(gyroX, gyroY, currentTime);
+            gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
 
-            if (_checkCollision()) {
-              _gameOver();
+            // 3. Rotation and path calculations
+            gyroData.calculateRotationDirection(gyroX, currentTime);
+            gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
+            gyroData.calculateRotationDuration(gyroX, currentTime);
+
+            // Debug prints for all metrics
+            debugPrint('''
+              Stability: ${gyroData.calculateTiltStability(gyroX, gyroY, gyroZ)}
+              MicroAdjustments: ${gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ)}
+              PathStraightness: ${gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ)}
+              TiltSpeed: ${gyroData.tiltSpeed}
+              RotationDuration: ${gyroData.rotationDuration}
+              DirectionConsistency: ${gyroData.rotationDirectionConsistency}
+            ''');
+
+            // Check if movement is significant
+            if (gyroData.isSignificantMovement(gyroX, gyroY, gyroZ)) {
+              _isMoving = true;
+
+              // Store the gyro data
+              gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ).then((_) {
+                debugPrint('Stored gyro data with all metrics');
+              });
+            } else {
+              if (_isMoving) {
+                _isMoving = false;
+                // Reset rotation tracking when movement stops
+                gyroData.rotationStartTime = null;
+                gyroData.rotationDuration = 0.0;
+              }
             }
-            if (_checkGoal()) {
-              _gameWon();
-            }
-          });
+
+            // Update ball position
+            setState(() {
+              double horizontalSensitivity = 20.0;
+              double verticalSensitivity = 30.0;
+
+              posX += gyroY * horizontalSensitivity;
+              posY += gyroX * verticalSensitivity;
+
+              // Clamp positions
+              posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+              posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+
+              if (_checkCollision()) {
+                _gameOver();
+              }
+              if (_checkGoal()) {
+                _gameWon();
+              }
+            });
+          }
+
+          // Store current values for next update
+          _lastUpdateTime = currentTime;
+          _lastGyroX = gyroX;
+          _lastGyroY = gyroY;
+          _lastGyroZ = gyroZ;
         }
       });
     }
@@ -288,74 +340,126 @@ void _gameWon() async {
   }
 
   Widget buildDifficultyMenu() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.blue[200]!, Colors.blue[400]!],
-        ),
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: true,
       ),
-      child: Center(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Select Difficulty',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 shadows: [
                   Shadow(
-                    blurRadius: 10.0,
-                    color: Colors.black26,
                     offset: Offset(5.0, 5.0),
+                    blurRadius: 3.0,
+                    color: Colors.black,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 50),
-            ...['Easy', 'Medium', 'Hard'].map((difficulty) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: difficulty == 'Easy'
-                      ? Colors.green
-                      : difficulty == 'Medium'
-                      ? Colors.orange
-                      : Colors.red,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  minimumSize: const Size(200, 60),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 5,
-                ),
-                onPressed: () => startGame(difficulty),
-                child: Text(
-                  difficulty,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+            const Padding(
+              padding: EdgeInsets.only(top: 10, bottom: 40),
+              child: Text(
+                'Note: The game will start right when you choose a difficulty',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
                 ),
               ),
-            )),
+            ),
+            _buildLevelButton('Easy', Colors.green, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton('Medium', Colors.orange, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton('Hard', Colors.red, 'HighScore:'),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildLevelButton(String levelName, Color buttonColor, String highScoreText) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      child: GestureDetector(
+        onTap: () => startGame(levelName),
+        child: Container(
+          width: double.infinity,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: buttonColor,
+              width: 2.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child: Text(
+                  levelName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: Text(
+                  highScoreText,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
   @override
   void dispose()async {
     await gyroData.endSession();
+    if (_isMoving) {
+      gyroData.endSession();
+    }
     _controller.dispose();
     if (isGameStarted) {
       _sensorSubscription.cancel();
       _timer.cancel();
+    }
+    if (_isMoving) {
+      gyroData.endSession();
     }
     super.dispose();
   }

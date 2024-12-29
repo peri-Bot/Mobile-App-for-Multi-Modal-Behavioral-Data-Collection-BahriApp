@@ -8,9 +8,9 @@ class GyroData {
   double? lastGyroX, lastGyroY, lastGyroZ;
   DateTime? lastTimestamp;
 
-  final double movementThreshold = 0.5; // Adjust this threshold to control sensitivity
-  final double speedThreshold = 0.5; // Threshold for tilt speed
-  final double accelerationThreshold = 0.5; // Threshold for tilt acceleration
+  final double movementThreshold = 2.0; // Adjust this threshold to control sensitivity
+  final double speedThreshold = 2.0; // Threshold for tilt speed
+  final double accelerationThreshold = 2.0; // Threshold for tilt acceleration
   final Duration delayBetweenSaves = const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
   double roll = 0.0;
@@ -20,15 +20,16 @@ class GyroData {
   double tiltAcceleration = 0.0;
   double tiltDeceleration = 0.0;
   double jerk = 0.0;
+  double? lastTiltSpeed;
+  double? lastTiltAcceleration;  // Added for jerk calculation
+  double? lastRotationDirection;
 
   double rotationDuration = 0.0;
   double rotationDirectionConsistency = 0.0;
   int consistentRotations = 0;
   int totalRotations = 0;
-
-  double? lastTiltSpeed;
-  double? lastRotationDirection;
-  DateTime? lastSavedTime;
+  double cumulativeRotation = 0.0;  // Added to track total rotation
+  DateTime? rotationStartTime;
 
   bool isEventActive = false;
   Duration eventCooldown = const Duration(seconds: 1); // Time window after an event where data will still be stored
@@ -68,17 +69,29 @@ class GyroData {
     pitch = _handleNaN(atan2(-gyroX, sqrt(gyroY * gyroY + gyroZ * gyroZ)) * 180 / pi); // Rotation around y-axis
   }
 
+
   void calculateTiltSpeed(double gyroX, double gyroY, DateTime currentTime) {
     if (lastTimestamp != null) {
       double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
-      tiltSpeed = _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY) / deltaTime);
+      if (deltaTime > 0) {  // Prevent division by zero
+        // Calculate magnitude of angular velocity
+        double currentTiltSpeed = _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY));
+        tiltSpeed = currentTiltSpeed;
 
-      if (lastTiltSpeed != null) {
-        tiltAcceleration = _handleNaN((tiltSpeed - lastTiltSpeed!) / deltaTime);
-        jerk = _handleNaN((tiltAcceleration - tiltDeceleration) / deltaTime);
+        if (lastTiltSpeed != null) {
+          // Calculate acceleration (change in speed over time)
+          tiltAcceleration = _handleNaN((currentTiltSpeed - lastTiltSpeed!) / deltaTime);
+
+          if (lastTiltAcceleration != null) {
+            // Calculate jerk (change in acceleration over time)
+            jerk = _handleNaN((tiltAcceleration - lastTiltAcceleration!) / deltaTime);
+          }
+
+          lastTiltAcceleration = tiltAcceleration;
+        }
+
+        lastTiltSpeed = currentTiltSpeed;
       }
-
-      lastTiltSpeed = tiltSpeed;
     }
     lastTimestamp = currentTime;
   }
@@ -99,18 +112,28 @@ class GyroData {
   }
 
   void calculateRotationDirection(double gyroX, DateTime currentTime) {
-    if (lastRotationDirection != null && lastTimestamp != null) {
-      double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
-      double currentDirection = gyroX > 0 ? 1.0 : -1.0;
+    double currentDirection = gyroX > 0 ? 1.0 : -1.0;
+
+    if (lastRotationDirection != null) {
       if (currentDirection == lastRotationDirection) {
         consistentRotations++;
       }
       totalRotations++;
-      rotationDirectionConsistency = _handleNaN(consistentRotations / totalRotations);
+
+      // Calculate consistency as a percentage
+      rotationDirectionConsistency = totalRotations > 0 ?
+      _handleNaN((consistentRotations / totalRotations) * 100.0) : 0.0;
     }
-    lastRotationDirection = gyroX > 0 ? 1.0 : -1.0;
-    lastTimestamp = currentTime;
+
+    // Start tracking rotation duration when direction changes
+    if (lastRotationDirection != currentDirection) {
+      rotationStartTime = currentTime;
+    }
+
+    lastRotationDirection = currentDirection;
   }
+
+
 
   double calculateMicroAdjustments(double gyroX, double gyroY, double gyroZ) {
     return _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ));
@@ -121,10 +144,31 @@ class GyroData {
   }
 
   void calculateRotationDuration(double gyroX, DateTime currentTime) {
-    if (lastTimestamp != null) {
-      double deltaTime = _handleNaN(currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
-      rotationDuration += deltaTime;
+    // Only update duration if we're actually rotating (above some minimum threshold)
+    final rotationThreshold = 0.1;  // Adjust this value based on your needs
+
+    if (gyroX.abs() > rotationThreshold) {
+      if (rotationStartTime == null) {
+        rotationStartTime = currentTime;
+      }
+
+      // Calculate duration in seconds
+      rotationDuration = _handleNaN(
+          currentTime.difference(rotationStartTime!).inMilliseconds / 1000.0
+      );
+
+      // Update cumulative rotation
+      double deltaTime = lastTimestamp != null ?
+      currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0 : 0.0;
+      cumulativeRotation += gyroX * deltaTime;
+    } else {
+      // Reset if no significant rotation
+      if (rotationStartTime != null) {
+        rotationStartTime = null;
+        rotationDuration = 0.0;
+      }
     }
+
     lastTimestamp = currentTime;
   }
 
@@ -173,7 +217,7 @@ class GyroData {
         _sessionData.add(dataPoint);
 
         // Send data after a batch size or delay
-        if (_sessionData.length >= 4) {
+        if (_sessionData.length >= 7) {
           await _sendSessionData(); // Sends in batches of 4 data points
         }
       }
@@ -225,3 +269,7 @@ class GyroData {
     return value;
   }
 }
+
+
+
+
