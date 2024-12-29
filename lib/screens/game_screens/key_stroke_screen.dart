@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:bahri_app/widgets/linear_timer.dart';
 import 'package:bahri_app/widgets/show_score_popup.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import '../../models/keystroke.dart';
+import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 import '../../services/keystroke_services.dart';
 
 import '../../widgets/keyboard/artistic_multilingual_keyboard.dart';
@@ -33,9 +34,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
   List<String> difficulties = [" Easy", " Medium", " Hard"];
   String hintTextAmh = "ከላይ ያለውን ዓረፍተ ነገር ይፃፉ...";
   String hintTextEng = "Type the sentence above...";
-  List<int> timeLimitsEng = [30000, 50000, 50000];
-  List<int> timeLimitsAmh = [40000, 120000, 120000];
-  int _totalKeystrokes = 0;
+  List<int> timeLimitsEng = [120000, 50000, 50000];
+  List<int> timeLimitsAmh = [140000, 120000, 120000];
   late List<bool?> correctnessBoolArray;
   final KeystrokeService keystrokeService = KeystrokeService();
   late Map<String, dynamic> gameInfo;
@@ -49,7 +49,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
   FocusNode focusNode = FocusNode();
   late int _totalMistakes;
   late int _totalCorrect;
-
+  bool _canPop = false;
   late TextEditingController currentKeyboardTEController;
   late FocusNode currentKeyboardFocusNode;
   KeyboardLanguages currentKeyboardLanguage = KeyboardLanguages.amharic;
@@ -121,6 +121,11 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
   };
 
   List<String>? _sentences;
+  void updateCanPop(bool value) {
+    setState(() {
+      _canPop = value;
+    });
+  }
 
   @override
   void initState() {
@@ -157,6 +162,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
       'Sentence': '$_targetSentence',
       'difficulty': difficulties[difficulty],
       'startTime': DateTime.now().toIso8601String(),
+      'language': isAmharic ? "Amharic" : "English",
     };
     keystrokeService.fetchUserId();
     keystrokeService.initHive();
@@ -194,207 +200,244 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          'keyStroke Test ${difficulties[difficulty]}',
-          //tap the center of the images that are not distorted
-          style: const TextStyle(
-            fontFamily: "assets/fonts/Poppins-Regular.ttf",
-            fontSize: 25,
+    return PopScope(
+      canPop: _canPop,
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
+          return;
+        }
 
-            //fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        actions: [
-          // IconButton(
-          //   icon: const Icon(
-          //     Icons.refresh,
-          //     color: Colors.black,
-          //   ),
-          //   onPressed: () {
-          //     FocusScope.of(context).unfocus(); // Unfocus from the text field
-
-          //     Future.delayed(const Duration(milliseconds: 100), () {
-          //       _getRandomSentence(); // Select a new random sentence
-          //       tEController
-          //           .clear(); // Clear the text field after the focus has been removed
-          //     });
-          //   }, // Refreshes the sentence
-          // ),
-        ],
-        backgroundColor: Colors.transparent,
-        //elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-            //size: 30,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
+        // Show the fade message box when the back button is pressed
+        showDialog(
+          context: context,
+          barrierDismissible: false, // Prevent dismissing by tapping outside
+          builder: (context) {
+            return const FadeMessageBox(
+              message: "Please finish the game first.", // Custom message
+              duration: Duration(seconds: 2), // Custom fade duration
+            );
           },
-        ),
-      ),
-      body: Center(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                Color.fromRGBO(183, 153, 255, 1),
-                Color.fromRGBO(172, 188, 255, 1),
-                Color.fromRGBO(174, 226, 255, 1),
-              ],
+        );
+      },
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text(
+            'keyStroke Game',
+            //tap the center of the images that are not distorted
+            style: TextStyle(
+              fontFamily: "assets/fonts/Poppins-Regular.ttf",
+              fontSize: 25,
+
+              //fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
-          constraints: const BoxConstraints.expand(),
-          child: SingleChildScrollView(
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(13.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 45,
-                    ),
-                    LinearTimer(
-                        key: _timerKey,
-                        durationMiliseconds: isAmharic
-                            ? timeLimitsAmh[difficulty]
-                            : timeLimitsEng[difficulty],
-                        onTimerStop: (remainingTime) {
-                          _setScore(remainingTime);
-                          gameInfo['endTime'] =
-                              DateTime.now().toIso8601String();
-                          gameInfo['completeUserInput'] =
-                              currentKeyboardTEController.text;
-                          keystrokeService.saveKeyStrokeData(gameInfo);
+          actions: const [
+            // IconButton(
+            //   icon: const Icon(
+            //     Icons.refresh,
+            //     color: Colors.black,
+            //   ),
+            //   onPressed: () {
+            //     FocusScope.of(context).unfocus(); // Unfocus from the text field
 
-                          showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return ShowScorePopup(
-                                score: _score,
-                                highScore: 22,
-                              );
-                            },
-                          );
+            //     Future.delayed(const Duration(milliseconds: 100), () {
+            //       _getRandomSentence(); // Select a new random sentence
+            //       tEController
+            //           .clear(); // Clear the text field after the focus has been removed
+            //     });
+            //   }, // Refreshes the sentence
+            // ),
+          ],
+          backgroundColor: Colors.transparent,
+          //elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.lock,
+              color: Colors.black,
+              //size: 30,
+            ),
+            onPressed: () {},
+          ),
+        ),
+        body: Center(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Color.fromRGBO(183, 153, 255, 1),
+                  Color.fromRGBO(172, 188, 255, 1),
+                  Color.fromRGBO(174, 226, 255, 1),
+                ],
+              ),
+            ),
+            constraints: const BoxConstraints.expand(),
+            child: SingleChildScrollView(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(13.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const SizedBox(
+                        height: 45,
+                      ),
+                      LinearTimer(
+                          key: _timerKey,
+                          durationMiliseconds: isAmharic
+                              ? timeLimitsAmh[difficulty]
+                              : timeLimitsEng[difficulty],
+                          onTimerStop: (remainingTime) {
+                            _setScore(remainingTime);
+                            gameInfo['endTime'] =
+                                DateTime.now().toIso8601String();
+                            gameInfo['completeUserInput'] =
+                                currentKeyboardTEController.text;
+                            keystrokeService.saveKeyStrokeData(gameInfo);
+
+                            showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (context) {
+                                return ShowScorePopup(
+                                  score: _score,
+                                  highScore: 22,
+                                );
+                              },
+                            );
+                          },
+                          onTimerFinish: (remainingTime) {
+                            updateCanPop(true);
+                            debugPrint("yoo");
+                            _setScore(remainingTime);
+                            onTypingComplete();
+                            gameInfo['endTime'] =
+                                DateTime.now().toIso8601String();
+                            gameInfo['completeUserInput'] =
+                                currentKeyboardTEController.text;
+                            keystrokeService.saveKeyStrokeData(gameInfo);
+
+                            showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (context) {
+                                return ShowScorePopup(
+                                  score: _score,
+                                  highScore: 22,
+                                );
+                              },
+                            );
+                          }),
+                      const SizedBox(height: 46),
+
+                      Container(
+                        margin: const EdgeInsets.all(6.0),
+                        padding: const EdgeInsets.all(3.0),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.transparent)),
+                        child: Text(
+                          _targetSentence!,
+                          style: const TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      // Container(
+                      //   padding: const EdgeInsets.all(13),
+                      //   width: 400,
+                      //   height: 400,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(11),
+                      //   ),
+                      // )
+                      TextField(
+                        controller: tEController,
+                        maxLength: _targetSentence!.length,
+                        maxLines: 2,
+                        focusNode: focusNode,
+                        textDirection: TextDirection.ltr,
+                        readOnly: true,
+                        showCursor: true,
+                        textAlign: TextAlign.start,
+                        decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            filled: true,
+                            hintText: isAmharic ? hintTextAmh : hintTextEng,
+                            fillColor: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        margin: const EdgeInsets.all(2.0),
+                        padding: const EdgeInsets.all(12.0),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black),
+                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white),
+                        child: ValueListenableBuilder<TextSpan>(
+                          valueListenable: _textSpanNotifier,
+                          builder: (context, richText, child) {
+                            return RichText(
+                              text: richText,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 46),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (currentKeyboardTEController.length <
+                              _targetSentence!.length) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible:
+                                  false, // Prevent dismissing by tapping outside
+                              builder: (context) {
+                                return const FadeMessageBox(
+                                  message:
+                                      "Please finish the game first.", // Custom message
+                                  duration: Duration(
+                                      seconds: 2), // Custom fade duration
+                                );
+                              },
+                            );
+                          } else {
+                            updateCanPop(true);
+                            _timerKey.currentState!.stopTimer();
+                          }
                         },
-                        onTimerFinish: (remainingTime) {
-                          debugPrint("yoo");
-                          _setScore(remainingTime);
-                          onTypingComplete();
-                          gameInfo['endTime'] =
-                              DateTime.now().toIso8601String();
-                          gameInfo['completeUserInput'] =
-                              currentKeyboardTEController.text;
-                          keystrokeService.saveKeyStrokeData(gameInfo);
-
-                          showDialog(
-                            barrierDismissible: false,
-                            context: context,
-                            builder: (context) {
-                              return ShowScorePopup(
-                                score: _score,
-                                highScore: 22,
-                              );
-                            },
-                          );
-                        }),
-                    const SizedBox(height: 46),
-
-                    Container(
-                      margin: const EdgeInsets.all(6.0),
-                      padding: const EdgeInsets.all(3.0),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.transparent)),
-                      child: Text(
-                        _targetSentence!,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                          minimumSize: const Size(145, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                        ),
+                        child: const Text(
+                          'Finish',
+                          style: TextStyle(
+                            fontSize: 21,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                            //fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 26),
-                    // Container(
-                    //   padding: const EdgeInsets.all(13),
-                    //   width: 400,
-                    //   height: 400,
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.white,
-                    //     borderRadius: BorderRadius.circular(11),
-                    //   ),
-                    // )
-                    TextField(
-                      controller: tEController,
-                      maxLines: null, // Allows multiline input
-
-                      focusNode: focusNode,
-                      textDirection: TextDirection.ltr,
-                      readOnly: true,
-                      showCursor: true,
-                      textAlign: TextAlign.start,
-                      decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          filled: true,
-                          hintText: isAmharic ? hintTextAmh : hintTextEng,
-                          fillColor: Colors.white),
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      margin: const EdgeInsets.all(2.0),
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(4),
-                          color: Colors.white),
-                      child: ValueListenableBuilder<TextSpan>(
-                        valueListenable: _textSpanNotifier,
-                        builder: (context, richText, child) {
-                          return RichText(
-                            text: richText,
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 46),
-                    ElevatedButton(
-                      onPressed: () {
-                        _timerKey.currentState!.stopTimer();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        minimumSize: const Size(145, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      child: const Text(
-                        'Finish',
-                        style: TextStyle(
-                          fontSize: 21,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                          //fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
+        bottomSheet: showKeyboard(),
       ),
-      bottomSheet: showKeyboard(),
     );
   }
 
@@ -442,7 +485,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
       keyTextStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
       //keyElevation: 10,
       keyShadowColor: Colors.black,
-      keyBorderRadius: BorderRadius.circular(8),
+      keyBorderRadius: BorderRadius.circular(2),
       keyboardAction: currentKeyboardAction,
       currentKeyboardLanguage: currentKeyboardLanguage,
       keyboardActionNextEvent: () {

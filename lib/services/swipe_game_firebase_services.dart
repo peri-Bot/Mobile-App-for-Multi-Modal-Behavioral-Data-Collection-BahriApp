@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as htp;
 
 class FirestoreService {
@@ -41,15 +44,29 @@ class FirestoreService {
     });
   }
 
-  Future<void> storeSwipeDataDartFrog(
+  Future<bool> isConnectedToInternet() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox('offlineSwipeData');
+  }
+
+  Future<String> storeSwipeDataDartFrog(
     String userId,
     int level,
     int score,
     List<Map<String, dynamic>> swipeData,
   ) async {
     String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-
-    final url = Uri.parse('http://15.184.243.127:8080/collect_swipe_data');
+    bool isOnline = await isConnectedToInternet();
 
     final body = jsonEncode({
       'userId': userId,
@@ -59,6 +76,14 @@ class FirestoreService {
       'startTime': DateTime.now().toIso8601String(),
       'swipeData': swipeData,
     });
+    if (!isOnline) {
+      // Save data to Hive if offline
+      var box = Hive.box('offlineSwipeData');
+      await box.add(body);
+      debugPrint('Swipe Data saved locally (offline).');
+      return 'Swipe Data saved_locally';
+    }
+    final url = Uri.parse('http://15.184.243.127:8080/collect_swipe_data');
 
     try {
       // Call http.post, which ensures that the import is used
@@ -69,12 +94,21 @@ class FirestoreService {
       );
 
       if (response.statusCode == 200) {
-        print('Swipe data sent to server successfully!');
+        debugPrint('Swipe data sent to server successfully!');
+        return ('Swipe data sent to server successfully!');
       } else {
-        print('Failed to send swipe data: ${response.body}');
+        debugPrint('Failed to send swipe data: ${response.body}');
+        var box = Hive.box('offlineSwipeData');
+        await box.add(body);
+        debugPrint('Swipe Data saved locally (offline).');
+        return 'Swipe Data saved_locally';
       }
     } catch (e) {
-      print('Error occurred while sending swipe data: $e');
+      debugPrint('Error occurred while sending swipe data: $e');
+      var box = Hive.box('offlineSwipeData');
+      await box.add(body);
+      debugPrint('Swipe Data saved locally (offline).');
+      return 'Swipe Data saved_locally';
     }
   }
 

@@ -1,16 +1,12 @@
-import 'package:bahri_app/screens/TeamPages/CreateTeam.dart';
-import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
 import 'package:bahri_app/screens/TeamPages/check_team_screen.dart';
+import 'package:bahri_app/screens/game_screens/games_list_screen.dart';
 import 'package:bahri_app/screens/leaderboard_screen.dart';
 import 'package:bahri_app/screens/profile_screen.dart';
 
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
-import 'TeamPages/NoTeamPage.dart';
-import 'home_screen.dart';
 import 'menu_screen.dart';
-import 'profile_screen.dart';
 
 class BaseScreen extends StatefulWidget {
   const BaseScreen({super.key});
@@ -23,7 +19,8 @@ class _BaseScreenState extends State<BaseScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
+    //const HomeScreen(),
+    const GamesListScreen(),
     // Add other screens here, e.g. SecondScreen(), ThirdScreen(), etc.
     const CheckTeamScreen(), // Placeholder for Groups Screen
     LeaderboardPage(), // Placeholder for Leaderboard Screen
@@ -70,12 +67,12 @@ class _BaseScreenState extends State<BaseScreen> {
         ),
         actions: [
           Padding(
-            padding: EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(15.0),
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
                 );
               },
               child: const Icon(

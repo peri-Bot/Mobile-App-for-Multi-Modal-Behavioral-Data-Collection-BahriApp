@@ -1,13 +1,8 @@
 import 'package:bahri_app/screens/base_screen.dart';
-import 'package:bahri_app/screens/home_screen.dart';
 import 'package:bahri_app/screens/signup_screen.dart';
-import 'package:bahri_app/services/firebase_login_services.dart';
 import 'package:flutter/material.dart';
 import 'package:bahri_app/services/UserServices.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:path/path.dart';
-
-import 'base_screen.dart';
+import 'package:stroke_text/stroke_text.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   //final FirebaseLoginServices _auth = FirebaseLoginServices();
   final loginValidate = UserServices();
+  bool _isSignInPressed = false;
+  bool _pwdhide = true;
 
   void _login(BuildContext context) async {
     String email = loginValidate.usernameController.text;
@@ -27,12 +24,19 @@ class _LoginScreenState extends State<LoginScreen> {
     UserServices userServices = UserServices();
     String response = await userServices.loginDartFrog(email, password);
     if (context.mounted && response == 'sucess') {
-      Navigator.push(
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BaseScreen()),
       );
     } else {
       if (context.mounted) {
+        setState(() {
+          _isSignInPressed = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text("Failed to sign in: Please try again later")),
@@ -89,19 +93,34 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Text(
-                                  'Login here',
-                                  style: TextStyle(
-                                    fontSize: 28, // Responsive font size
-                                    fontWeight: FontWeight.bold,
+                                // const Text(
+                                //   'Login here',
+                                //   style: TextStyle(
+                                //     fontSize: 28, // Responsive font size
+                                //     fontWeight: FontWeight.bold,
+                                //     fontFamily:
+                                //         "assets/fonts/Poppins-SemiBold.ttf",
+                                //   ),
+                                //   textAlign: TextAlign.center,
+                                // ),
+                                const StrokeText(
+                                  text: 'Welcome Back',
+                                  textStyle: TextStyle(
                                     fontFamily:
-                                        "assets/fonts/Poppins-SemiBold.ttf",
+                                        "assets/fonts/Poppins-Regular.ttf",
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 0, 0, 0),
                                   ),
                                   textAlign: TextAlign.center,
+                                  strokeColor:
+                                      Color.fromARGB(255, 255, 255, 255),
+                                  strokeWidth: 1.6,
                                 ),
                                 SizedBox(height: constraints.maxHeight * 0.01),
+
                                 const Text(
-                                  'Welcome back you\'ve been missed!',
+                                  'Enter your credentials to login in!',
                                   style: TextStyle(
                                     fontSize: 16, // Responsive font size
                                     fontFamily:
@@ -109,6 +128,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
+                                SizedBox(height: constraints.maxHeight * 0.01),
+                                SizedBox(height: constraints.maxHeight * 0.01),
                               ],
                             ),
                           ),
@@ -122,7 +143,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: loginValidate.usernameController,
                                 decoration: InputDecoration(
-                                  hintText: 'Email',
+                                  prefixIcon: const Icon(
+                                    Icons.account_circle,
+                                    color: Colors.black,
+                                  ),
+                                  hintText: 'Username',
                                   filled: true,
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
@@ -140,6 +165,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: loginValidate.passwordController,
                                 decoration: InputDecoration(
+                                  prefixIcon: const Icon(Icons.key,
+                                      color: Colors.black),
+                                  suffixIcon: IconButton(
+                                    icon: _pwdhide
+                                        ? const Icon(Icons.visibility,
+                                            color: Colors.black)
+                                        : const Icon(Icons.visibility_off,
+                                            color: Colors.black),
+                                    onPressed: () {
+                                      setState(() {
+                                        _pwdhide = !_pwdhide;
+                                      });
+                                    },
+                                  ),
                                   hintText: 'Password',
                                   filled: true,
                                   fillColor: Colors.white,
@@ -148,25 +187,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                     borderSide: BorderSide.none,
                                   ),
                                 ),
-                                obscureText: true,
+                                obscureText: _pwdhide,
                                 validator: loginValidate.validatePassword,
                               ),
                               const SizedBox(height: 7),
-                              const Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  'Forgot your password?',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontFamily:
-                                        "assets/fonts/Poppins-SemiBold.ttf",
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
+                              // const Align(
+                              //   alignment: Alignment.centerRight,
+                              //   child: Text(
+                              //     'Forgot your password?',
+                              //     style: TextStyle(
+                              //       color: Colors.black,
+                              //       fontFamily:
+                              //           "assets/fonts/Poppins-SemiBold.ttf",
+                              //       decoration: TextDecoration.underline,
+                              //     ),
+                              //   ),
+                              // ),
                               SizedBox(height: constraints.maxHeight * 0.02),
                               ElevatedButton(
                                 onPressed: () {
+                                  setState(() {
+                                    _isSignInPressed = true;
+                                  });
                                   _login(context);
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -176,16 +218,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   backgroundColor: const Color(0xFFB19EF0),
                                 ),
-                                child: const Text(
-                                  'Sign in',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    fontFamily:
-                                        "assets/fonts/Poppins-SemiBold.ttf",
-                                    //fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: _isSignInPressed
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Sign in',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          //fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                               SizedBox(
                                 height: constraints.maxHeight * 0.02,
@@ -227,18 +279,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               SizedBox(height: constraints.maxHeight * 0.02),
-                              const Text("or continue with"),
-                              SizedBox(
-                                height: constraints.maxHeight * 0.05,
-                                width: constraints.maxWidth * .8,
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.g_translate,
-                                    color: Colors.black,
-                                  ),
-                                  onPressed: () {},
-                                ),
-                              ),
                             ],
                           ),
                         ),

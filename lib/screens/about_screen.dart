@@ -10,75 +10,98 @@ class AboutScreen extends StatelessWidget {
         elevation: 0,
         title: const Text('About BahriApp'),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            end: Alignment.topRight,
-            colors: [
-              Color.fromRGBO(183, 153, 255, 1),
-              Color.fromRGBO(172, 188, 255, 1),
-              Color.fromRGBO(174, 226, 255, 1),
-            ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
+                colors: [
+                  Color.fromRGBO(183, 153, 255, 1),
+                  Color.fromRGBO(172, 188, 255, 1),
+                  Color.fromRGBO(174, 226, 255, 1),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: const SingleChildScrollView(
-          padding: EdgeInsets.all(16.0),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                  height:
-                      120), // Add padding to push content below the transparent app bar
-              Text(
-                'BahriApp',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                    height:
+                        120), // Add padding to push content below the transparent app bar
+                const Text(
+                  'BahriApp',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'BahriApp is an Android application that collects biometric behavioral data from users while they engage in various games. These include motion games, tap games, swipe games, and keystroke games. The data is securely stored in Firebase Firestore for further analysis.',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Creators',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Creators',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Roba Daniel\nZekariyas Girma\nKidus Yared\nKidus Abebe\nUnder the supervision of a Ph.D student Animaw Kerie ',
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'The purpose of the tool is to collect behavioral biometric data for a dissertation entitled: "Multi-Modal Biometric Fusion for Adaptive Continuous Authentication in National Digital Identity  Systems"',
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'Roba Daniel\nZekariyas Girma\nKidus Yared\nKidus Abebe',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'All creators are 4th year students at HiLCoE School of Computer Science and Technology, dedicated to exploring different areas of the field',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Contact Us',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Contact Us',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'For any queries or feedback, please reach out to us at: bahriapp@gmail.com',
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'For any queries or feedback, please reach out to us at: \nbahriapp@gmail.com',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

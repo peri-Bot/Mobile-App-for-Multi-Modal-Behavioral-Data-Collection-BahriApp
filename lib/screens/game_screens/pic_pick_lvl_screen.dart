@@ -1,7 +1,4 @@
 import 'package:bahri_app/screens/game_screens/pic_pick_screen.dart';
-import 'package:bahri_app/screens/login_screen.dart';
-import 'package:bahri_app/screens/signup_screen.dart';
-import 'package:bahri_app/widgets/LogoCircularBorder.dart';
 import 'package:flutter/material.dart';
 import 'package:stroke_text/stroke_text.dart';
 
@@ -117,30 +114,16 @@ class PicPickLvlScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Easy',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
+                          child: const Center(
+                            child: Text(
+                              'Easy',
+                              style: TextStyle(
+                                fontSize: 21,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                                //fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                'HighScore: ',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 46),
@@ -161,30 +144,16 @@ class PicPickLvlScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Medium',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
+                          child: const Center(
+                            child: Text(
+                              'Medium',
+                              style: TextStyle(
+                                fontSize: 21,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                                //fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                'HighScore: ',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 46),
@@ -205,30 +174,16 @@ class PicPickLvlScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Hard',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
+                          child: const Center(
+                            child: Text(
+                              'Hard',
+                              style: TextStyle(
+                                fontSize: 21,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                                //fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                'HighScore: ',
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  color: Color.fromARGB(255, 0, 0, 0),
-                                  fontFamily:
-                                      "assets/fonts/Poppins-SemiBold.ttf",
-                                  //fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         //const Spacer(flex: 1),

@@ -12,7 +12,6 @@ class FirestoreService {
     DateTime dOB,
     String gender,
     String userName,
-    String email,
     String skillLevel,
     String password,
   ) async {
@@ -44,11 +43,9 @@ class FirestoreService {
         "dateOfBirth": dOB,
         "gender": gender,
         "userName": userName,
-        "email": email,
         "skillLevel": skillLevel,
         "password": password,
       });
     });
   }
 }
-

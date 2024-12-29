@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bahri_app/services/enums.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,9 +21,9 @@ class UserServices {
 
   String? validateUsername(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Email cannot be empty';
+      return 'Username cannot be empty';
     } else if (value.length < 4) {
-      return 'Emmail must be at least 4 characters long';
+      return 'Username must be at least 4 characters long';
     }
     return null;
   }
@@ -30,8 +31,10 @@ class UserServices {
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password cannot be empty';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
+    } else if (value.length < 6) {
+      return 'Password must be at least 6 characters long';
+    } else if (value.length > 12) {
+      return 'Username cant be more than 12 characters long';
     }
     return null;
   }
@@ -49,7 +52,6 @@ class UserServices {
     required DateTime dOB,
     required String gender,
     required String userName,
-    required String email,
     required String skillLevel,
     required String password,
     double? progress,
@@ -62,7 +64,6 @@ class UserServices {
       dOB: dOB,
       gender: gender,
       userName: userName,
-      email: email,
       skillLevel: skillLevel,
       password: password,
       progress: progress,
@@ -72,22 +73,15 @@ class UserServices {
 
   Future<void> registerUser() async {
     FirestoreService firestoreService = FirestoreService();
-    firestoreService.addUser(
-        newUser.firstName,
-        newUser.lastName,
-        newUser.dOB,
-        newUser.gender,
-        newUser.userName,
-        newUser.email,
-        newUser.skillLevel,
-        newUser.password);
+    firestoreService.addUser(newUser.firstName, newUser.lastName, newUser.dOB,
+        newUser.gender, newUser.userName, newUser.skillLevel, newUser.password);
   }
 
   Future<String> registerUserDartFrog(BuildContext context) async {
     bool isOnline = await isConnectedToInternet();
     if (!isOnline) return 'fail';
     final url = Uri.parse(
-        'http://15.184.243.127:8080/register_user'); // Use your Dart Frog server address
+        'http://15.184.243.127:8080/api/v2/register_user'); // Use your Dart Frog server address
     debugPrint("ipgiven");
 
     try {
@@ -100,7 +94,6 @@ class UserServices {
           'dOB': newUser.dOB.toString(),
           'gender': newUser.gender,
           'userName': newUser.userName,
-          'email': newUser.email,
           'skillLevel': newUser.skillLevel,
           'password': newUser.password,
           'created_at': DateTime.timestamp().toIso8601String(),
@@ -132,20 +125,20 @@ class UserServices {
     }
   }
 
-  Future<String> loginDartFrog(String email, String password) async {
+  Future<String> loginDartFrog(String username, String password) async {
     bool isOnline = await isConnectedToInternet();
     if (!isOnline) return 'fail';
     debugPrint("User is online: sending data");
 
     try {
       final response = await http.post(
-        Uri.parse('http://15.184.243.127:8080/login'),
+        Uri.parse('http://15.184.243.127:8080/api/v2/login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },
         body: jsonEncode(<String, String>{
-          'email': email,
-          'password': password,
+          'username': username.trim(),
+          'password': password.trim(),
         }),
       );
 
@@ -169,11 +162,48 @@ class UserServices {
     }
   }
 
+  Future<UsernameCheckResult> checkUsernameAvailability(String username) async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return UsernameCheckResult.error;
+
+    debugPrint("User is online: checking username availability");
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'http://15.184.243.127:8080/api/v2/check_username_availability'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, String>{
+          'username': username.trim(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        bool isTaken = responseBody['isTaken'] as bool;
+        debugPrint(
+            isTaken ? "Username is already taken." : "Username is available.");
+        return isTaken
+            ? UsernameCheckResult.usernameTaken
+            : UsernameCheckResult.usernameAvailable;
+      } else {
+        debugPrint(
+            "Error: Received status code ${response.statusCode} during username check.");
+        return UsernameCheckResult.error;
+      }
+    } catch (e) {
+      debugPrint("Error during username check: $e");
+      return UsernameCheckResult.error;
+    }
+  }
+
   // Method to validate user input fields
   String validateUserInput({
     String? firstName,
     String? lastName,
-    String? email,
+    String? username,
     String? password,
     String? rePassword,
     String? birthdate,
@@ -181,11 +211,20 @@ class UserServices {
     String? skillLevle = "-1",
   }) {
     String error = "";
-    if (email != null) {
-      if (email.isEmpty) {
-        error = 'Email cannot be empty';
-      } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-        error = 'Invalid email format';
+    //  if (username == null || username.isEmpty) {
+    //   return 'Username cannot be empty';
+    // } else if (!RegExp(r'^[a-zA-Z_]+$').hasMatch(username)) {
+    //   return 'Invalid username: Only letters and underscores are allowed';
+    // }
+    if (username != null) {
+      if (username.isEmpty) {
+        return 'Username cannot be empty';
+      } else if (!RegExp(r'^[a-zA-Z_]+$').hasMatch(username)) {
+        return 'Invalid username: Only letters and underscores are allowed';
+      } else if (username.length <= 3) {
+        error = 'Username must be at least 4 characters long';
+      } else if (username.length > 12) {
+        error = 'Username cant be more than 12 characters long';
       }
     } else if (firstName != null) {
       if (firstName.isEmpty) {
@@ -224,18 +263,8 @@ class UserServices {
     } else if (password != null) {
       if (password.isEmpty) {
         error = 'Password cannot be empty';
-      } else if (password.length < 8) {
-        error = 'Password must be at least 8 characters long';
-      } else if (!RegExp(r'[A-Z]').hasMatch(password)) {
-        error = 'Password must contain at least one uppercase letter';
-      } else if (password.contains(' ')) {
-        error = 'Password cannot contain spaces';
-      } else if (!RegExp(r'[a-z]').hasMatch(password)) {
-        error = 'Password must contain at least one lowercase letter';
-      } else if (!RegExp(r'[0-9]').hasMatch(password)) {
-        error = 'Password must contain at least one number';
-      } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
-        error = 'Password must contain at least one special character';
+      } else if (password.length < 6) {
+        error = 'Password must be at least 6 characters long';
       } else {
         if (rePassword!.isEmpty) {
           error = 'Confirm Password cannot be empty';

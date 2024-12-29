@@ -7,7 +7,6 @@ class User {
   late DateTime dOB;
   late String gender;
   late String userName;
-  late String email;
   late String skillLevel;
   late String password;
   late double? progress;
@@ -19,7 +18,6 @@ class User {
     required this.dOB,
     required this.gender,
     required this.userName,
-    required this.email,
     required this.skillLevel,
     required this.password,
     required this.progress,
@@ -46,7 +44,6 @@ class User {
       dOB: dOB ?? this.dOB,
       gender: gender ?? this.gender,
       userName: userName ?? this.userName,
-      email: email ?? this.email,
       skillLevel: skillLevel ?? this.skillLevel,
       password: password ?? this.password,
       progress: progress ?? this.progress,
@@ -56,7 +53,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, userName: $userName, email: $email, skillLevel: $skillLevel, password: $password, progress: $progress)';
+    return 'User(id: $id, firstName: $firstName, lastName: $lastName, dOB: $dOB, gender: $gender, userName: $userName, skillLevel: $skillLevel, password: $password, progress: $progress)';
   }
 
   @override
@@ -69,7 +66,6 @@ class User {
         other.dOB == dOB &&
         other.gender == gender &&
         other.userName == userName &&
-        other.email == email &&
         other.skillLevel == skillLevel &&
         other.password == password &&
         other.progress == progress &&
@@ -84,7 +80,6 @@ class User {
         dOB.hashCode ^
         gender.hashCode ^
         userName.hashCode ^
-        email.hashCode ^
         skillLevel.hashCode ^
         password.hashCode ^
         progress.hashCode ^

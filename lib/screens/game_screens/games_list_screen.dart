@@ -1,6 +1,9 @@
+// ignore_for_file: unused_import, unnecessary_import
+
 import 'dart:ffi' as ffi;
 //import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
 
+import 'package:bahri_app/screens/game_screens/handwriting_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_lvl_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:bahri_app/screens/game_screens/motion_game/acceleroGame.dart';
@@ -23,51 +26,53 @@ class GamesListScreen extends StatefulWidget {
 
 class GamesList extends State<GamesListScreen> {
   //bool firstSwitchValue = false;
+
   bool _collapsedWalk = false;
   bool _collapsedSwipe = false;
+  bool firstSwitchValue = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      //backgroundColor: const Color(0xFFE6E9FF),
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          'Games',
-          style: TextStyle(
-            fontFamily: "assets/fonts/Poppins-Regular.ttf",
-            fontSize: 25,
+      backgroundColor: Colors.transparent,
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   title: const Text(
+      //     'Games',
+      //     style: TextStyle(
+      //       fontFamily: "assets/fonts/Poppins-Regular.ttf",
+      //       fontSize: 25,
 
-            //fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      //       //fontWeight: FontWeight.bold,
+      //       color: Colors.black,
+      //     ),
+      //   ),
+      //   backgroundColor: Colors.transparent,
+      //   elevation: 0,
+      //   leading: IconButton(
+      //     icon: const Icon(Icons.arrow_back, color: Colors.black),
+      //     onPressed: () {
+      //       Navigator.pop(context);
+      //     },
+      //   ),
+      // ),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Color.fromRGBO(183, 153, 255, 1),
-                  Color.fromRGBO(172, 188, 255, 1),
-                  Color.fromRGBO(174, 226, 255, 1),
-                ],
-              ),
-            ),
-          ),
+          // Container(
+          //   decoration: const BoxDecoration(
+          //     gradient: LinearGradient(
+          //       begin: Alignment.bottomCenter,
+          //       end: Alignment.topCenter,
+          //       colors: [
+          //         Color.fromRGBO(183, 153, 255, 1),
+          //         Color.fromRGBO(172, 188, 255, 1),
+          //         Color.fromRGBO(174, 226, 255, 1),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           SafeArea(
             child: SingleChildScrollView(
               child: Center(
@@ -159,7 +164,9 @@ class GamesList extends State<GamesListScreen> {
                             clipBehavior: Clip.antiAlias,
                             collapsedShape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
-
+                            onExpansionChanged: (value) {
+                              setState(() {});
+                            },
                             leading: const Icon(Icons.touch_app),
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,7 +207,7 @@ class GamesList extends State<GamesListScreen> {
                             children: const <Widget>[
                               ListTile(
                                 title: Text(
-                                  "Tap the ceneter of the images that are not distorted to score points",
+                                  "Tap the ceneter of the images that are not bombs 💣 to score points",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -292,13 +299,15 @@ class GamesList extends State<GamesListScreen> {
                             clipBehavior: Clip.antiAlias,
                             collapsedShape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
-
+                            onExpansionChanged: (value) {
+                              setState(() {});
+                            },
                             leading: const Icon(Icons.keyboard),
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "KeyStroke Game",
+                                  "Typing Game",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -355,7 +364,9 @@ class GamesList extends State<GamesListScreen> {
                             clipBehavior: Clip.antiAlias,
                             collapsedShape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
-
+                            onExpansionChanged: (value) {
+                              setState(() {});
+                            },
                             leading: const Icon(Icons.sports_soccer),
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -419,9 +430,11 @@ class GamesList extends State<GamesListScreen> {
                             collapsedShape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
 
-                            leading: Icon(_collapsedWalk
-                                ? Icons.directions_run
-                                : Icons.directions_walk),
+                            leading: Icon(
+                              _collapsedWalk
+                                  ? Icons.directions_run
+                                  : Icons.directions_walk,
+                            ),
                             onExpansionChanged: (value) {
                               setState(() {
                                 _collapsedWalk = value;
@@ -475,6 +488,105 @@ class GamesList extends State<GamesListScreen> {
                                       fontWeight: FontWeight.w400),
                                 ),
                               )
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        Card(
+                          child: ExpansionTile(
+                            collapsedBackgroundColor: Colors.white,
+                            //backgroundColor: Color.fromARGB(255, 231, 90, 90),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            backgroundColor: Colors.white,
+                            clipBehavior: Clip.antiAlias,
+                            collapsedShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+
+                            leading: const Icon(Icons.draw),
+                            onExpansionChanged: (value) {
+                              setState(() {});
+                            },
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Handwriting",
+                                  style: TextStyle(
+                                      fontFamily:
+                                          "assets/fonts/Poppins-SemiBold.ttf",
+                                      fontSize: 21.0,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                HandwritingScreen(
+                                                    isAmharic:
+                                                        firstSwitchValue)));
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 7,
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      // side: const BorderSide(
+                                      //     color: Colors.black)
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "Play",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                )
+                              ],
+                            ),
+                            //trailing: ,
+                            tilePadding: const EdgeInsets.all(9),
+
+                            children: <Widget>[
+                              const ListTile(
+                                title: Text(
+                                  "write The Showen Letter in the Box Using Handwriting",
+                                  style: TextStyle(
+                                      fontFamily:
+                                          "assets/fonts/Poppins-SemiBold.ttf",
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              AnimatedToggleSwitch<bool>.size(
+                                current: firstSwitchValue,
+                                values: const [false, true],
+                                iconOpacity: 0.2,
+                                indicatorSize: const Size.fromWidth(100),
+                                customIconBuilder: (context, local, global) =>
+                                    Text(
+                                  local.value ? "አማርኛ" : "English",
+                                  style: TextStyle(
+                                      color: Color.lerp(Colors.black,
+                                          Colors.white, local.animationValue)),
+                                ),
+                                animationDuration:
+                                    const Duration(milliseconds: 75),
+
+                                borderWidth: 5.0,
+                                iconAnimationType: AnimationType.onHover,
+                                style: ToggleStyle(
+                                  backgroundColor: Colors.white,
+                                  indicatorColor: Colors.black,
+                                  borderColor: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+// ToggleStyle
+                                selectedIconScale: 1.0,
+                                onChanged: (value) =>
+                                    setState(() => firstSwitchValue = value),
+                              ),
                             ],
                           ),
                         )
