@@ -8,7 +8,7 @@ class BallGame extends StatefulWidget {
   const BallGame({super.key});
 
   @override
-  _BallGameState createState() => _BallGameState();
+  State<BallGame> createState() => _BallGameState();
 }
 
 class _BallGameState extends State<BallGame>

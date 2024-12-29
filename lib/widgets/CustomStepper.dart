@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stroke_text/stroke_text.dart';
 
 class CustomStepper extends StatelessWidget {
   const CustomStepper({
@@ -23,57 +24,58 @@ class CustomStepper extends StatelessWidget {
 
       list.add(
         Container(
-            width: 19.0,
-            height: 19.0,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: circleColor,
+          width: 19.0,
+          height: 19.0,
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: circleColor,
+          ),
+          child: Center(
+            child: Icon(
+              Icons.task_alt,
+              size: 15,
+              color: (i == _curStep) ? _activeColor : _inactiveColor,
             ),
-            child: Center(
-              child: Icon(Icons.task_alt,
-                  size: 15,
-                  color: (i == _curStep) ? _activeColor : _inactiveColor),
-            )),
+          ),
+        ),
       );
+
       if (i != steps.length - 1) {
-        list.add(Expanded(
+        list.add(
+          Expanded(
             child: Container(
-          height: lineWidth,
-          color: lineColor,
-        )));
+              height: lineWidth,
+              color: lineColor,
+            ),
+          ),
+        );
       }
-    });
-
-    return list;
-  }
-
-  List<Widget> _titleViews() {
-    var list = <Widget>[];
-    Color clr;
-    steps.asMap().forEach((i, text) {
-      if (i == _curStep) {
-        clr = Colors.black;
-      } else {
-        clr = Colors.white;
-      }
-      list.add(Text(text["title"], style: TextStyle(color: clr, fontSize: 12)));
     });
     return list;
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Column(
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: _titleViews(),
+        // Text(
+        //   steps[_curStep]["title"].toString().toUpperCase(),
+        //   style: const TextStyle(
+        //       color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+        // ),
+        StrokeText(
+          text: steps[_curStep]["title"].toString().toUpperCase(),
+          textStyle: const TextStyle(
+            fontFamily: "assets/fonts/Poppins-Regular.ttf",
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 0, 0, 0),
+          ),
+          strokeColor: Color.fromARGB(255, 255, 255, 255),
+          strokeWidth: 1.9,
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         Row(
           children: _iconViews(),
         ),

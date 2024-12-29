@@ -3,13 +3,9 @@ import 'package:bahri_app/screens/TeamPages/NoTeamPage.dart';
 import 'package:bahri_app/screens/TeamPages/request_rejected_screen.dart';
 import 'package:bahri_app/screens/TeamPages/team_admin_screen.dart';
 import 'package:bahri_app/screens/TeamPages/waiting_for_approval.dart';
-import 'package:bahri_app/screens/base_screen.dart';
-import 'package:bahri_app/screens/welcome_screen.dart';
 import 'package:bahri_app/services/teams_services.dart';
-import 'package:bahri_app/widgets/LogoCircularBorder.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CheckTeamScreen extends StatefulWidget {
   const CheckTeamScreen({super.key});
@@ -19,7 +15,6 @@ class CheckTeamScreen extends StatefulWidget {
 }
 
 class _CheckTeamScreen extends State<CheckTeamScreen> {
-  final _secureStorage = const FlutterSecureStorage();
   final _teamsServices = TeamsServices.empty();
   String? teamID;
 

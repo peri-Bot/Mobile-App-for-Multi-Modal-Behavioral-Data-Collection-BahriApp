@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 //import 'leaderboard_service.dart';
 
 class LeaderboardPage extends StatefulWidget {
+  const LeaderboardPage({super.key});
+
   @override
-  _LeaderboardPageState createState() => _LeaderboardPageState();
+  State<LeaderboardPage> createState() => _LeaderboardPageState();
 }
 
 class _LeaderboardPageState extends State<LeaderboardPage> {
@@ -12,11 +14,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   bool _showTeams = true;
   bool _isLoading = true;
   List<Map<String, dynamic>> _dataList = [];
+  List<Color> medalColors = [Colors.amber, Colors.grey, Colors.brown];
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    _leaderboardService.fetchUserId();
   }
 
   Future<void> _fetchData() async {
@@ -28,7 +32,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         _dataList = await _leaderboardService.fetchUsers();
       }
     } catch (e) {
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -62,12 +66,14 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     final item = _dataList[index];
                     final displayName =
                         _showTeams ? item['teamName'] : item['userName'];
+                    final score = item['score'];
                     return Card(
                       elevation: 3,
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                          backgroundColor:
+                              index < 3 ? medalColors[index] : Colors.black,
                           child: Text(
                             '${index + 1}',
                             style: const TextStyle(
@@ -76,7 +82,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                             ),
                           ), // Ranking number
                         ),
-                        title: Text(displayName),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [Text(displayName), Text(score.toString())],
+                        ),
                       ),
                     );
                   }),

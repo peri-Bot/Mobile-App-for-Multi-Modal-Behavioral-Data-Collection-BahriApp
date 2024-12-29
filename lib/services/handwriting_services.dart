@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'dart:math';
-import './../widgets/keyboard/utils/types.dart';
 import 'package:http/http.dart' as http;
 
 class HandwritingServices {

@@ -1,11 +1,9 @@
-import 'dart:ffi' as ffi;
 //import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
 
 import 'package:bahri_app/screens/game_screens/free_flow_text_screen.dart';
 import 'package:bahri_app/screens/game_screens/key_stroke_screen.dart';
 import 'package:bahri_app/screens/game_screens/password_entry_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:stroke_text/stroke_text.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 
@@ -75,15 +73,15 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                         const SizedBox(height: 55),
                         const SizedBox(
                           child: StrokeText(
-                            text: 'Keystroke Test',
+                            text: 'Keystroke Game',
                             textStyle: TextStyle(
                               fontFamily: "assets/fonts/Poppins-Regular.ttf",
                               fontSize: 40,
                               fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(255, 255, 255, 255),
+                              color: Color.fromARGB(255, 0, 0, 0),
                             ),
-                            strokeColor: Color.fromARGB(255, 0, 0, 0),
-                            strokeWidth: 7,
+                            strokeColor: Color.fromARGB(255, 255, 255, 255),
+                            strokeWidth: 3,
                           ),
                         ),
                         // const SizedBox(height: 25),
@@ -107,7 +105,7 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                           iconOpacity: 0.2,
                           indicatorSize: const Size.fromWidth(100),
                           customIconBuilder: (context, local, global) => Text(
-                            local.value ? "Amharic" : "English",
+                            local.value ? "አማርኛ" : "English",
                             style: TextStyle(
                                 color: Color.lerp(Colors.black, Colors.white,
                                     local.animationValue)),
@@ -193,7 +191,7 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Free flow',
+                                'Free Text',
                                 style: TextStyle(
                                   fontSize: 21,
                                   color: Color.fromARGB(255, 0, 0, 0),
@@ -207,39 +205,6 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                         ),
                         const SizedBox(height: 46),
 
-                        // ElevatedButton(
-                        //   onPressed: () {
-                        // Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //         builder: (context) =>
-                        //             const PasswordEntryScreen()));
-                        //   },
-                        //   style: ElevatedButton.styleFrom(
-                        //     backgroundColor:
-                        //         const Color.fromARGB(255, 255, 255, 255),
-                        //     minimumSize: const Size(double.infinity, 75),
-                        //     shape: RoundedRectangleBorder(
-                        //       borderRadius: BorderRadius.circular(10),
-                        //     ),
-                        //   ),
-                        //   child: const Row(
-                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //     children: [
-                        //       Text(
-                        //         'Password',
-                        //         style: TextStyle(
-                        //           fontSize: 21,
-                        //           color: Color.fromARGB(255, 0, 0, 0),
-                        //           fontFamily:
-                        //               "assets/fonts/Poppins-SemiBold.ttf",
-                        //           //fontWeight: FontWeight.bold,
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                        //const Spacer(flex: 1),
                         Card(
                           child: ExpansionTile(
                             collapsedBackgroundColor: Colors.white,
@@ -292,7 +257,7 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                               ListTile(
                                 title: RichText(
                                   text: const TextSpan(
-                                    text: "Remember This Sample Password ",
+                                    text: "Write This Sample Password ",
                                     style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
@@ -314,8 +279,7 @@ class KeyStrokeLvlScreen extends State<KeyStrokeLevelScreen> {
                                         ),
                                       ),
                                       TextSpan(
-                                        text:
-                                            " and Type into the Provided Text Box",
+                                        text: " into the Provided Text Box",
                                       ),
                                     ],
                                   ),

@@ -1,5 +1,8 @@
 import 'package:bahri_app/services/freetext_service.dart';
+import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
+import 'package:pinput/pinput.dart';
+import 'package:stroke_text/stroke_text.dart';
 import '../../widgets/keyboard/artistic_multilingual_keyboard.dart';
 
 class FreeFlowTextScreen extends StatefulWidget {
@@ -13,9 +16,16 @@ class FreeFlowTextScreen extends StatefulWidget {
 
 class _FreeFlowTextScreenState extends State<FreeFlowTextScreen> {
   late bool isAmharic;
-  bool _isDialogVisible = false;
+  bool _canPop = false;
+
+  void updateCanPop(bool value) {
+    setState(() {
+      _canPop = value;
+    });
+  }
 
   final FreeTextService freeTextService = FreeTextService();
+  final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
@@ -26,8 +36,8 @@ class _FreeFlowTextScreenState extends State<FreeFlowTextScreen> {
 
   KeyboardLanguages currentKeyboardLanguage = KeyboardLanguages.amharic;
   KeyboardAction currentKeyboardAction = KeyboardAction.actionDone;
-  final int _maxCharacters = 8;
   bool _isKeyboardOpen = false;
+  String? _hintText;
 
   @override
   void initState() {
@@ -35,11 +45,17 @@ class _FreeFlowTextScreenState extends State<FreeFlowTextScreen> {
     isAmharic = widget.isAmharic;
     currentKeyboardTEController = _textController;
     currentKeyboardFocusNode = _textFocusNode;
+    if (isAmharic) {
+      _hintText = 'የተሰማህን ሃሳብ ፃፍ';
+    } else {
+      _hintText = "Note Whatever Comes to Mind";
+    }
+    _textController.addListener(_scrollToBottom);
     _textFocusNode.addListener(() {
       setState(() {
         _isKeyboardOpen = _textFocusNode.hasFocus;
         if (_isKeyboardOpen) {
-          currentKeyboardAction = KeyboardAction.actionDone;
+          currentKeyboardAction = KeyboardAction.actionNewLine;
           currentKeyboardTEController = _textController;
           currentKeyboardFocusNode = _textFocusNode;
 
@@ -53,164 +69,226 @@ class _FreeFlowTextScreenState extends State<FreeFlowTextScreen> {
     });
 
     // Add listener to monitor text changes
-    _textController.addListener(_onTextChanged);
+
     freeTextService.fetchUserId();
     freeTextService.initHive();
     gameInfo = {
       'startTime': DateTime.now().toIso8601String(),
+      'language': isAmharic ? "Amharic" : "English",
     };
   }
 
-  void _onTextChanged() {
-    // Check if text has reached maximum length
-    if (_textController.text.length == _maxCharacters && !_isDialogVisible) {
-      _isDialogVisible = true;
-      // Show dialog when max characters are reached
-      _showMaxCharacterDialog();
-    }
-
-    // Force update to refresh the character count
-    setState(() {});
-  }
-
-  void _showMaxCharacterDialog() {
-    gameInfo['endTime'] = DateTime.now().toIso8601String();
-    gameInfo['completeUserInput'] = currentKeyboardTEController.text;
-    freeTextService.saveKeyStrokeFreeTextData(gameInfo);
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Maximum Characters Reached'),
-          content:
-              const Text('You have entered the maximum number of characters.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _isDialogVisible = false;
-                Navigator.of(context).pop(); // Close the dialog
-                Navigator.of(context).pop(); // Go back to previous screen
-                //Navigator.of(context).pop();
-              },
-              child: const Text('Go Back'),
-            ),
-          ],
-        );
-      },
-    );
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('TextController: $_textController');
-    print('FocusNode: $_textFocusNode');
-    print('IsKeyboardOpen: $_isKeyboardOpen');
-    print('KeyboardAction: $currentKeyboardAction');
-    print('KeyboardLanguage: $currentKeyboardLanguage');
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Free Flow Text'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    debugPrint('TextController: $_textController');
+    debugPrint('FocusNode: $_textFocusNode');
+    debugPrint('IsKeyboardOpen: $_isKeyboardOpen');
+    debugPrint('KeyboardAction: $currentKeyboardAction');
+    debugPrint('KeyboardLanguage: $currentKeyboardLanguage');
+    return PopScope(
+      canPop: _canPop,
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
+          return;
+        }
+
+        // Show the fade message box when the back button is pressed
+        showDialog(
+          context: context,
+          barrierDismissible: false, // Prevent dismissing by tapping outside
+          builder: (context) {
+            return const FadeMessageBox(
+              message: "Please Play the game first.", // Custom message
+              duration: Duration(seconds: 2), // Custom fade duration
+            );
+          },
+        );
+      },
+      child: Scaffold(
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text('Free Flow Text'),
+          leading: IconButton(
+            icon: const Icon(Icons.lock),
+            onPressed: () => (),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Stack(
-        children: [
-          // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Color.fromRGBO(183, 153, 255, 1),
-                  Color.fromRGBO(172, 188, 255, 1),
-                  Color.fromRGBO(174, 226, 255, 1),
-                ],
+        body: Stack(
+          children: [
+            // Background Gradient
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Color.fromRGBO(183, 153, 255, 1),
+                    Color.fromRGBO(172, 188, 255, 1),
+                    Color.fromRGBO(174, 226, 255, 1),
+                  ],
+                ),
               ),
             ),
-          ),
-          SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Character Counter
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: Text(
-                      '${_textController.text.length}/$_maxCharacters',
+
+            SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    // Character Counter
+                    // Padding(
+                    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    //   child: Align(
+                    //     alignment: Alignment.topRight,
+                    //     child: Text(
+                    //       '${_textController.text.length}/$_maxCharacters',
+                    //       style: const TextStyle(
+                    //         color: Colors.white,
+                    //         fontWeight: FontWeight.bold,
+                    //         fontSize: 16,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    const SizedBox(
+                      height: 50,
+                    ),
+
+                    Text(
+                      _hintText!,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontFamily: "assets/fonts/Poppins-Regular.ttf",
+                        fontSize: 24,
+                        fontWeight: FontWeight.normal,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                      // strokeColor: const Color.fromARGB(255, 255, 255, 255),
+                      // strokeWidth: 1,
+                    ),
+                    // Text Input Field
+                    const SizedBox(
+                      height: 60,
+                    ),
+                    SizedBox(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _textController,
+                              focusNode: _textFocusNode,
+                              scrollController: _scrollController,
+
+                              decoration: const InputDecoration(
+                                labelText: 'Enter Text',
+                                border: UnderlineInputBorder(),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                              readOnly:
+                                  true, // Set to true if you want it read-only.
+                              showCursor: true,
+                              maxLines:
+                                  4, // Allows unlimited lines, but constrained by the height.
+                              keyboardType: TextInputType.multiline,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-
-                // Text Input Field
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextField(
-                    controller: _textController,
-                    focusNode: _textFocusNode,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter Text',
-                      border: OutlineInputBorder(),
-                      filled: true,
-                      fillColor: Colors.white,
+                    const SizedBox(height: 46),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (currentKeyboardTEController.length > 1) {
+                          gameInfo['endTime'] =
+                              DateTime.now().toIso8601String();
+                          gameInfo['completeUserInput'] =
+                              currentKeyboardTEController.text;
+                          freeTextService.saveKeyStrokeFreeTextData(gameInfo);
+                          _showEnd();
+                        } else {
+                          // Show the fade message box when the back button is pressed
+                          showDialog(
+                            context: context,
+                            barrierDismissible:
+                                false, // Prevent dismissing by tapping outside
+                            builder: (context) {
+                              return const FadeMessageBox(
+                                message:
+                                    "Please play the game first.", // Custom message
+                                duration: Duration(
+                                    seconds: 2), // Custom fade duration
+                              );
+                            },
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        minimumSize: const Size(145, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      child: const Text(
+                        'Finish',
+                        style: TextStyle(
+                          fontSize: 21,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                          //fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    readOnly: true,
-                    showCursor: true,
-                    maxLength: _maxCharacters,
-                    buildCounter: (context,
-                        {required currentLength,
-                        required isFocused,
-                        maxLength}) {
-                      return Container(); // Hide default counter
-                    },
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomSheet: KeyboardLayouts(
-        key: UniqueKey(),
-        textEditingController: currentKeyboardTEController,
-        focusNode: currentKeyboardFocusNode,
-        isKeyboardOpen: _isKeyboardOpen,
-        enableLanguageButton: false,
-        keyboardBackgroundColor: Colors.transparent,
-        keysBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        keyTextStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-        keyBorderRadius: BorderRadius.circular(8),
-        keyboardAction: currentKeyboardAction,
-        currentKeyboardLanguage: currentKeyboardLanguage,
-        onButtonPressed: (keyText, keyType) {
-          freeTextService.onButtonPressed(
-              getKeyText(keyText, keyType), keyType);
-          debugPrint(getKeyText(keyText, keyType));
-          //_buildtxt(tEController.text);
-        },
-        onKeyTapDown: (details) {
-          debugPrint("inside tapDOwn");
-          freeTextService.onKeyTapDown(details);
-        },
-        onKeyTapUp: (details) {
-          debugPrint("inside tapUP");
+          ],
+        ),
+        bottomSheet: KeyboardLayouts(
+          key: UniqueKey(),
+          textEditingController: currentKeyboardTEController,
+          focusNode: currentKeyboardFocusNode,
+          isKeyboardOpen: _isKeyboardOpen,
+          enableLanguageButton: false,
+          keyboardBackgroundColor: Colors.transparent,
+          keysBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          keyShadowColor: Colors.black,
+          keyElevation: 10,
+          keyTextStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          keyBorderRadius: BorderRadius.circular(8),
+          keyboardAction: currentKeyboardAction,
+          currentKeyboardLanguage: currentKeyboardLanguage,
+          onButtonPressed: (keyText, keyType) {
+            freeTextService.onButtonPressed(
+                getKeyText(keyText, keyType), keyType);
+            debugPrint(getKeyText(keyText, keyType));
+            //_buildtxt(tEController.text);
+          },
+          onKeyTapDown: (details) {
+            debugPrint("inside tapDOwn");
+            freeTextService.onKeyTapDown(details);
+          },
+          onKeyTapUp: (details) {
+            debugPrint("inside tapUP");
 
-          freeTextService.onKeyTapUp(details);
-        },
+            freeTextService.onKeyTapUp(details);
+          },
+        ),
       ),
     );
   }
@@ -246,5 +324,90 @@ class _FreeFlowTextScreenState extends State<FreeFlowTextScreen> {
       default:
         return originalKeyText;
     }
+  }
+
+  void _showEnd() {
+    var radius = 10.0;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(25.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Successfully Recorded",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 11,
+                    ),
+                    Center(
+                      child: Text(
+                        'Go back to levels page',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 0, 0, 0),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close dialog
+                      Navigator.of(context).pop(); // Navigate back
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(radius),
+                          bottomRight: Radius.circular(radius),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      height: 35,
+                      width: 250,
+                      child: const Text(
+                        "Go Back",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 11,
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

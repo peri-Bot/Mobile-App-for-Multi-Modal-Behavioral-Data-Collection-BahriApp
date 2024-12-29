@@ -1,8 +1,6 @@
-import 'package:bahri_app/screens/TeamPages/MainTeamScreen.dart';
 import 'package:bahri_app/screens/base_screen.dart';
 import 'package:bahri_app/services/teams_services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CreateTeamPage extends StatefulWidget {
   const CreateTeamPage({super.key});

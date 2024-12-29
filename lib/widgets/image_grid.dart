@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:ffi' as ffi;
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import '../services/pic_pick_services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -66,7 +63,6 @@ class _ImageGrid extends State<ImageGrid> {
   }
 
   //double? _tapForce;
-  double? _tapSurfaceArea;
 
   List<String> images = [
     'assets/pic_pick_images/Image(1).jpg',

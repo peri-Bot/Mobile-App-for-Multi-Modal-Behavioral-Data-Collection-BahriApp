@@ -1,4 +1,5 @@
 import 'package:bahri_app/screens/login_screen.dart';
+import 'package:bahri_app/services/enums.dart';
 import 'package:bahri_app/widgets/PopupDialogBox.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:bahri_app/widgets/CustomStepper.dart';
 import 'package:bahri_app/widgets/LogoCircularBorder.dart';
 import 'package:bahri_app/services/UserServices.dart';
-import 'package:pinput/pinput.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:stroke_text/stroke_text.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -22,10 +23,9 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _visibleBackBtn = false;
   bool _isBackBtnDIsabled = false;
   bool _isContinueBtnDIsabled = false;
-  bool _isLoading = false;
 
   String? _error;
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -70,16 +70,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   //widthFactor: 0.5,
                   child: Container(
                     alignment: Alignment.center,
-                    // decoration:
-                    //     BoxDecoration(border: Border.all(color: Colors.black)),
-                    child: const Text(
-                      "Create Account",
-                      style: TextStyle(
-                        fontFamily: "assets/fonts/Poppins-Bold.ttf",
-                        fontSize: 30,
+                    child: const StrokeText(
+                      text: "CREATE ACCOUNT",
+                      textStyle: TextStyle(
+                        fontFamily: "assets/fonts/Poppins-Regular.ttf",
+                        fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Color.fromARGB(255, 0, 0, 0),
                       ),
+                      strokeColor: Color.fromARGB(255, 255, 255, 255),
+                      strokeWidth: 1.9,
                     ),
                   ),
                 ),
@@ -92,14 +92,20 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: CustomStepper(
                     currentStep: _currentStep,
                     steps: const [
-                      {'title': 'Email', 'image': 'assets/images/check.svg'},
-                      {'title': 'Name', 'image': 'assets/images/check.svg'},
-                      {'title': 'DoB', 'image': 'assets/images/check.svg'},
+                      {'title': 'Username', 'image': 'assets/images/check.svg'},
+                      {'title': 'fullName', 'image': 'assets/images/check.svg'},
+                      {
+                        'title': 'Date of Birth',
+                        'image': 'assets/images/check.svg'
+                      },
                       {'title': 'Gender', 'image': 'assets/images/check.svg'},
                       {'title': 'Skill', 'image': 'assets/images/check.svg'},
-                      {'title': 'PWD', 'image': 'assets/images/check.svg'},
-                      {'title': 'TOS', 'image': 'assets/images/check.svg'},
-                      {'title': "OTP", 'image': 'assets/images/check.svg'}
+                      {'title': 'Password', 'image': 'assets/images/check.svg'},
+                      {
+                        'title': 'Terms of Service',
+                        'image': 'assets/images/check.svg'
+                      },
+                      //{'title': "OTP", 'image': 'assets/images/check.svg'}
                     ],
                   ),
                 ),
@@ -118,53 +124,98 @@ class _SignupScreenState extends State<SignupScreen> {
                 FractionallySizedBox(
                   widthFactor: 0.9,
                   child: ElevatedButton(
-                    onPressed: () {
-                      _isContinueBtnDIsabled
-                          ? null
-                          : setState(() {
-                              var errRetrun = validate(_currentStep);
-                              if (_currentStep == 7) {
+                    onPressed: _isContinueBtnDIsabled
+                        ? null
+                        : () async {
+                            // Move async here instead of in setState
+                            var errRetrun = validate(_currentStep);
+
+                            if (_currentStep == 6) {
+                              setState(() {
                                 _isBackBtnDIsabled = true;
                                 _isContinueBtnDIsabled = true;
-                                UserServices newSrvc = UserServices();
-                                Random rng = Random();
-                                final dateString = _birthdateController.text;
-                                final dateFormat = DateFormat('yyyy-MM-dd');
-                                DateTime dateti = dateFormat.parse(dateString);
+                              });
 
-                                newSrvc.newUser = newSrvc.createUser(
-                                    id: rng.nextInt(100).toDouble(),
-                                    firstName: _nameController.text
-                                        .trim()
-                                        .split(" ")[0],
-                                    lastName: _nameController.text
-                                        .trim()
-                                        .split(" ")[1],
-                                    dOB: dateti,
-                                    gender: _selectedGender![0],
-                                    userName: "userName${rng.nextInt(100)}",
-                                    email: _emailController.text.trim(),
-                                    skillLevel: _selectedSkill!,
-                                    password: _passwordController.text,
-                                    progress: rng.nextInt(100).toDouble());
-                                var result =
-                                    newSrvc.registerUserDartFrog(context);
-                                confirmregister(result);
-                              } else if (errRetrun.isEmpty || errRetrun == "") {
-                                if (_currentStep < 7) {
+                              UserServices newSrvc = UserServices();
+                              Random rng = Random();
+                              final dateString = _birthdateController.text;
+                              final dateFormat = DateFormat('yyyy-MM-dd');
+                              DateTime dateti = dateFormat.parse(dateString);
+
+                              newSrvc.newUser = newSrvc.createUser(
+                                  id: rng.nextInt(100).toDouble(),
+                                  firstName:
+                                      _nameController.text.trim().split(" ")[0],
+                                  lastName:
+                                      _nameController.text.trim().split(" ")[1],
+                                  dOB: dateti,
+                                  gender: _selectedGender![0],
+                                  userName: _usernameController.text.trim(),
+                                  skillLevel: _selectedSkill!,
+                                  password: _passwordController.text,
+                                  progress: rng.nextInt(100).toDouble());
+                              var result =
+                                  newSrvc.registerUserDartFrog(context);
+                              confirmregister(result);
+                            } else if (errRetrun.isEmpty || errRetrun == "") {
+                              if (_currentStep == 0) {
+                                setState(() {
+                                  _isContinueBtnDIsabled = true;
+                                  _error = null;
+                                });
+
+                                UserServices uService = UserServices();
+                                var res =
+                                    await uService.checkUsernameAvailability(
+                                        _usernameController.text.trim());
+
+                                setState(() {
+                                  switch (res) {
+                                    case UsernameCheckResult.usernameAvailable:
+                                      _currentStep++;
+                                      _error = null;
+                                      _isContinueBtnDIsabled = false;
+                                      break;
+                                    case UsernameCheckResult.usernameTaken:
+                                      _isContinueBtnDIsabled = false;
+                                      _error =
+                                          "Username '${_usernameController.text.trim()}' is already taken.";
+                                      break;
+                                    case UsernameCheckResult.error:
+                                      _error =
+                                          "An error occurred while checking the username.";
+                                      _isContinueBtnDIsabled = false;
+                                      break;
+                                    default:
+                                      _error =
+                                          "An error occurred while checking the username.";
+                                      _isContinueBtnDIsabled = false;
+                                      break;
+                                  }
+                                  if (_currentStep > 0) {
+                                    _visibleBackBtn = true;
+                                  } else if (_currentStep <= 0) {
+                                    _visibleBackBtn = false;
+                                  }
+                                });
+                              } else if (_currentStep < 6) {
+                                setState(() {
                                   _currentStep++;
-                                }
-                                if (_currentStep > 0) {
-                                  _visibleBackBtn = true;
-                                } else if (_currentStep <= 0) {
-                                  _visibleBackBtn = false;
-                                }
-                                _error = null;
-                              } else {
-                                _error = errRetrun;
+                                  _error = null;
+
+                                  if (_currentStep > 0) {
+                                    _visibleBackBtn = true;
+                                  } else if (_currentStep <= 0) {
+                                    _visibleBackBtn = false;
+                                  }
+                                });
                               }
-                            });
-                    },
+                            } else {
+                              setState(() {
+                                _error = errRetrun;
+                              });
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB19EF0),
                       minimumSize: const Size(double.infinity, 55),
@@ -187,7 +238,6 @@ class _SignupScreenState extends State<SignupScreen> {
                               fontSize: 18,
                               color: Color.fromARGB(255, 255, 255, 255),
                               fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                              //fontWeight: FontWeight.bold,
                             ),
                           ),
                   ),
@@ -259,11 +309,11 @@ class _SignupScreenState extends State<SignupScreen> {
           builder:
               (BuildContext context, void Function(void Function()) setState) {
             return TextField(
-              controller: _emailController,
+              controller: _usernameController,
               decoration: InputDecoration(
                 fillColor: Colors.white,
                 filled: true,
-                labelText: 'Email',
+                labelText: 'Username',
                 errorText: _error,
                 border: const UnderlineInputBorder(),
               ),
@@ -332,6 +382,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 errorText: _error,
                 border: const UnderlineInputBorder(),
               ),
+              dropdownColor: Colors.white, // Background color of dropdown menu
+              menuMaxHeight: 200, // Optional: limits the height of dropdown
+              borderRadius:
+                  BorderRadius.circular(8), // Border radius of dropdown menu
               value: _selectedGender,
               items: ['Male', 'Female'].map((String value) {
                 return DropdownMenuItem<String>(
@@ -352,84 +406,128 @@ class _SignupScreenState extends State<SignupScreen> {
             (BuildContext context, void Function(void Function()) setState) {
           return Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.all(0.0),
-                child: Text(
-                  'Select Your Phone Skill level',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "assets/fonts/Poppins-Bold.ttf",
-                  ),
-                  textAlign: TextAlign.center,
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              GridView.builder(
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 4,
-                    //crossAxisSpacing: 0,
-                  ),
-                  itemCount: levels.length,
-                  itemBuilder: (context, index) {
-                    return RadioListTile<String>(
-                      contentPadding: EdgeInsets.zero,
-                      visualDensity: const VisualDensity(horizontal: -4.0),
-                      //dense: true,
-                      value: levels[index],
-                      groupValue: _selectedSkill,
-                      selected: _selectedSkill == levels[index],
-                      onChanged: (newValue) {
-                        setState(
-                          () {
-                            _selectedSkill = newValue;
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: StrokeText(
+                        text: 'SELECT YOUR PHONE UTILIZATION SKILL LEVEL',
+                        textStyle: TextStyle(
+                          fontFamily: "assets/fonts/Poppins-Regular.ttf",
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                        strokeColor: Color.fromARGB(255, 255, 255, 255),
+                        strokeWidth: 0,
+                      ),
+                    ),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 4,
+                      ),
+                      itemCount: levels.length,
+                      itemBuilder: (context, index) {
+                        return RadioListTile<String>(
+                          contentPadding: EdgeInsets.zero,
+                          visualDensity: const VisualDensity(
+                            horizontal: -4.0,
+                            vertical: -4.0, // Added vertical density adjustment
+                          ),
+                          value: levels[index],
+                          groupValue: _selectedSkill,
+                          selected: _selectedSkill == levels[index],
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedSkill = newValue;
+                            });
                           },
+                          title: Row(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .center, // Align items vertically center
+                            children: [
+                              Expanded(
+                                // Wrap RichText with Expanded
+                                child: RichText(
+                                  textAlign: TextAlign.start,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: levels[index],
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                          height: 1.0, // Add line height
+                                        ),
+                                      ),
+                                      const WidgetSpan(
+                                        alignment: PlaceholderAlignment.middle,
+                                        child: SizedBox(
+                                            width:
+                                                7), // Add space between text and icon
+                                      ),
+                                      WidgetSpan(
+                                        alignment: PlaceholderAlignment
+                                            .middle, // Align icon with text
+                                        child: SizedBox(
+                                          // Wrap IconButton with SizedBox for consistent sizing
+                                          height: 24,
+                                          width: 24,
+                                          child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints:
+                                                const BoxConstraints(), // Remove default constraints
+                                            onPressed: () {
+                                              String filename = "";
+                                              switch (index) {
+                                                case 0:
+                                                  filename = "Basic_Skill.md";
+                                                case 1:
+                                                  filename =
+                                                      "Intermediate_Skill.md";
+                                                case 2:
+                                                  filename =
+                                                      "Advanced_Skill.md";
+                                                case 3:
+                                                  filename = "Expert_skill.md";
+                                              }
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Popupdialogbox(
+                                                    mdFileName: filename,
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(
+                                              Icons.info,
+                                              size:
+                                                  17, // Slightly increased icon size
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                       },
-                      title: Row(
-                        children: [
-                          Flexible(
-                            //fit: FlexFit.loose,
-                            child: Text(
-                              levels[index],
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                          Flexible(
-                            //fit: FlexFit.tight,
-                            child: IconButton(
-                              onPressed: () {
-                                String filename = "";
-                                switch (index) {
-                                  case 0:
-                                    filename = "Basic_Skill.md";
-                                  case 1:
-                                    filename = "Intermediate_Skill.md";
-                                  case 2:
-                                    filename = "Advanced_Skill.md";
-                                  case 3:
-                                    filename = "Expert_skill.md";
-                                }
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return Popupdialogbox(
-                                      mdFileName: filename,
-                                    );
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.help_outline,
-                                size: 11,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    );
-                  }),
+                    ),
+                  ],
+                ),
+              )
             ],
           );
         });
@@ -505,13 +603,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const Divider(color: Colors.transparent),
                 TextField(
-                  controller: _emailController,
+                  controller: _usernameController,
                   readOnly: true,
                   decoration: const InputDecoration(
                     fillColor: Colors.white,
                     filled: true,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
-                    labelText: 'Email',
+                    labelText: 'Username',
                     border: UnderlineInputBorder(),
                   ),
                 ),
@@ -618,30 +716,6 @@ class _SignupScreenState extends State<SignupScreen> {
           },
         );
 
-      case 7:
-        return StatefulBuilder(
-          builder:
-              (BuildContext context, void Function(void Function()) setState) {
-            return const Column(
-              children: [
-                Center(
-                  child: Text(
-                    "Press Continue to confirm signup",
-                    style: TextStyle(
-                      fontFamily: "assets/fonts/Poppins-Bold.ttf",
-                    ),
-                  ),
-                ),
-                Divider(color: Colors.transparent),
-                // const Pinput(
-                //   length: 4,
-                //   //defaultPinTheme: PinTheme(colors),
-                // )
-              ],
-            );
-          },
-        );
-
       default:
         return Container();
     }
@@ -652,7 +726,8 @@ class _SignupScreenState extends State<SignupScreen> {
     var error = "";
     switch (currentStep) {
       case 0:
-        error = usrsrvs.validateUserInput(email: _emailController.text.trim());
+        error = usrsrvs.validateUserInput(
+            username: _usernameController.text.trim());
       case 1:
         String? fname;
         if (_nameController.text.trim().isEmpty) {
@@ -692,19 +767,75 @@ class _SignupScreenState extends State<SignupScreen> {
   void confirmregister(Future<String> result) async {
     String res = await result;
     if (!mounted) return;
+
     if (res == 'sucess') {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      int countdown = 5; // Initial countdown value
+
+      // Show a dialog with countdown
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent closing the dialog manually
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              // Timer to update countdown every second
+              Future.delayed(Duration(seconds: 1), () {
+                if (countdown > 1) {
+                  setState(() {
+                    countdown--;
+                  });
+                } else {
+                  Navigator.of(context).pop(); // Close the dialog
+                  // Navigate back to the login screen
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
+                  );
+                }
+              });
+
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11), // Set border radius
+                ),
+                backgroundColor: Colors.white, // Set dialog background color
+                child: Padding(
+                  padding: const EdgeInsets.all(
+                      20.0), // Add padding inside the dialog
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // Wrap content
+                    children: [
+                      const Text(
+                        "Successfully Registered",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black, // Black text color
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Redirecting to homepage in $countdown seconds...",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black, // Black text color
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       );
     } else {
       _isContinueBtnDIsabled = false;
       _isBackBtnDIsabled = false;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Something went wrong, Please try again later}")));
+          content: Text("Something went wrong, Please try again later")));
     }
   }
 }
