@@ -11,8 +11,7 @@ class BallGame extends StatefulWidget {
   State<BallGame> createState() => _BallGameState();
 }
 
-class _BallGameState extends State<BallGame>
-    with SingleTickerProviderStateMixin {
+class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin {
   final GyroData gyroData = GyroData();
   double posX = 0.0;
   double posY = 0.0;
@@ -26,11 +25,41 @@ class _BallGameState extends State<BallGame>
   late AnimationController _controller;
   bool isGameOver = false;
   bool isGameWon = false;
+  bool isGameStarted = false;
   int score = 0;
   late Timer _timer;
-  int currentLevel = 1;
+  String currentDifficulty = '';
   List<Rect> obstacles = [];
   String? uid;
+  DateTime? _lastUpdateTime;
+  double _lastGyroX = 0.0;
+  double _lastGyroY = 0.0;
+  double _lastGyroZ = 0.0;
+  bool _isMoving = false;
+
+  final Map<String, List<Rect>> difficultyLevels = {
+    'Easy': [
+      const Rect.fromLTWH(50, 150, 200, 40),
+      const Rect.fromLTWH(50, 320, 200, 40),
+      const Rect.fromLTWH(220, 550, 150, 40),
+    ],
+    'Medium': [
+      const Rect.fromLTWH(50, 150, 200, 30),
+      const Rect.fromLTWH(50, 240, 200, 30),
+      const Rect.fromLTWH(150, 500, 200, 30),
+      const Rect.fromLTWH(150, 600, 200, 30),
+    ],
+    'Hard': [
+      const Rect.fromLTWH(50, 100, 100, 25),
+      const Rect.fromLTWH(50, 200, 150, 25),
+      const Rect.fromLTWH(50, 300, 200, 25),
+      const Rect.fromLTWH(50, 400, 250, 25),
+      const Rect.fromLTWH(50, 500, 200, 25),
+      const Rect.fromLTWH(50, 600, 150, 25),
+      const Rect.fromLTWH(50, 700, 100, 25),
+    ],
+  };
+
   Future<void> fetchUserId() async {
     uid = await getUserId();
     debugPrint("User ID is set: ==$uid");
@@ -49,16 +78,27 @@ class _BallGameState extends State<BallGame>
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-        posY = MediaQuery.of(context).size.height -
-            ballSize -
-            20; // Start above the bottom border
-        _setLevel(currentLevel);
-      });
+  }
+
+  void startGame(String difficulty) async {
+    // Ensure UID is set
+    if (uid == null) {
+      await fetchUserId();
+    }
+
+    // Start a new gyro session when game starts
+    await gyroData.startNewSession(uid ?? 'anonymous');
+
+    setState(() {
+      isGameStarted = true;
+      currentDifficulty = difficulty;
+      obstacles = difficultyLevels[difficulty]!;
+      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
+      posY = MediaQuery.of(context).size.height - ballSize - 20;
+      isGameOver = false;
+      isGameWon = false;
+      score = 0;
     });
-    _checkGyroscope();
     _initializeSensors();
     _startScoreTimer();
   }
@@ -77,43 +117,80 @@ class _BallGameState extends State<BallGame>
           double gyroY = sensorEvent.data[1];
           double gyroZ = sensorEvent.data[2];
 
-          GyroData gyroData = GyroData();
+          // Debug prints to verify sensor data
+          debugPrint('Raw Gyro Data - X: $gyroX, Y: $gyroY, Z: $gyroZ');
 
-          gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
-          gyroData.calculateTiltSpeed(gyroX, gyroY, DateTime.now());
-          gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationDirection(gyroX, DateTime.now());
-          gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
-          gyroData.calculateRotationDuration(gyroX, DateTime.now());
-          gyroData.printMetrics();
-          gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ);
+          // Calculate time delta
+          if (_lastUpdateTime != null) {
+            double deltaTime = currentTime.difference(_lastUpdateTime!).inMilliseconds / 1000.0;
 
-          setState(() {
-            double horizontalSensitivity = 20.0;
-            double verticalSensitivity = 30.0;
+            // Calculate all gyro metrics in sequence
+            // 1. Basic orientation and stability calculations
+            gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
+            gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
 
-            posX += sensorEvent.data[1] * horizontalSensitivity;
-            posY += sensorEvent.data[0] * verticalSensitivity;
+            // 2. Motion and speed calculations
+            gyroData.calculateTiltSpeed(gyroX, gyroY, currentTime);
+            gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
 
-            posX =
-                posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-            posY = posY.clamp(
-                0.0,
-                MediaQuery.of(context).size.height -
-                    ballSize -
-                    10); // Adjusted to stay above the bottom border
+            // 3. Rotation and path calculations
+            gyroData.calculateRotationDirection(gyroX, currentTime);
+            gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
+            gyroData.calculateRotationDuration(gyroX, currentTime);
 
-            if (_checkCollision()) {
-              _gameOver();
+            // Debug prints for all metrics
+            debugPrint('''
+              Stability: ${gyroData.calculateTiltStability(gyroX, gyroY, gyroZ)}
+              MicroAdjustments: ${gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ)}
+              PathStraightness: ${gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ)}
+              TiltSpeed: ${gyroData.tiltSpeed}
+              RotationDuration: ${gyroData.rotationDuration}
+              DirectionConsistency: ${gyroData.rotationDirectionConsistency}
+            ''');
+
+            // Check if movement is significant
+            if (gyroData.isSignificantMovement(gyroX, gyroY, gyroZ)) {
+              _isMoving = true;
+
+              // Store the gyro data
+              gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ).then((_) {
+                debugPrint('Stored gyro data with all metrics');
+              });
+            } else {
+              if (_isMoving) {
+                _isMoving = false;
+                // Reset rotation tracking when movement stops
+                gyroData.rotationStartTime = null;
+                gyroData.rotationDuration = 0.0;
+              }
             }
-            if (_checkGoal()) {
-              _gameWon();
-            }
-            print(
-                'Gyroscope data: x=${sensorEvent.data[0]}, y=${sensorEvent.data[1]}, z=${sensorEvent.data[2]}');
-            print('Ball position: posX=$posX, posY=$posY');
-          });
+
+            // Update ball position
+            setState(() {
+              double horizontalSensitivity = 20.0;
+              double verticalSensitivity = 30.0;
+
+              posX += gyroY * horizontalSensitivity;
+              posY += gyroX * verticalSensitivity;
+
+              // Clamp positions
+              posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+              posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+
+              if (_checkCollision()) {
+                _gameOver();
+              }
+              if (_checkGoal()) {
+                _gameWon();
+              }
+            });
+          }
+
+          // Store current values for next update
+          _lastUpdateTime = currentTime;
+          _lastGyroX = gyroX;
+          _lastGyroY = gyroY;
+          _lastGyroZ = gyroZ;
         }
       });
     }
@@ -131,7 +208,6 @@ class _BallGameState extends State<BallGame>
 
   bool _checkCollision() {
     Rect ballRect = Rect.fromLTWH(posX, posY, ballSize, ballSize);
-
     for (Rect obstacle in obstacles) {
       if (ballRect.overlaps(obstacle)) {
         return true;
@@ -146,33 +222,43 @@ class _BallGameState extends State<BallGame>
     return ballRect.overlaps(goalRect);
   }
 
-  void _gameOver() {
+  void _gameOver() async {
+    await gyroData.endSession();
     setState(() {
       isGameOver = true;
-      _sensorSubscription.cancel();
-      _timer.cancel();
-      score = 0; // Reset the score
-      currentLevel = 1; // Restart from level 1
     });
+    _sensorSubscription.cancel();
+    _timer.cancel();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _resetGame();
+                setState(() {
+                  isGameStarted = false;
+                });
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child:
-                  const Text('Restart', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                startGame(currentDifficulty);
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -180,30 +266,35 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  void _gameWon() {
+
+
+void _gameWon() async {
+    await gyroData.endSession();
     setState(() {
       isGameWon = true;
-      _sensorSubscription.cancel();
-      _timer.cancel();
     });
+    _sensorSubscription.cancel();
+    _timer.cancel();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('You Win!', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          title: const Text('Level Complete!', style: TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _continueToNextLevel();
+                setState(() {
+                  isGameStarted = false;
+                });
               },
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Next', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
@@ -221,99 +312,8 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  List<Rect> level1Obstacles = [
-    const Rect.fromLTWH(50, 150, 200, 40),
-    const Rect.fromLTWH(50, 240, 200, 40),
-    const Rect.fromLTWH(50, 320, 200, 40),
-    const Rect.fromLTWH(50, 400, 130, 40),
-    const Rect.fromLTWH(220, 550, 150, 40),
-    const Rect.fromLTWH(220, 650, 150, 40),
-  ];
-  List<Rect> level2Obstacles = [
-    const Rect.fromLTWH(50, 150, 200, 30),
-    const Rect.fromLTWH(50, 240, 200, 30),
-    const Rect.fromLTWH(150, 500, 200, 30),
-    const Rect.fromLTWH(150, 600, 200, 30),
-  ];
-  List<Rect> level3Obstacles = [
-    const Rect.fromLTWH(50, 100, 100, 30),
-    const Rect.fromLTWH(100, 200, 100, 30),
-    const Rect.fromLTWH(50, 300, 100, 30),
-    const Rect.fromLTWH(280, 400, 100, 30),
-    const Rect.fromLTWH(180, 500, 100, 30),
-    const Rect.fromLTWH(280, 600, 100, 30),
-    const Rect.fromLTWH(50, 650, 100, 30),
-  ];
-  List<Rect> level4Obstacles = [
-    const Rect.fromLTWH(50, 100, 100, 25),
-    const Rect.fromLTWH(50, 200, 150, 25),
-    const Rect.fromLTWH(50, 300, 200, 25),
-    const Rect.fromLTWH(50, 400, 250, 25),
-    const Rect.fromLTWH(50, 500, 200, 25),
-    const Rect.fromLTWH(50, 600, 150, 25),
-    const Rect.fromLTWH(50, 700, 100, 25),
-  ];
-  List<Rect> level5Obstacles = [
-    const Rect.fromLTWH(50, 150, 100, 25),
-    const Rect.fromLTWH(200, 250, 150, 25),
-    const Rect.fromLTWH(50, 350, 100, 25),
-    const Rect.fromLTWH(250, 500, 100, 25),
-    const Rect.fromLTWH(50, 500, 100, 25),
-    const Rect.fromLTWH(200, 680, 150, 25),
-  ];
-
-  void _setLevel(int level) {
-    setState(() {
-      switch (level) {
-        case 1:
-          obstacles = level1Obstacles;
-          break;
-        case 2:
-          obstacles = level2Obstacles;
-          break;
-        case 3:
-          obstacles = level3Obstacles;
-          break;
-        case 4:
-          obstacles = level4Obstacles;
-          break;
-        case 5:
-          obstacles = level5Obstacles;
-          break;
-        default:
-          obstacles = level1Obstacles;
-      }
-    });
-  }
-
-  void _resetGame() {
-    setState(() {
-      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-      posY = MediaQuery.of(context).size.height - ballSize - 20;
-      isGameOver = false;
-      isGameWon = false;
-    });
-    _initializeSensors();
-    _startScoreTimer();
-  }
-
-  void _continueToNextLevel() {
-    setState(() {
-      score += 5;
-      posX = (MediaQuery.of(context).size.width - ballSize) / 2;
-      posY = MediaQuery.of(context).size.height - ballSize - 20;
-      isGameWon = false;
-      score = 0;
-      currentLevel = (currentLevel % 5) + 1; // Move to the next level
-    });
-    _setLevel(currentLevel);
-    _initializeSensors();
-    _startScoreTimer();
-  }
-
   void _checkGyroscope() async {
-    bool sensorAvailable =
-        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
+    bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
     if (!sensorAvailable) {
       _showGyroscopeNotAvailableDialog();
     }
@@ -339,28 +339,149 @@ class _BallGameState extends State<BallGame>
     );
   }
 
+  Widget buildDifficultyMenu() {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Select Difficulty',
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    offset: Offset(5.0, 5.0),
+                    blurRadius: 3.0,
+                    color: Colors.black,
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 10, bottom: 40),
+              child: Text(
+                'Note: The game will start right when you choose a difficulty',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            _buildLevelButton('Easy', Colors.green, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton('Medium', Colors.orange, 'HighScore:'),
+            const SizedBox(height: 20),
+            _buildLevelButton('Hard', Colors.red, 'HighScore:'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelButton(String levelName, Color buttonColor, String highScoreText) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      child: GestureDetector(
+        onTap: () => startGame(levelName),
+        child: Container(
+          width: double.infinity,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: buttonColor,
+              width: 2.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 20.0),
+                child: Text(
+                  levelName,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: Text(
+                  highScoreText,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
   @override
-  void dispose() {
-    _sensorSubscription.cancel();
+  void dispose()async {
+    await gyroData.endSession();
+    if (_isMoving) {
+      gyroData.endSession();
+    }
     _controller.dispose();
-    _timer.cancel();
+    if (isGameStarted) {
+      _sensorSubscription.cancel();
+      _timer.cancel();
+    }
+    if (_isMoving) {
+      gyroData.endSession();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!isGameStarted) {
+      return Scaffold(
+        body: buildDifficultyMenu(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.blue[40],
       body: Stack(
         children: [
-          // Border
           AnimatedContainer(
             duration: const Duration(milliseconds: 500),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.blueAccent, width: 20),
             ),
           ),
-          // Ball
           AnimatedPositioned(
             duration: const Duration(milliseconds: 100),
             left: posX,
@@ -369,14 +490,11 @@ class _BallGameState extends State<BallGame>
               width: ballSize,
               height: ballSize,
               decoration: BoxDecoration(
-                color: isGameOver || isGameWon
-                    ? Colors.transparent
-                    : Colors.pinkAccent,
+                color: isGameOver || isGameWon ? Colors.transparent : Colors.pinkAccent,
                 shape: BoxShape.circle,
               ),
             ),
           ),
-          // Obstacles
           for (Rect obstacle in obstacles)
             Positioned(
               left: obstacle.left,
@@ -387,7 +505,6 @@ class _BallGameState extends State<BallGame>
                 color: Colors.blue,
               ),
             ),
-          // Goal area
           Positioned(
             left: 20,
             right: 20,
@@ -400,40 +517,54 @@ class _BallGameState extends State<BallGame>
                 child: Text(
                   'GOAL',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
           ),
-          if (isGameWon)
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _continueToNextLevel();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Continue to Next Level'),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Back'),
-                  ),
-                ],
+          // Score display
+          Positioned(
+            top: 60,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Score: $score',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+          ),
+          // Difficulty display
+          Positioned(
+            top: 60,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Level: $currentDifficulty',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

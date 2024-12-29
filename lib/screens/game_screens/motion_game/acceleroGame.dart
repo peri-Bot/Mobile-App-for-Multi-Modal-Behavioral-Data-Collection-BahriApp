@@ -188,6 +188,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isPaused = false;
     });
     _stepCounter.userId = uid;
+    _stepCounter.initializeSession();
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
@@ -203,6 +204,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isPaused = false;
     });
     _stepCounter.userId = uid;
+    _stepCounter.initializeSession();
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
@@ -211,13 +213,14 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   void _startSitting() {
     setState(() {
       _isActive = true;
-      _currentActivity = 'sitting';
+      _currentActivity = 'Walked up and down stairs';
       _isWalking = false;
       _isJogging = false;
       _isSitting = true;
       _isPaused = false;
     });
     _stepCounter.userId = uid;
+    _stepCounter.initializeSession();
     _initSensor();
     _stepCounter.startDataCollection();
     _startTimer();
