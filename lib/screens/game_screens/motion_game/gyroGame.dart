@@ -256,19 +256,8 @@ class _BallGameState extends State<BallGame>
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Choose Level',
+              child: const Text('GO BACK',
                   style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                startGame(currentDifficulty);
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-              ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -318,35 +307,6 @@ class _BallGameState extends State<BallGame>
                 backgroundColor: Colors.redAccent,
               ),
               child: const Text('Quit', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _checkGyroscope() async {
-    bool sensorAvailable =
-        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
-    if (!sensorAvailable) {
-      _showGyroscopeNotAvailableDialog();
-    }
-  }
-
-  void _showGyroscopeNotAvailableDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Gyroscope Not Available'),
-          content: const Text('Your device does not have a gyroscope.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
             ),
           ],
         );
