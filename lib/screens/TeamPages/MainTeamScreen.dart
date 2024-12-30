@@ -41,6 +41,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const BaseScreen()),
@@ -91,8 +92,6 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                                 elevation: 3,
                                 child: ListTile(
                                   title: Text(member['userName']),
-                                  subtitle: Text(
-                                      'Tap Score: ${member['tapScore']}, Keystroke Score: ${member['keystrokeScore']}, Swipe Score: ${member['swipeScore']}'),
                                 ),
                               );
                             },
@@ -162,6 +161,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
 
       if (mounted) {
         // Ensure the widget is still mounted
+
+        Navigator.of(context).popUntil((route) => route.isFirst);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const BaseScreen()),

@@ -88,49 +88,48 @@ class LevelSelectionScreen extends StatelessWidget {
                         ),
 
                         // The level selection buttons with HighScore label
-                        const SizedBox(height: 46),
 
                         // _buildLevelButton(context, 'Easy', 1, 'HighScore:'),
                         // const SizedBox(height: 46),
                         // _buildLevelButton(context, 'Medium', 2, 'HighScore:'),
                         // const SizedBox(height: 46),
                         // _buildLevelButton(context, 'Hard', 3, 'HighScore:'),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => GameScreen(
-                                  level: 1, // Pass the selected level
-                                  // Pass the userId
-                                  onLevelComplete: (score) {
-                                    debugPrint(
-                                        'Level complete with score: $score');
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 255, 255, 255),
-                            minimumSize: const Size(double.infinity, 75),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Easy',
-                              style: TextStyle(
-                                fontSize: 21,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                                //fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (context) => GameScreen(
+                        //           level: 1, // Pass the selected level
+                        //           // Pass the userId
+                        //           onLevelComplete: (score) {
+                        //             debugPrint(
+                        //                 'Level complete with score: $score');
+                        //           },
+                        //         ),
+                        //       ),
+                        //     );
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor:
+                        //         const Color.fromARGB(255, 255, 255, 255),
+                        //     minimumSize: const Size(double.infinity, 75),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(10),
+                        //     ),
+                        //   ),
+                        //   child: const Center(
+                        //     child: Text(
+                        //       'Easy',
+                        //       style: TextStyle(
+                        //         fontSize: 21,
+                        //         color: Color.fromARGB(255, 0, 0, 0),
+                        //         fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                        //         //fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         const SizedBox(height: 46),
 
                         ElevatedButton(
@@ -159,7 +158,7 @@ class LevelSelectionScreen extends StatelessWidget {
                           ),
                           child: const Center(
                             child: Text(
-                              'Medium',
+                              'Left or Right ',
                               style: TextStyle(
                                 fontSize: 21,
                                 color: Color.fromARGB(255, 0, 0, 0),
@@ -197,7 +196,7 @@ class LevelSelectionScreen extends StatelessWidget {
                           ),
                           child: const Center(
                             child: Text(
-                              'Hard',
+                              'Up or Down',
                               style: TextStyle(
                                 fontSize: 21,
                                 color: Color.fromARGB(255, 0, 0, 0),

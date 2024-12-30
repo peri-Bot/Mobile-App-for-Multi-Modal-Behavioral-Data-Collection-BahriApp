@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/languages_alphabets.dart';
@@ -542,7 +541,7 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
                         )
                       : Icon(
                           _getIconForKeyType(keyType),
-                          size: screenHeight * 0.025,
+                          size: screenHeight * 0.026,
                           color: widget.keyTextStyle.color,
                         ),
                 ),
@@ -585,11 +584,11 @@ class _KeyboardLayoutsState extends State<KeyboardLayouts> {
       case KeyTypes.newLineKey:
         return Icons.subdirectory_arrow_left_rounded;
       case KeyTypes.changeKeyboardKey:
-        return CupertinoIcons.arrow_up_circle;
+        return Icons.arrow_circle_up;
       case KeyTypes.changeLanguageKey:
-        return CupertinoIcons.globe;
+        return Icons.language;
       case KeyTypes.backSpace:
-        return CupertinoIcons.delete_left;
+        return Icons.backspace;
       default:
         return Icons.done; // Default icon if none match
     }

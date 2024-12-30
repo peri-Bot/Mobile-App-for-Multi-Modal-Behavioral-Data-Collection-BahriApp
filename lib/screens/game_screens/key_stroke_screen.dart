@@ -303,9 +303,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                               barrierDismissible: false,
                               context: context,
                               builder: (context) {
-                                return ShowScorePopup(
-                                  score: _score,
-                                  highScore: 22,
+                                return const ShowScorePopup(
+                                  radius: 8,
                                 );
                               },
                             );
@@ -325,9 +324,8 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                               barrierDismissible: false,
                               context: context,
                               builder: (context) {
-                                return ShowScorePopup(
-                                  score: _score,
-                                  highScore: 22,
+                                return const ShowScorePopup(
+                                  radius: 8,
                                 );
                               },
                             );

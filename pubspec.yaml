@@ -28,38 +28,38 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  another_stepper: ^1.2.2
-  cupertino_icons: ^1.0.6
-  firebase_core: ^2.24.2
+  #another_stepper: ^1.2.2
+  #cupertino_icons: ^1.0.6
+  #firebase_core: ^2.24.2
   flutter:
     sdk: flutter
   flutter_markdown: any
-  flutter_svg: ^2.0.10+1
+  #flutter_svg: ^2.0.10+1
   path: ^1.9.0
-  provider: ^6.1.2
-  flutter_dotenv: ^5.1.0
+  #provider: ^6.1.2
+  #flutter_dotenv: ^5.1.0
   curved_navigation_bar: ^1.0.6
   pinput: ^5.0.0
-  cloud_firestore: ^4.14.0
+  #cloud_firestore: ^4.14.0
   flutter_secure_storage: ^8.0.0
   connectivity_plus: ^6.0.5
   intl: ^0.18.0
-  firebase_auth: ^4.16.0
-  animated_text_kit: ^4.2.2
-  firebase_database: ^10.4.0
+  #firebase_auth: ^4.16.0
+  #animated_text_kit: ^4.2.2
+  #firebase_database: ^10.4.0
 
   http: ^1.2.2
   #asset_fill: ^2.0.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   stroke_text: ^0.0.3 
-  artistic_multilingual_keyboards: ^0.0.4
+  #artistic_multilingual_keyboards: ^0.0.4
   animated_toggle_switch: ^0.8.3
 
   flutter_sensors:
   url_launcher:
   mailto:
-  uuid:
+  #uuid:
 
 
 dev_dependencies:

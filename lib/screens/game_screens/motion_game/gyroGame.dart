@@ -1,4 +1,5 @@
 import 'package:bahri_app/services/gyroGame_services.dart';
+import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
@@ -11,7 +12,8 @@ class BallGame extends StatefulWidget {
   State<BallGame> createState() => _BallGameState();
 }
 
-class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin {
+class _BallGameState extends State<BallGame>
+    with SingleTickerProviderStateMixin {
   final GyroData gyroData = GyroData();
   double posX = 0.0;
   double posY = 0.0;
@@ -31,10 +33,14 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
   String currentDifficulty = '';
   List<Rect> obstacles = [];
   String? uid;
+  bool _canPop = false;
+  void updateCanPop(bool value) {
+    setState(() {
+      _canPop = value;
+    });
+  }
+
   DateTime? _lastUpdateTime;
-  double _lastGyroX = 0.0;
-  double _lastGyroY = 0.0;
-  double _lastGyroZ = 0.0;
   bool _isMoving = false;
 
   final Map<String, List<Rect>> difficultyLevels = {
@@ -78,6 +84,7 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
+    gyroData.initHive();
   }
 
   void startGame(String difficulty) async {
@@ -122,8 +129,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
           // Calculate time delta
           if (_lastUpdateTime != null) {
-            double deltaTime = currentTime.difference(_lastUpdateTime!).inMilliseconds / 1000.0;
-
             // Calculate all gyro metrics in sequence
             // 1. Basic orientation and stability calculations
             gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
@@ -153,7 +158,9 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               _isMoving = true;
 
               // Store the gyro data
-              gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ).then((_) {
+              gyroData
+                  .storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ)
+                  .then((_) {
                 debugPrint('Stored gyro data with all metrics');
               });
             } else {
@@ -167,15 +174,17 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
             // Update ball position
             setState(() {
-              double horizontalSensitivity = 20.0;
-              double verticalSensitivity = 30.0;
+              double horizontalSensitivity = 10.0;
+              double verticalSensitivity = 15.0;
 
               posX += gyroY * horizontalSensitivity;
               posY += gyroX * verticalSensitivity;
 
               // Clamp positions
-              posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-              posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+              posX =
+                  posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+              posY = posY.clamp(
+                  0.0, MediaQuery.of(context).size.height - ballSize - 10);
 
               if (_checkCollision()) {
                 _gameOver();
@@ -188,9 +197,6 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
 
           // Store current values for next update
           _lastUpdateTime = currentTime;
-          _lastGyroX = gyroX;
-          _lastGyroY = gyroY;
-          _lastGyroZ = gyroZ;
         }
       });
     }
@@ -236,10 +242,12 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
                 setState(() {
                   isGameStarted = false;
@@ -248,10 +256,12 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level',
+                  style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
                 startGame(currentDifficulty);
               },
@@ -266,9 +276,7 @@ class _BallGameState extends State<BallGame> with SingleTickerProviderStateMixin
     );
   }
 
-
-
-void _gameWon() async {
+  void _gameWon() async {
     await gyroData.endSession();
     setState(() {
       isGameWon = true;
@@ -281,11 +289,14 @@ void _gameWon() async {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('Level Complete!', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          title: const Text('Level Complete!',
+              style: TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
                 setState(() {
                   isGameStarted = false;
@@ -294,10 +305,12 @@ void _gameWon() async {
               style: TextButton.styleFrom(
                 backgroundColor: Colors.teal,
               ),
-              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level',
+                  style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
@@ -313,7 +326,8 @@ void _gameWon() async {
   }
 
   void _checkGyroscope() async {
-    bool sensorAvailable = await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
+    bool sensorAvailable =
+        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
     if (!sensorAvailable) {
       _showGyroscopeNotAvailableDialog();
     }
@@ -329,6 +343,7 @@ void _gameWon() async {
           actions: [
             TextButton(
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
               },
               child: const Text('OK'),
@@ -345,7 +360,15 @@ void _gameWon() async {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: true,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -387,18 +410,18 @@ void _gameWon() async {
                 ),
               ),
             ),
-            _buildLevelButton('Easy', Colors.green, 'HighScore:'),
+            _buildLevelButton('Easy', Colors.green),
             const SizedBox(height: 20),
-            _buildLevelButton('Medium', Colors.orange, 'HighScore:'),
+            _buildLevelButton('Medium', Colors.orange),
             const SizedBox(height: 20),
-            _buildLevelButton('Hard', Colors.red, 'HighScore:'),
+            _buildLevelButton('Hard', Colors.red),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLevelButton(String levelName, Color buttonColor, String highScoreText) {
+  Widget _buildLevelButton(String levelName, Color buttonColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40.0),
       child: GestureDetector(
@@ -428,17 +451,6 @@ void _gameWon() async {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: Text(
-                  highScoreText,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -446,9 +458,8 @@ void _gameWon() async {
     );
   }
 
-
   @override
-  void dispose()async {
+  void dispose() async {
     await gyroData.endSession();
     if (_isMoving) {
       gyroData.endSession();
@@ -472,100 +483,121 @@ void _gameWon() async {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.blue[40],
-      body: Stack(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.blueAccent, width: 20),
-            ),
-          ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 100),
-            left: posX,
-            top: posY,
-            child: Container(
-              width: ballSize,
-              height: ballSize,
+    return PopScope(
+      canPop: _canPop,
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
+          return;
+        }
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return const FadeMessageBox(
+              message: "Please finish the game first.",
+              duration: Duration(seconds: 2),
+            );
+          },
+        );
+      },
+      child: Scaffold(
+        backgroundColor: Colors.blue[40],
+        body: Stack(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
               decoration: BoxDecoration(
-                color: isGameOver || isGameWon ? Colors.transparent : Colors.pinkAccent,
-                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blueAccent, width: 20),
               ),
             ),
-          ),
-          for (Rect obstacle in obstacles)
-            Positioned(
-              left: obstacle.left,
-              top: obstacle.top,
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 100),
+              left: posX,
+              top: posY,
               child: Container(
-                width: obstacle.width,
-                height: obstacle.height,
-                color: Colors.blue,
+                width: ballSize,
+                height: ballSize,
+                decoration: BoxDecoration(
+                  color: isGameOver || isGameWon
+                      ? Colors.transparent
+                      : Colors.pinkAccent,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
-          Positioned(
-            left: 20,
-            right: 20,
-            top: 0,
-            child: Container(
-              width: 200,
-              height: 50,
-              color: Colors.green[400],
-              child: const Center(
+            for (Rect obstacle in obstacles)
+              Positioned(
+                left: obstacle.left,
+                top: obstacle.top,
+                child: Container(
+                  width: obstacle.width,
+                  height: obstacle.height,
+                  color: Colors.blue,
+                ),
+              ),
+            Positioned(
+              left: 20,
+              right: 20,
+              top: 0,
+              child: Container(
+                width: 200,
+                height: 50,
+                color: Colors.green[400],
+                child: const Center(
+                  child: Text(
+                    'GOAL',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Score display
+            // Positioned(
+            //   top: 60,
+            //   right: 20,
+            //   child: Container(
+            //     padding: const EdgeInsets.all(8),
+            //     decoration: BoxDecoration(
+            //       color: Colors.black54,
+            //       borderRadius: BorderRadius.circular(10),
+            //     ),
+            //     child: Text(
+            //       'Score: $score',
+            //       style: const TextStyle(
+            //         color: Colors.white,
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // Difficulty display
+            Positioned(
+              top: 60,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Text(
-                  'GOAL',
-                  style: TextStyle(
+                  'Level: $currentDifficulty',
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-          ),
-          // Score display
-          Positioned(
-            top: 60,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Score: $score',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          // Difficulty display
-          Positioned(
-            top: 60,
-            left: 20,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Level: $currentDifficulty',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

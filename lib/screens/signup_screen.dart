@@ -817,7 +817,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Redirecting to homepage in $countdown seconds...",
+                        "Redirecting to login in $countdown seconds...",
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.black, // Black text color

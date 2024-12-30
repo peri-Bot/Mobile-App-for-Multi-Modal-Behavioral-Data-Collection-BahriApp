@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -19,7 +18,8 @@ class SwipeDataCollector {
     // lets leave this for now yes yes yes yes yes yes
   }
 
-  void endCollecting(DragEndDetails details, Function(Map<String, dynamic>) onComplete) {
+  void endCollecting(
+      DragEndDetails details, Function(Map<String, dynamic>) onComplete) {
     _endTime = DateTime.now();
     final duration = _endTime!.difference(_startTime!).inMilliseconds / 1000.0;
 
@@ -30,7 +30,8 @@ class SwipeDataCollector {
       'endY': details.velocity.pixelsPerSecond.dy,
       'initialPressure': _initialPressure ?? 0.5,
       'duration': duration,
-      'distance': sqrt(pow(details.velocity.pixelsPerSecond.dx - _initialPosition!.dx, 2) +
+      'distance': sqrt(pow(
+              details.velocity.pixelsPerSecond.dx - _initialPosition!.dx, 2) +
           pow(details.velocity.pixelsPerSecond.dy - _initialPosition!.dy, 2)),
       'speed': details.velocity.pixelsPerSecond.distance / duration,
     };
@@ -38,7 +39,6 @@ class SwipeDataCollector {
     onComplete(data);
   }
 }
-
 
 class DataCollectionService {
   // Method to calculate the screen diagonal length
@@ -52,14 +52,18 @@ class DataCollectionService {
     final Size size = MediaQuery.of(context).size;
     return size.width * size.height;
   }
+
   //non normalized metrics yes!
-  double calculateSwipePathStraightness(double initialX, double initialY, double endX, double endY) {
-    double straightDistance = sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
+  double calculateSwipePathStraightness(
+      double initialX, double initialY, double endX, double endY) {
+    double straightDistance =
+        sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
     double actualDistance = (endX - initialX).abs() + (endY - initialY).abs();
     return straightDistance / actualDistance;
   }
 
-  double calculateSwipeAngle(double initialX, double initialY, double endX, double endY) {
+  double calculateSwipeAngle(
+      double initialX, double initialY, double endX, double endY) {
     return atan2(endY - initialY, endX - initialX) * (180 / pi);
   }
 
@@ -75,7 +79,8 @@ class DataCollectionService {
     return acceleration / duration;
   }
 
-  double calculateSwipeDistance(double initialX, double initialY, double endX, double endY) {
+  double calculateSwipeDistance(
+      double initialX, double initialY, double endX, double endY) {
     return sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
   }
 
@@ -83,34 +88,37 @@ class DataCollectionService {
     return (endTime - startTime) / 1000.0; // convert milliseconds to seconds
   }
 
-
   double calculateSwipeDeceleration(double speed, double duration) {
-  // Assuming the swipe starts at max speed and decelerates to 0
-  return speed / duration; // Simplified deceleration calculation
+    // Assuming the swipe starts at max speed and decelerates to 0
+    return speed / duration; // Simplified deceleration calculation
   }
 
-  double calculateSwipeAreaCoverage(double startX, double startY, double endX, double endY, double screenArea) {
-  double swipeWidth = (endX - startX).abs();
-  double swipeHeight = (endY - startY).abs();
-  double swipeArea = swipeWidth * swipeHeight;
-  return swipeArea / screenArea;
+  double calculateSwipeAreaCoverage(double startX, double startY, double endX,
+      double endY, double screenArea) {
+    double swipeWidth = (endX - startX).abs();
+    double swipeHeight = (endY - startY).abs();
+    double swipeArea = swipeWidth * swipeHeight;
+    return swipeArea / screenArea;
   }
 
-  double calculateSwipeFingerOrientation(double initialX, double initialY, double endX, double endY) {
-  return atan2(endY - initialY, endX - initialX) * (180 / pi);
+  double calculateSwipeFingerOrientation(
+      double initialX, double initialY, double endX, double endY) {
+    return atan2(endY - initialY, endX - initialX) * (180 / pi);
   }
 
-  double calculateSwipeFingerMovementVariability(double initialX, double initialY, double endX, double endY) {
-  // This is a simplified version that assumes variability is the difference between straight and actual path lengths
-  double straightDistance = sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
-  double actualDistance = (endX - initialX).abs() + (endY - initialY).abs();
-  return (actualDistance - straightDistance).abs();
+  double calculateSwipeFingerMovementVariability(
+      double initialX, double initialY, double endX, double endY) {
+    // This is a simplified version that assumes variability is the difference between straight and actual path lengths
+    double straightDistance =
+        sqrt(pow(endX - initialX, 2) + pow(endY - initialY, 2));
+    double actualDistance = (endX - initialX).abs() + (endY - initialY).abs();
+    return (actualDistance - straightDistance).abs();
   }
 
   double calculateTimeOfDayImpact() {
-  DateTime now = DateTime.now();
-  // Assume some variation based on time; this is highly simplified
-  return now.hour + (now.minute / 60.0);
+    DateTime now = DateTime.now();
+    // Assume some variation based on time; this is highly simplified
+    return now.hour + (now.minute / 60.0);
   }
   // Screen-normalized metrics yes!
 
@@ -131,7 +139,7 @@ class DataCollectionService {
   double calculateSNSD(double swipeDuration, double screenResponseTime) {
     return swipeDuration / screenResponseTime;
   }
-   //will do something about pressure later on
+  //will do something about pressure later on
   /*double calculateSNSP(double swipePressure, double screenSensitivity) {
     return swipePressure / screenSensitivity;
   }*/
@@ -144,11 +152,13 @@ class DataCollectionService {
     return actualSwipePathLength / getScreenDiagonal(context);
   }
 
-  double calculateSNSA_Acceleration(double swipeAcceleration, BuildContext context) {
+  double calculateSNSA_Acceleration(
+      double swipeAcceleration, BuildContext context) {
     return swipeAcceleration / getScreenDiagonal(context);
   }
 
-  double calculateSNSD_Deceleration(double swipeDeceleration, BuildContext context) {
+  double calculateSNSD_Deceleration(
+      double swipeDeceleration, BuildContext context) {
     return swipeDeceleration / getScreenDiagonal(context);
   }
 
@@ -160,7 +170,8 @@ class DataCollectionService {
     return swipeArea / getScreenArea(context);
   }
 
-  double calculateSNSS_Straightness(double swipeStraightness, BuildContext context) {
+  double calculateSNSS_Straightness(
+      double swipeStraightness, BuildContext context) {
     return swipeStraightness / getScreenDiagonal(context);
   }
 
@@ -168,11 +179,13 @@ class DataCollectionService {
     return fingerOrientation / getScreenDiagonal(context);
   }
 
-  double calculateSNSFMV(double fingerMovementVariability, BuildContext context) {
+  double calculateSNSFMV(
+      double fingerMovementVariability, BuildContext context) {
     return fingerMovementVariability / getScreenDiagonal(context);
   }
 
-  double calculateSNSTDI(double timeOfDaySwipePerformance, double screenPerformanceIndex) {
+  double calculateSNSTDI(
+      double timeOfDaySwipePerformance, double screenPerformanceIndex) {
     return timeOfDaySwipePerformance / screenPerformanceIndex;
   }
 }

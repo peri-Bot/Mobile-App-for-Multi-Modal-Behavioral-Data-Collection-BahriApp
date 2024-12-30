@@ -157,6 +157,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   // Process data here
+                                  showLoaderDialog(context);
                                   _teamsServices = TeamsServices(
                                       teamName: _teamNameController.text,
                                       teamDescription:
@@ -207,6 +208,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
       // );
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Team Created Successfully")));
+      Navigator.of(context).popUntil((route) => route.isFirst);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BaseScreen()),
@@ -215,5 +217,25 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Something went wrong, Please try again later}")));
     }
+  }
+
+  showLoaderDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: Row(
+        children: [
+          const CircularProgressIndicator(),
+          Container(
+              margin: const EdgeInsets.only(left: 7),
+              child: const Text("Creating...")),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

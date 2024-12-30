@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/accelerometerGame_service.dart';
@@ -8,20 +9,25 @@ class AccelerometerGames extends StatefulWidget {
   const AccelerometerGames({super.key});
 
   @override
-  MotionSensorGamePageState createState() => MotionSensorGamePageState();
+  State<AccelerometerGames> createState() => MotionSensorGamePageState();
 }
 
 class MotionSensorGamePageState extends State<AccelerometerGames> {
   final StepCounter _stepCounter = StepCounter();
-  bool _isSensorAvailable = false;
   int _stepCount = 0;
   bool _isWalking = false;
   bool _isPaused = false;
   bool _isJogging = false;
   bool _isSitting = false;
   Timer? _timer;
+  bool _canPop = false;
+  void updateCanPop(bool value) {
+    setState(() {
+      _canPop = value;
+    });
+  }
+
   int _elapsedSeconds = 0;
-  bool _isActive = false;
   String _currentActivity = '';
   String? uid;
   Future<void> fetchUserId() async {
@@ -38,7 +44,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   void initState() {
     super.initState();
     fetchUserId();
-
+    _stepCounter.initHive();
     _initGame();
   }
 
@@ -113,15 +119,15 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
           _stepCount / (_elapsedSeconds > 0 ? _elapsedSeconds : 1);
       if (sittingStability < 0.5) {
         resultMessage =
-            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Good job!";
+            "You Complete this activity  for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Good job!";
         score = 10;
       } else if (sittingStability < 1) {
         resultMessage =
-            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Not bad!";
+            "You Complete this activity for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Not bad!";
         score = 5;
       } else {
         resultMessage =
-            "You sat still for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Try harder next time!";
+            "You Complete this activity for $_elapsedSeconds seconds with a stability score of ${sittingStability.toStringAsFixed(2)}. Try harder next time!";
         score = 2;
       }
     } else {
@@ -139,6 +145,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
             TextButton(
               child: const Text('Play Again'),
               onPressed: () {
+                updateCanPop(true);
                 Navigator.of(context).pop();
                 _resetGame();
               },
@@ -173,14 +180,11 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       },
       currentActivity: _currentActivity, // Pass the current activity
     );
-    setState(() {
-      _isSensorAvailable = sensorAvailable;
-    });
+    setState(() {});
   }
 
   void _startWalking() {
     setState(() {
-      _isActive = true;
       _currentActivity = 'walking';
       _isWalking = true;
       _isJogging = false;
@@ -196,7 +200,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
   void _startJogging() {
     setState(() {
-      _isActive = true;
       _currentActivity = 'jogging';
       _isWalking = false;
       _isJogging = true;
@@ -212,7 +215,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
   void _startSitting() {
     setState(() {
-      _isActive = true;
       _currentActivity = 'Walked up and down stairs';
       _isWalking = false;
       _isJogging = false;
@@ -231,7 +233,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _stopTimer();
     _showCompletionDialog();
     setState(() {
-      _isActive = false;
       _currentActivity = '';
       _isWalking = false;
       _isJogging = false;
@@ -249,142 +250,168 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text('Accelerometer Game'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color.fromRGBO(183, 153, 255, 1),
-              Color.fromRGBO(172, 188, 255, 1),
-              Color.fromRGBO(174, 226, 255, 1),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return PopScope(
+      canPop: _canPop,
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
+          return;
+        }
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return const FadeMessageBox(
+              message: "Please finish the game first.",
+              duration: Duration(seconds: 2),
+            );
+          },
+        );
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text('Accelerometer Game'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.lock,
+              color: Colors.black,
+            ),
+            onPressed: () {},
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Time Elapsed: $_elapsedSeconds seconds',
-              style: const TextStyle(
-                fontSize: 24,
-                color: Colors.white,
-              ),
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(183, 153, 255, 1),
+                Color.fromRGBO(172, 188, 255, 1),
+                Color.fromRGBO(174, 226, 255, 1),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            const SizedBox(height: 80),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'choose an activity to do; Walk, jog, or sit while holding your phone, '
-                'press stop when you are done.',
-                style: TextStyle(
-                  fontSize: 18,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Time Elapsed: $_elapsedSeconds seconds',
+                style: const TextStyle(
+                  fontSize: 24,
                   color: Colors.white,
-                  fontStyle: FontStyle.italic,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(
-              height: 25,
-            ),
-            const Text(
-              "Choose an Activity",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Colors.deepPurple),
-            ),
-            const SizedBox(height: 25),
-            const SizedBox(
-              height: 20,
-            ),
-            // Walking button
-            Visibility(
-              visible: !_isWalking && !_isJogging && !_isSitting,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  textStyle: const TextStyle(fontSize: 20),
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
+              const SizedBox(height: 80),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'choose an activity to do; Walk, jog, or sit while holding your phone, '
+                  'press stop when you are done.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                onPressed: _startWalking,
-                child: const Text('Start Walking'),
               ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            // Jogging button
-            Visibility(
-              visible: !_isWalking && !_isJogging && !_isSitting,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  textStyle: const TextStyle(fontSize: 20),
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                ),
-                onPressed: _startJogging,
-                child: const Text('Start Jogging'),
+              const SizedBox(
+                height: 25,
               ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            // Sitting button
-            Visibility(
-              visible: !_isWalking && !_isJogging && !_isSitting,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  textStyle: const TextStyle(fontSize: 20),
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.teal,
-                ),
-                onPressed: _startSitting,
-                child: const Text('Start Sitting'),
+              const Text(
+                "Choose an Activity",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.deepPurple),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Stop button - visible only when an activity is active
-            if (_isWalking || _isJogging || _isSitting)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
-                  textStyle: const TextStyle(fontSize: 20),
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
+              const SizedBox(height: 25),
+              const SizedBox(
+                height: 20,
+              ),
+              // Walking button
+              Visibility(
+                visible: !_isWalking && !_isJogging && !_isSitting,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
+                    textStyle: const TextStyle(fontSize: 20),
+                    backgroundColor: Colors.white70,
+                    foregroundColor: Colors.teal,
+                  ),
+                  onPressed: _startWalking,
+                  child: const Text('Start Walking'),
                 ),
-                onPressed: _stopActivity,
-                child: const Text('Stop Activity'),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              // Jogging button
+              Visibility(
+                visible: !_isWalking && !_isJogging && !_isSitting,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
+                    textStyle: const TextStyle(fontSize: 20),
+                    backgroundColor: Colors.white70,
+                    foregroundColor: Colors.teal,
+                  ),
+                  onPressed: _startJogging,
+                  child: const Text('Start Jogging'),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              // Sitting button
+              Visibility(
+                visible: !_isWalking && !_isJogging && !_isSitting,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
+                    textStyle: const TextStyle(fontSize: 20),
+                    backgroundColor: Colors.white70,
+                    foregroundColor: Colors.teal,
+                  ),
+                  onPressed: _startSitting,
+                  child: const Text('Go Up Stairs and Down Staris'),
+                ),
               ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Pause/Resume button
-            if (_isWalking || _isJogging || _isSitting)
-              ElevatedButton(
-                onPressed: _isPaused ? _resumeGame : _pauseGame,
-                child: Text(_isPaused ? 'Resume' : 'Pause'),
-              ),
-          ],
+              // Stop button - visible only when an activity is active
+              if (_isWalking || _isJogging || _isSitting)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
+                    textStyle: const TextStyle(fontSize: 20),
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: _stopActivity,
+                  child: const Text('Stop Activity'),
+                ),
+
+              const SizedBox(height: 20),
+
+              // Pause/Resume button
+              if (_isWalking || _isJogging || _isSitting)
+                ElevatedButton(
+                  onPressed: _isPaused ? _resumeGame : _pauseGame,
+                  child: Text(_isPaused ? 'Resume' : 'Pause'),
+                ),
+            ],
+          ),
         ),
       ),
     );

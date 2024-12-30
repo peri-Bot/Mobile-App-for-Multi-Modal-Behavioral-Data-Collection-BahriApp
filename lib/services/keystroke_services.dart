@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'dart:math';
@@ -266,6 +265,7 @@ class KeystrokeService {
     bool isOnline = await isConnectedToInternet();
 
     gameInfo['uid'] = uid;
+    gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
 
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,

@@ -4,13 +4,9 @@ class ShowScorePopup extends StatelessWidget {
   const ShowScorePopup({
     super.key,
     this.radius = 10,
-    required this.score,
-    required this.highScore,
   });
 
   final double radius;
-  final int score;
-  final int highScore;
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +17,11 @@ class ShowScorePopup extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(25.0),
+          const Padding(
+            padding: EdgeInsets.all(25.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Center(
                   child: Text(
@@ -40,17 +36,10 @@ class ShowScorePopup extends StatelessWidget {
                   height: 11,
                 ),
                 Text(
-                  'Score: $score',
+                  'Go back to Home Screen',
                   style: TextStyle(
                     fontSize: 16,
-                    color: score >= highScore ? Colors.green : Colors.red,
-                    //fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Text(
-                  'HighScore: 25',
-                  style: TextStyle(
-                    fontSize: 16,
+                    color: Colors.black,
                     //fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -60,11 +49,12 @@ class ShowScorePopup extends StatelessWidget {
           Center(
             child: Container(
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 0, 0, 0),
+                color: const Color.fromARGB(255, 0, 0, 0),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextButton(
                 onPressed: () {
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
@@ -90,7 +80,7 @@ class ShowScorePopup extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 11,
           ),
         ],

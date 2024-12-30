@@ -7,14 +7,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class ImageGrid extends StatefulWidget {
   final int gridSize;
   final String intensityLevel; // New parameter for distortion intensity
-  final Function(int) onScoreUpdate;
+  final Function() updateCorrect;
+  final Function() updateWrong;
   final int seconds;
 
   const ImageGrid(
       {super.key,
       required this.gridSize,
       required this.intensityLevel,
-      required this.onScoreUpdate,
+      required this.updateCorrect,
+      required this.updateWrong,
       required this.seconds});
 
   @override
@@ -26,6 +28,8 @@ class _ImageGrid extends State<ImageGrid> {
   late String intensityLevel;
   late List<String> currentImages;
   late int score;
+  late int _correct = 0;
+  late int _wrong = 0;
   late int seconds;
   late int _tapPressTime;
   late int _tapReleaseTime;
@@ -85,16 +89,6 @@ class _ImageGrid extends State<ImageGrid> {
     'assets/pic_pick_images/Image(18).jpg',
     'assets/pic_pick_images/Image(19).jpg',
     'assets/pic_pick_images/Image(20).jpg',
-    'assets/pic_pick_images/Image(21).jpg',
-    'assets/pic_pick_images/Image(22).jpg',
-    'assets/pic_pick_images/Image(23).jpg',
-    'assets/pic_pick_images/Image(24).jpg',
-    'assets/pic_pick_images/distortedEasy(1).jpg',
-    'assets/pic_pick_images/distortedEasy(2).jpg',
-    'assets/pic_pick_images/distortedEasy(3).jpg',
-    'assets/pic_pick_images/distortedEasy(4).jpg',
-    'assets/pic_pick_images/distortedEasy(5).jpg',
-    'assets/pic_pick_images/distortedEasy(6).jpg',
     'assets/pic_pick_images/distortedMedium(1).jpg',
     'assets/pic_pick_images/distortedMedium(2).jpg',
     'assets/pic_pick_images/distortedMedium(3).jpg',
@@ -105,16 +99,6 @@ class _ImageGrid extends State<ImageGrid> {
     'assets/pic_pick_images/distortedMedium(8).jpg',
     'assets/pic_pick_images/distortedMedium(9).jpg',
     'assets/pic_pick_images/distortedMedium(10).jpg',
-    'assets/pic_pick_images/distortedHard(1).jpg',
-    'assets/pic_pick_images/distortedHard(2).jpg',
-    'assets/pic_pick_images/distortedHard(3).jpg',
-    'assets/pic_pick_images/distortedHard(4).jpg',
-    'assets/pic_pick_images/distortedHard(5).jpg',
-    'assets/pic_pick_images/distortedHard(6).jpg',
-    'assets/pic_pick_images/distortedHard(7).jpg',
-    'assets/pic_pick_images/distortedHard(8).jpg',
-    'assets/pic_pick_images/distortedHard(9).jpg',
-    'assets/pic_pick_images/distortedHard(10).jpg',
   ];
 
   @override
@@ -140,6 +124,8 @@ class _ImageGrid extends State<ImageGrid> {
       gameEnded = true;
       gameInfo['endTime'] = DateTime.now().toIso8601String();
       gameInfo['uid'] = uid;
+      gameInfo['CorrectCount'] = _correct;
+      gameInfo['WrongCount'] = _wrong;
       // Use a microtask to ensure this runs after the current build cycle
       Future.microtask(() {
         tapDataCollectionService.saveTapData(tapData, gameInfo);
@@ -170,14 +156,12 @@ class _ImageGrid extends State<ImageGrid> {
       String tappedImage = currentImages[index];
 
       if (_isDistorted(tappedImage)) {
-        score = score - 4; // Deduct a point if the image is distorted
-        if (score <= 0) {
-          score = 0;
-        }
+        widget.updateWrong();
+        _wrong++;
       } else {
-        score++; // Add a point if the image is not distorted
+        widget.updateCorrect();
+        _correct++; // Add a point if the image is not distorted
       }
-      widget.onScoreUpdate(score);
 
       // Replace the tapped image with a new one while respecting the distorted limit
       currentImages[index] = _getNextImage();
@@ -230,7 +214,7 @@ class _ImageGrid extends State<ImageGrid> {
           _intendedTapLocation = Offset(x + itemWidth / 2, y + itemHeight / 2);
           return GestureDetector(
             onTapDown: (details) {
-              _tapPressTime = DateTime.now().millisecondsSinceEpoch as int;
+              _tapPressTime = DateTime.now().millisecondsSinceEpoch;
               _tapGlobalInitialLocation = details.globalPosition;
               _tapLocalInitialLocation = details.localPosition;
               screenSize = MediaQuery.of(context).size;

@@ -206,12 +206,33 @@ class GamesList extends State<GamesListScreen> {
 
                             children: const <Widget>[
                               ListTile(
-                                title: Text(
-                                  "Tap the ceneter of the images that are not bombs 💣 to score points",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Center(
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        "Tap the ceneter of the images that contain land animals and avoid that aren't ",
+                                        style: TextStyle(
+                                            fontFamily:
+                                                "assets/fonts/Poppins-SemiBold.ttf",
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "የምድር እንስሳትን የያዙ ምስሎችን መሃል ይንኩ እና ያልሆኑትን አይንኩ",
+                                      // style: TextStyle(
+                                      //     fontFamily:
+                                      //         "assets/fonts/Poppins-SemiBold.ttf",
+                                      //     fontWeight: FontWeight.w400),
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
@@ -276,12 +297,27 @@ class GamesList extends State<GamesListScreen> {
 
                             children: const <Widget>[
                               ListTile(
-                                title: Text(
-                                  "Swipe left to right or right to left, and bottom to top or top to bottom accordingly to score points.",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "Swipe left or right , and bottom or top accordingly to score points.",
+                                      style: TextStyle(
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "ነጥቦችን ለማግኘት ወደ ግራ ወይም ቀኝ፣ እና ከታች ወይም ከላይ ያንሸራትቱ።",
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
@@ -341,12 +377,26 @@ class GamesList extends State<GamesListScreen> {
 
                             children: const <Widget>[
                               ListTile(
-                                title: Text(
-                                  "Type the displayed texts accuratly to score points",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Type the displayed texts accuratly",
+                                      style: TextStyle(
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "የሚታዩትን ጽሑፎች በትክክል ይተይቡ።",
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
@@ -406,14 +456,142 @@ class GamesList extends State<GamesListScreen> {
 
                             children: const <Widget>[
                               ListTile(
-                                title: Text(
-                                  "Move the ball to the finish line by tilting your phone without touching any objects or borders.",
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "Move the ball to the finish line by tilting your phone without touching any objects or borders.",
+                                      style: TextStyle(
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "ምንም አይነት ነገር እና ድንበር ሳይነኩ ስልክዎን በማዘንበል ኳሱን ወደ መጨረሻው መስመር ያንቀሳቅሱት።",
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Card(
+                          child: ExpansionTile(
+                            collapsedBackgroundColor: Colors.white,
+                            //backgroundColor: Color.fromARGB(255, 231, 90, 90),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            backgroundColor: Colors.white,
+                            clipBehavior: Clip.antiAlias,
+                            collapsedShape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+
+                            leading: const Icon(Icons.draw),
+                            onExpansionChanged: (value) {
+                              setState(() {});
+                            },
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Handwriting",
                                   style: TextStyle(
                                       fontFamily:
                                           "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
+                                      fontSize: 21.0,
+                                      fontWeight: FontWeight.w500),
                                 ),
-                              )
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                HandwritingScreen(
+                                                    isAmharic:
+                                                        firstSwitchValue)));
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 7,
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      // side: const BorderSide(
+                                      //     color: Colors.black)
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    "Play",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                )
+                              ],
+                            ),
+                            //trailing: ,
+                            tilePadding: const EdgeInsets.all(9),
+
+                            children: <Widget>[
+                              const ListTile(
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "write The displayed Letter in the Box Using Handwriting",
+                                      style: TextStyle(
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "የእጅ ጽሑፍን በመጠቀም የሚታየውን ፊደል በሳጥኑ ውስጥ ይፃፉ።",
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              AnimatedToggleSwitch<bool>.size(
+                                current: firstSwitchValue,
+                                values: const [false, true],
+                                iconOpacity: 0.2,
+                                indicatorSize: const Size.fromWidth(100),
+                                customIconBuilder: (context, local, global) =>
+                                    Text(
+                                  local.value ? "አማርኛ" : "English",
+                                  style: TextStyle(
+                                      color: Color.lerp(Colors.black,
+                                          Colors.white, local.animationValue)),
+                                ),
+                                animationDuration:
+                                    const Duration(milliseconds: 75),
+
+                                borderWidth: 5.0,
+                                iconAnimationType: AnimationType.onHover,
+                                style: ToggleStyle(
+                                  backgroundColor: Colors.white,
+                                  indicatorColor: Colors.black,
+                                  borderColor: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+// ToggleStyle
+                                selectedIconScale: 1.0,
+                                onChanged: (value) =>
+                                    setState(() => firstSwitchValue = value),
+                              ),
                             ],
                           ),
                         ),
@@ -480,12 +658,27 @@ class GamesList extends State<GamesListScreen> {
 
                             children: const <Widget>[
                               ListTile(
-                                title: Text(
-                                  "Walk with your phone to reach the specified number of steps.",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
+                                title: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "Walk with your phone to reach the specified number of steps.",
+                                      style: TextStyle(
+                                          fontFamily:
+                                              "assets/fonts/Poppins-SemiBold.ttf",
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Divider(
+                                      height: 3,
+                                      color: Colors.black,
+                                    ),
+                                    Text(
+                                      textAlign: TextAlign.center,
+                                      "የተገለጹትን የእርምጃዎች ብዛት ለመድረስ በስልክዎ ይራመዱ።",
+                                    ),
+                                  ],
                                 ),
                               )
                             ],
@@ -493,103 +686,6 @@ class GamesList extends State<GamesListScreen> {
                         ),
                         const SizedBox(height: 28),
 
-                        Card(
-                          child: ExpansionTile(
-                            collapsedBackgroundColor: Colors.white,
-                            //backgroundColor: Color.fromARGB(255, 231, 90, 90),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            backgroundColor: Colors.white,
-                            clipBehavior: Clip.antiAlias,
-                            collapsedShape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-
-                            leading: const Icon(Icons.draw),
-                            onExpansionChanged: (value) {
-                              setState(() {});
-                            },
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  "Handwriting",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontSize: 21.0,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                HandwritingScreen(
-                                                    isAmharic:
-                                                        firstSwitchValue)));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 7,
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      // side: const BorderSide(
-                                      //     color: Colors.black)
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "Play",
-                                    style: TextStyle(color: Colors.black),
-                                  ),
-                                )
-                              ],
-                            ),
-                            //trailing: ,
-                            tilePadding: const EdgeInsets.all(9),
-
-                            children: <Widget>[
-                              const ListTile(
-                                title: Text(
-                                  "write The Showen Letter in the Box Using Handwriting",
-                                  style: TextStyle(
-                                      fontFamily:
-                                          "assets/fonts/Poppins-SemiBold.ttf",
-                                      fontWeight: FontWeight.w400),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              AnimatedToggleSwitch<bool>.size(
-                                current: firstSwitchValue,
-                                values: const [false, true],
-                                iconOpacity: 0.2,
-                                indicatorSize: const Size.fromWidth(100),
-                                customIconBuilder: (context, local, global) =>
-                                    Text(
-                                  local.value ? "አማርኛ" : "English",
-                                  style: TextStyle(
-                                      color: Color.lerp(Colors.black,
-                                          Colors.white, local.animationValue)),
-                                ),
-                                animationDuration:
-                                    const Duration(milliseconds: 75),
-
-                                borderWidth: 5.0,
-                                iconAnimationType: AnimationType.onHover,
-                                style: ToggleStyle(
-                                  backgroundColor: Colors.white,
-                                  indicatorColor: Colors.black,
-                                  borderColor: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-// ToggleStyle
-                                selectedIconScale: 1.0,
-                                onChanged: (value) =>
-                                    setState(() => firstSwitchValue = value),
-                              ),
-                            ],
-                          ),
-                        )
                         //const Spacer(flex: 2), // Adds space at the bottom
                       ],
                     ),

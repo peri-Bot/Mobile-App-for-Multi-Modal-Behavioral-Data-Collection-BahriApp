@@ -2,7 +2,6 @@ import 'package:bahri_app/services/freetext_service.dart';
 import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
-import 'package:stroke_text/stroke_text.dart';
 import '../../widgets/keyboard/artistic_multilingual_keyboard.dart';
 
 class FreeFlowTextScreen extends StatefulWidget {

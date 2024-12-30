@@ -142,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               TextFormField(
                                 controller: loginValidate.usernameController,
+                                enableSuggestions: true,
                                 decoration: InputDecoration(
                                   prefixIcon: const Icon(
                                     Icons.account_circle,

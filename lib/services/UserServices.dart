@@ -5,11 +5,10 @@ import 'package:bahri_app/services/enums.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:bahri_app/models/user.dart';
-
-import 'firestore.dart';
 
 class UserServices {
   late final User newUser;
@@ -69,12 +68,6 @@ class UserServices {
       progress: progress,
       teamId: teamId,
     );
-  }
-
-  Future<void> registerUser() async {
-    FirestoreService firestoreService = FirestoreService();
-    firestoreService.addUser(newUser.firstName, newUser.lastName, newUser.dOB,
-        newUser.gender, newUser.userName, newUser.skillLevel, newUser.password);
   }
 
   Future<String> registerUserDartFrog(BuildContext context) async {
@@ -150,6 +143,19 @@ class UserServices {
         // Store the token securely using flutter_secure_storage
         await _secureStorage.write(key: 'authToken', value: token);
         await _secureStorage.write(key: 'uid', value: uid);
+        if (responseBody['userProfile'] != null) {
+          final userProfileBox = await Hive.openBox('userProfile');
+
+          await userProfileBox.putAll({
+            'dateOfBirth': responseBody['userProfile']['dateOfBirth'] ?? '',
+            'firstName': responseBody['userProfile']['firstName'] ?? '',
+            'gender': responseBody['userProfile']['gender'] ?? '',
+            'lastName': responseBody['userProfile']['lastName'] ?? '',
+            'skillLevel': responseBody['userProfile']['skillLevel'] ?? '',
+            'userName': responseBody['userProfile']['userName'] ?? '',
+          });
+          await userProfileBox.close();
+        }
 
         debugPrint("Login Successful: Token stored securely");
         return 'sucess';
@@ -279,7 +285,26 @@ class UserServices {
 
   void logout() async {
     await _secureStorage.deleteAll();
+    final box = await Hive.openBox('userProfile');
+    await box.clear();
+    await box.close();
 
     debugPrint("User logged out: Token deleted");
+  }
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final box = await Hive.openBox('userProfile');
+
+    final profile = {
+      'dateOfBirth': box.get('dateOfBirth') ?? '',
+      'firstName': box.get('firstName') ?? '',
+      'gender': box.get('gender') ?? '',
+      'lastName': box.get('lastName') ?? '',
+      'skillLevel': box.get('skillLevel') ?? '',
+      'userName': box.get('userName') ?? '',
+    };
+
+    await box.close();
+    return profile;
   }
 }

@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
 
@@ -50,6 +49,7 @@ class TapDataCollectionService {
       List<Map<String, dynamic>> tapData, Map<String, dynamic> gameInfo) async {
     bool isOnline = await isConnectedToInternet();
     //if (!isOnline) return 'fail';
+    gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
 
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,

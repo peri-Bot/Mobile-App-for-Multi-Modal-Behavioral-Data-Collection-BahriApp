@@ -98,34 +98,34 @@ class PicPickLvlScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 46),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PicPick(difficulty: 0)));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 255, 255, 255),
-                            minimumSize: const Size(double.infinity, 75),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Easy',
-                              style: TextStyle(
-                                fontSize: 21,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                                //fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //             builder: (context) =>
+                        //                 const PicPick(difficulty: 0)));
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor:
+                        //         const Color.fromARGB(255, 255, 255, 255),
+                        //     minimumSize: const Size(double.infinity, 75),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(10),
+                        //     ),
+                        //   ),
+                        //   child: const Center(
+                        //     child: Text(
+                        //       'Easy',
+                        //       style: TextStyle(
+                        //         fontSize: 21,
+                        //         color: Color.fromARGB(255, 0, 0, 0),
+                        //         fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                        //         //fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         const SizedBox(height: 46),
 
                         ElevatedButton(
@@ -146,7 +146,7 @@ class PicPickLvlScreen extends StatelessWidget {
                           ),
                           child: const Center(
                             child: Text(
-                              'Medium',
+                              'Start',
                               style: TextStyle(
                                 fontSize: 21,
                                 color: Color.fromARGB(255, 0, 0, 0),
@@ -158,34 +158,34 @@ class PicPickLvlScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 46),
 
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PicPick(difficulty: 2)));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 255, 255, 255),
-                            minimumSize: const Size(double.infinity, 75),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Hard',
-                              style: TextStyle(
-                                fontSize: 21,
-                                color: Color.fromARGB(255, 0, 0, 0),
-                                fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
-                                //fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //             builder: (context) =>
+                        //                 const PicPick(difficulty: 2)));
+                        //   },
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor:
+                        //         const Color.fromARGB(255, 255, 255, 255),
+                        //     minimumSize: const Size(double.infinity, 75),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(10),
+                        //     ),
+                        //   ),
+                        //   child: const Center(
+                        //     child: Text(
+                        //       'Hard',
+                        //       style: TextStyle(
+                        //         fontSize: 21,
+                        //         color: Color.fromARGB(255, 0, 0, 0),
+                        //         fontFamily: "assets/fonts/Poppins-SemiBold.ttf",
+                        //         //fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                         //const Spacer(flex: 1),
 
                         //const Spacer(flex: 2), // Adds space at the bottom

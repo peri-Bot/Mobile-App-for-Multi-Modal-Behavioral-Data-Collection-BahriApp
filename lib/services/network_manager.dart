@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -16,7 +15,8 @@ class NetworkManager {
     await Hive.openBox('offlineKeystrokeFreeTextData');
     await Hive.openBox('offlineKeystrokePasswordTextData');
     await Hive.openBox('offlineHandwritingData');
-
+    await Hive.openBox('offlineAcceloData');
+    await Hive.openBox('offlineGyroData');
     await Hive.openBox('offlineTapData');
     await Hive.openBox('offlineSwipeData');
   }
@@ -41,6 +41,8 @@ class NetworkManager {
         uploadPendingKeystrokeFreeTextData();
         uploadPendingPasswordFreeTextData();
         uploadPendingHandwitingData();
+        uploadPendingGyroData();
+        uploadPendingAcceloData();
       }
     });
   }
@@ -75,6 +77,74 @@ class NetworkManager {
         }
       } catch (e) {
         debugPrint('Error occurred while uploading pending keystroke data: $e');
+      }
+    }
+  }
+
+  Future<void> uploadPendingGyroData() async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return; // No need to proceed if still offline
+
+    var box = Hive.box('offlineGyroData');
+    if (box.isEmpty) {
+      debugPrint('No pending keystroke data to upload.');
+      return;
+    }
+
+    for (var key in box.keys) {
+      var requestData = box.get(key);
+      final url = Uri.parse('http://15.184.243.127:8080/collect_gyro_data');
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(requestData),
+        );
+
+        if (response.statusCode == 200) {
+          debugPrint('Pending offlineGyroData data uploaded successfully.');
+          await box.delete(key); // Delete local data after successful upload
+        } else {
+          debugPrint(
+              'Failed to upload pending offlineGyroData data: ${response.body}');
+        }
+      } catch (e) {
+        debugPrint(
+            'Error occurred while uploading pending offlineGyroData data: $e');
+      }
+    }
+  }
+
+  Future<void> uploadPendingAcceloData() async {
+    bool isOnline = await isConnectedToInternet();
+    if (!isOnline) return; // No need to proceed if still offline
+
+    var box = Hive.box('offlineAcceloData');
+    if (box.isEmpty) {
+      debugPrint('No pending offlineAcceloData data to upload.');
+      return;
+    }
+
+    for (var key in box.keys) {
+      var requestData = box.get(key);
+      final url =
+          Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data');
+
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(requestData),
+        );
+
+        if (response.statusCode == 200) {
+          debugPrint('Pending Accelo data uploaded successfully.');
+          await box.delete(key); // Delete local data after successful upload
+        } else {
+          debugPrint('Failed to upload pending Accelo data: ${response.body}');
+        }
+      } catch (e) {
+        debugPrint('Error occurred while uploading pending Accelo data: $e');
       }
     }
   }

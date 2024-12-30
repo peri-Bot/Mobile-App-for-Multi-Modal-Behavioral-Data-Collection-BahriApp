@@ -156,6 +156,7 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
                                         'No description'),
                                     trailing: ElevatedButton(
                                       onPressed: () async {
+                                        showLoaderDialog(context);
                                         String result = await _teamsServices
                                             .submitJoinRequest(team["teamID"]);
                                         if (result == "sucess") {
@@ -163,6 +164,9 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
                                               .showSnackBar(SnackBar(
                                                   content: Text(
                                                       "you have submmited your request to join: ${team['teamName']}")));
+
+                                          Navigator.of(context).popUntil(
+                                              (route) => route.isFirst);
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
@@ -201,6 +205,26 @@ class _JoinTeamPageState extends State<JoinTeamPage> {
           ),
         ],
       ),
+    );
+  }
+
+  showLoaderDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: Row(
+        children: [
+          const CircularProgressIndicator(),
+          Container(
+              margin: const EdgeInsets.only(left: 7),
+              child: const Text("Requesting...")),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }

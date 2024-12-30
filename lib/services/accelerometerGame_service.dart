@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
-import 'package:uuid/uuid.dart';
 
 class StepCounter {
   // Fields for step counting and sensor data
@@ -28,7 +28,7 @@ class StepCounter {
   final List<double> _verticalOscillationData = [];
   final List<double> _stepDurations = [];
   int _totalSteps = 0;
-  final Uuid _uuid = Uuid();
+  //final Uuid _uuid = Uuid();
   String? _sessionId;
 
   // Firestore session-based fields
@@ -42,8 +42,10 @@ class StepCounter {
     required String currentActivity,
   }) async {
     _currentActivity = currentActivity;
-    bool accelerometerAvailable = await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
-    bool magnetometerAvailable = await SensorManager().isSensorAvailable(Sensors.MAGNETIC_FIELD);
+    bool accelerometerAvailable =
+        await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
+    bool magnetometerAvailable =
+        await SensorManager().isSensorAvailable(Sensors.MAGNETIC_FIELD);
 
     if (accelerometerAvailable && magnetometerAvailable) {
       final accelerometerStream = await SensorManager().sensorUpdates(
@@ -55,13 +57,16 @@ class StepCounter {
         interval: const Duration(milliseconds: 100),
       );
 
-      _accelerometerSubscription = accelerometerStream.listen((SensorEvent event) {
+      _accelerometerSubscription =
+          accelerometerStream.listen((SensorEvent event) {
         if (_isDataCollectionEnabled) {
-          _processAccelerometerData(event.data, onStepDetected, currentActivity);
+          _processAccelerometerData(
+              event.data, onStepDetected, currentActivity);
         }
       });
 
-      _magnetometerSubscription = magnetometerStream.listen((SensorEvent event) {
+      _magnetometerSubscription =
+          magnetometerStream.listen((SensorEvent event) {
         if (_isDataCollectionEnabled) {
           _processMagnetometerData(event.data);
         }
@@ -80,7 +85,8 @@ class StepCounter {
   }
 
   // Process the accelerometer data and detect steps
-  void _processAccelerometerData(List<double> data, Function onStepDetected, String currentActivity) {
+  void _processAccelerometerData(
+      List<double> data, Function onStepDetected, String currentActivity) {
     double x = data[0], y = data[1], z = data[2];
     double magnitude = sqrt(x * x + y * y + z * z);
     magnitude = _applyLowPassFilter(magnitude, _lastMagnitude);
@@ -125,53 +131,75 @@ class StepCounter {
 
   // Initialize session ID
   void initializeSession() {
-    _sessionId = _uuid.v4();
+    _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   // Send the data to Dart Frog server
-  Future<void> _sendDataToDartFrogServer(String userId) async {
+  Future<String> _sendDataToDartFrogServer(String userId) async {
+    final url =
+        Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data');
+    bool isOnline = await isConnectedToInternet();
+
     if (userId.isEmpty || !_isDataCollectionEnabled) {
-      debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
-      return;
+      debugPrint(
+          "Data cannot be sent. Either user ID is empty or data collection is off.");
+      return "Data cannot be sent. Either user ID is empty or data collection is off";
+    }
+    Map<String, double> orientationData = getOrientation();
+    Map<String, dynamic> data = {
+      'userId': userId,
+      'sessionId': _sessionId,
+      'timestamp': DateTime.now().toIso8601String(),
+      'averageAcceleration': getAverageAcceleration(),
+      'peakAcceleration': _peakAcceleration,
+      'minAcceleration': _minAcceleration,
+      'standardDeviation': getStandardDeviation(),
+      'verticalOscillation': getVerticalOscillation(),
+      'jerk': getJerk(_lastMagnitude),
+      'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
+      'averageStepDuration': getAverageStepDuration(),
+      'stepFrequency': getStepFrequency(),
+      'activityType': _currentActivity ?? 'unknown',
+      //'totalSteps': _totalSteps,
+      'orientation_pitch': orientationData['pitch'],
+      'orientation_roll': orientationData['roll'],
+      'orientation_yaw': orientationData['yaw'], // Add orientation data
+    };
+
+    if (!isOnline) {
+      // Save data to Hive if offline
+      var box = Hive.box('offlineAcceloData');
+      await box.add(data);
+      debugPrint('Data saved locally (offline).');
+      return 'saved_locally';
     }
 
     try {
-      Map<String, double> orientationData = getOrientation();
-      Map<String, dynamic> data = {
-        'userId': userId,
-        'sessionId': _sessionId,
-        'timestamp': DateTime.now().toIso8601String(),
-        'averageAcceleration': getAverageAcceleration(),
-        'peakAcceleration': _peakAcceleration,
-        'minAcceleration': _minAcceleration,
-        'standardDeviation': getStandardDeviation(),
-        'verticalOscillation': getVerticalOscillation(),
-        'jerk': getJerk(_lastMagnitude ?? 0.0),
-        'stepDuration': _stepDurations.isNotEmpty ? _stepDurations.last : 0,
-        'averageStepDuration': getAverageStepDuration(),
-        'stepFrequency': getStepFrequency(),
-        'activityType': _currentActivity ?? 'unknown',
-        //'totalSteps': _totalSteps,
-        'orientation_pitch': orientationData['pitch'],
-        'orientation_roll': orientationData['roll'],
-        'orientation_yaw': orientationData['yaw'], // Add orientation data
-      };
-
       debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
 
       var response = await http.post(
-        Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data'),
+        url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
 
       if (response.statusCode == 200) {
         debugPrint("Data sent successfully.");
+        return 'success';
       } else {
         debugPrint("Failed to send data. Status: ${response.statusCode}");
+        debugPrint('Could not add keyStroke data: ${response.body}');
+        var box = Hive.box('offlineAcceloData');
+        await box.add(data);
+        debugPrint('Data saved locally (offline).');
+        return 'saved_locally';
       }
     } catch (e) {
       debugPrint("Error sending data: $e");
+      var box = Hive.box('offlineAcceloData');
+      await box.add(data);
+      debugPrint('Data saved locally (offline).');
+      return 'saved_locally';
     }
   }
 
@@ -215,7 +243,8 @@ class StepCounter {
   // Get step frequency (steps per minute)
   double getStepFrequency() {
     if (_stepDurations.isEmpty) return 0;
-    double totalTime = _stepDurations.reduce((a, b) => a + b) / 1000; // in seconds
+    double totalTime =
+        _stepDurations.reduce((a, b) => a + b) / 1000; // in seconds
     return _totalSteps / (totalTime / 60); // steps per minute
   }
 
@@ -248,7 +277,8 @@ class StepCounter {
     double roll = atan2(ay, az); // Roll angle (in radians)
 
     // Calculate yaw (compass heading)
-    double yaw = atan2(my * ax - mx * ay, mx * az - mz * ax); // Yaw angle (in radians)
+    double yaw =
+        atan2(my * ax - mx * ay, mx * az - mz * ax); // Yaw angle (in radians)
 
     // Convert radians to degrees for easier interpretation
     double pitchDeg = pitch * 180.0 / pi;
@@ -262,11 +292,27 @@ class StepCounter {
   void _logStepDuration() {
     if (_lastStepTime != null) {
       DateTime now = DateTime.now();
-      double stepDuration = now.difference(_lastStepTime!).inMilliseconds.toDouble();
+      double stepDuration =
+          now.difference(_lastStepTime!).inMilliseconds.toDouble();
       _stepDurations.add(stepDuration);
       print("Step duration: $stepDuration ms");
     }
     _lastStepTime = DateTime.now();
+  }
+
+  Future<bool> isConnectedToInternet() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> initHive() async {
+    await Hive.initFlutter();
+    await Hive.openBox('offlineAcceloData');
   }
 
   // Reset the counters and data
@@ -291,21 +337,21 @@ class StepCounter {
   }
 
   // Example method to update session end time in Firestore
-  void updateSessionEndTime() async {
-    if (_sessionId == null || _lastStepTime == null) return;
+  // void updateSessionEndTime() async {
+  //   if (_sessionId == null || _lastStepTime == null) return;
 
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(userId).set({
-        'stepData': {
-          _sessionId.toString(): {
-            'endTime': FieldValue.serverTimestamp(),
-            'sessionDuration': '${DateTime.now().difference(_lastStepTime!).inMilliseconds} ms',
-          }
-        }
-      }, SetOptions(merge: true));
-      print("Session end time updated successfully");
-    } catch (e) {
-      print("Failed to update session end time: $e");
-    }
-  }
+  //   try {
+  //     await FirebaseFirestore.instance.collection('users').doc(userId).set({
+  //       'stepData': {
+  //         _sessionId.toString(): {
+  //           'endTime': FieldValue.serverTimestamp(),
+  //           'sessionDuration': '${DateTime.now().difference(_lastStepTime!).inMilliseconds} ms',
+  //         }
+  //       }
+  //     }, SetOptions(merge: true));
+  //     print("Session end time updated successfully");
+  //   } catch (e) {
+  //     print("Failed to update session end time: $e");
+  //   }
+  // }
 }

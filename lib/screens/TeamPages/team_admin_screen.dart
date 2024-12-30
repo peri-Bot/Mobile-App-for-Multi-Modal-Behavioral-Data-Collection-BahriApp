@@ -54,6 +54,7 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
+            Navigator.of(context).popUntil((route) => route.isFirst);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const BaseScreen()),
@@ -165,8 +166,8 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
                     elevation: 3,
                     child: ListTile(
                       title: Text(member['userName']),
-                      subtitle: Text(
-                          'Tap Score: ${member['tapScore']}, Keystroke Score: ${member['keystrokeScore']}, Swipe Score: ${member['swipeScore']}'),
+                      // subtitle: Text(
+                      //     'Tap Score: ${member['tapScore']}, Keystroke Score: ${member['keystrokeScore']}, Swipe Score: ${member['swipeScore']}'),
                     ),
                   );
                 }).toList(),
