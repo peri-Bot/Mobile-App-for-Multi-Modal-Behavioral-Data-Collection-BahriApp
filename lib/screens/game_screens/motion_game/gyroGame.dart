@@ -88,6 +88,14 @@ class _BallGameState extends State<BallGame>
   }
 
   void startGame(String difficulty) async {
+    // Reset all game states
+    if (_sensorSubscription != null) {
+      _sensorSubscription.cancel();
+    }
+    if (_timer != null && _timer.isActive) {
+      _timer.cancel();
+    }
+
     // Ensure UID is set
     if (uid == null) {
       await fetchUserId();
@@ -99,16 +107,19 @@ class _BallGameState extends State<BallGame>
     setState(() {
       isGameStarted = true;
       currentDifficulty = difficulty;
-      obstacles = difficultyLevels[difficulty]!;
+      obstacles = List.from(difficultyLevels[difficulty]!);  // Create a new list
       posX = (MediaQuery.of(context).size.width - ballSize) / 2;
       posY = MediaQuery.of(context).size.height - ballSize - 20;
       isGameOver = false;
       isGameWon = false;
       score = 0;
+      _canPop = false;
     });
+
     _initializeSensors();
     _startScoreTimer();
   }
+
 
   void _initializeSensors() async {
     if (await SensorManager().isSensorAvailable(Sensors.GYROSCOPE)) {
@@ -213,9 +224,18 @@ class _BallGameState extends State<BallGame>
   }
 
   bool _checkCollision() {
-    Rect ballRect = Rect.fromLTWH(posX, posY, ballSize, ballSize);
+    // Create a smaller hit box for more precise collision detection
+    final double hitBoxPadding = ballSize * 0.2;  // 20% padding for more precise collision
+    Rect ballHitBox = Rect.fromLTWH(
+        posX + hitBoxPadding,
+        posY + hitBoxPadding,
+        ballSize - (hitBoxPadding * 2),
+        ballSize - (hitBoxPadding * 2)
+    );
+
     for (Rect obstacle in obstacles) {
-      if (ballRect.overlaps(obstacle)) {
+      if (ballHitBox.overlaps(obstacle)) {
+        debugPrint('Collision detected with obstacle: $obstacle');
         return true;
       }
     }
@@ -228,101 +248,121 @@ class _BallGameState extends State<BallGame>
     return ballRect.overlaps(goalRect);
   }
 
+
   void _gameOver() async {
-    await gyroData.endSession();
-    setState(() {
-      isGameOver = true;
-    });
-    _sensorSubscription.cancel();
-    _timer.cancel();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.teal[200],
-          title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                setState(() {
-                  isGameStarted = false;
-                });
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
+    if (mounted) {  // Check if widget is still mounted
+      await gyroData.endSession();
+      setState(() {
+        isGameOver = true;
+      });
+      _sensorSubscription.cancel();
+      _timer.cancel();
+
+      // Ensure we're not showing multiple dialogs
+      if (!isGameWon) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return WillPopScope(
+              onWillPop: () async => false,  // Prevent back button dismissal
+              child: AlertDialog(
+                backgroundColor: Colors.teal[200],
+                title: const Text('Game Over', style: TextStyle(color: Colors.white)),
+                content: Text('Your score: $score',
+                    style: const TextStyle(color: Colors.white)),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();  // Close dialog
+                      Navigator.pushReplacement(  // Replace current screen
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BallGame(),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                    ),
+                    child: const Text('Choose Level',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();  // Close dialog
+                      setState(() {
+                        isGameStarted = true;
+                        startGame(currentDifficulty);
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                    ),
+                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
               ),
-              child: const Text('Choose Level',
-                  style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                startGame(currentDifficulty);
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-              ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+            );
+          },
         );
-      },
-    );
+      }
+    }
   }
 
   void _gameWon() async {
-    await gyroData.endSession();
-    setState(() {
-      isGameWon = true;
-    });
-    _sensorSubscription.cancel();
-    _timer.cancel();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.teal[200],
-          title: const Text('Level Complete!',
-              style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                setState(() {
-                  isGameStarted = false;
-                });
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-              ),
-              child: const Text('Choose Level',
+    if (mounted) {  // Check if widget is still mounted
+      await gyroData.endSession();
+      setState(() {
+        isGameWon = true;
+      });
+      _sensorSubscription.cancel();
+      _timer.cancel();
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return WillPopScope(
+            onWillPop: () async => false,  // Prevent back button dismissal
+            child: AlertDialog(
+              backgroundColor: Colors.teal[200],
+              title: const Text('Level Complete!',
                   style: TextStyle(color: Colors.white)),
+              content: Text('Your score: $score',
+                  style: const TextStyle(color: Colors.white)),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();  // Close dialog
+                    Navigator.pushReplacement(  // Replace current screen
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BallGame(),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                  ),
+                  child: const Text('Choose Level',
+                      style: TextStyle(color: Colors.white)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);  // Return to first screen
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  child: const Text('Quit', style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
-              child: const Text('Quit', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
 
   void _checkGyroscope() async {
