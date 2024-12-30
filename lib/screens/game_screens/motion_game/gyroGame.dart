@@ -88,38 +88,35 @@ class _BallGameState extends State<BallGame>
   }
 
   void startGame(String difficulty) async {
-    // Reset all game states
-    if (_sensorSubscription != null) {
-      _sensorSubscription.cancel();
-    }
-    if (_timer != null && _timer.isActive) {
-      _timer.cancel();
-    }
+    debugPrint('1. Starting game with difficulty: $difficulty'); // Debug point 1
 
     // Ensure UID is set
     if (uid == null) {
+      debugPrint('2. Fetching user ID'); // Debug point 2
       await fetchUserId();
     }
 
+    debugPrint('3. Starting new gyro session'); // Debug point 3
     // Start a new gyro session when game starts
     await gyroData.startNewSession(uid ?? 'anonymous');
 
+    debugPrint('4. Setting game state'); // Debug point 4
     setState(() {
       isGameStarted = true;
       currentDifficulty = difficulty;
-      obstacles = List.from(difficultyLevels[difficulty]!);  // Create a new list
+      obstacles = difficultyLevels[difficulty]!;
       posX = (MediaQuery.of(context).size.width - ballSize) / 2;
       posY = MediaQuery.of(context).size.height - ballSize - 20;
       isGameOver = false;
       isGameWon = false;
       score = 0;
-      _canPop = false;
     });
 
+    debugPrint('5. Initializing sensors'); // Debug point 5
     _initializeSensors();
     _startScoreTimer();
+    debugPrint('6. Game started successfully'); // Debug point 6
   }
-
 
   void _initializeSensors() async {
     if (await SensorManager().isSensorAvailable(Sensors.GYROSCOPE)) {
@@ -224,18 +221,9 @@ class _BallGameState extends State<BallGame>
   }
 
   bool _checkCollision() {
-    // Create a smaller hit box for more precise collision detection
-    final double hitBoxPadding = ballSize * 0.2;  // 20% padding for more precise collision
-    Rect ballHitBox = Rect.fromLTWH(
-        posX + hitBoxPadding,
-        posY + hitBoxPadding,
-        ballSize - (hitBoxPadding * 2),
-        ballSize - (hitBoxPadding * 2)
-    );
-
+    Rect ballRect = Rect.fromLTWH(posX, posY, ballSize, ballSize);
     for (Rect obstacle in obstacles) {
-      if (ballHitBox.overlaps(obstacle)) {
-        debugPrint('Collision detected with obstacle: $obstacle');
+      if (ballRect.overlaps(obstacle)) {
         return true;
       }
     }
@@ -248,126 +236,156 @@ class _BallGameState extends State<BallGame>
     return ballRect.overlaps(goalRect);
   }
 
-
   void _gameOver() async {
-    if (mounted) {  // Check if widget is still mounted
-      await gyroData.endSession();
-      setState(() {
-        isGameOver = true;
-      });
-      _sensorSubscription.cancel();
-      _timer.cancel();
-
-      // Ensure we're not showing multiple dialogs
-      if (!isGameWon) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return WillPopScope(
-              onWillPop: () async => false,  // Prevent back button dismissal
-              child: AlertDialog(
-                backgroundColor: Colors.teal[200],
-                title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-                content: Text('Your score: $score',
-                    style: const TextStyle(color: Colors.white)),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();  // Close dialog
-                      Navigator.pushReplacement(  // Replace current screen
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BallGame(),
-                        ),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Choose Level',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();  // Close dialog
-                      setState(() {
-                        isGameStarted = true;
-                        startGame(currentDifficulty);
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                    ),
-                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
+    await gyroData.endSession();
+    setState(() {
+      isGameOver = true;
+    });
+    _sensorSubscription.cancel();
+    _timer.cancel();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.teal[200],
+          title: const Text('Game Over', style: TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
+          actions: [
+            TextButton(
+              onPressed: () {
+                updateCanPop(true);
+                Navigator.of(context).pop();
+                setState(() {
+                  isGameStarted = false;
+                });
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
               ),
-            );
-          },
+              child: const Text('Choose Level',
+                  style: TextStyle(color: Colors.white)),
+            ),
+            TextButton(
+              onPressed: () {
+                updateCanPop(true);
+                Navigator.of(context).pop();
+                startGame(currentDifficulty);
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         );
-      }
-    }
+      },
+    );
   }
 
   void _gameWon() async {
-    if (mounted) {  // Check if widget is still mounted
-      await gyroData.endSession();
-      setState(() {
-        isGameWon = true;
-      });
-      _sensorSubscription.cancel();
-      _timer.cancel();
+    // Prevent multiple dialogs from showing
+    if (isGameWon) return;  // Early return if game is already won
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return WillPopScope(
-            onWillPop: () async => false,  // Prevent back button dismissal
-            child: AlertDialog(
-              backgroundColor: Colors.teal[200],
-              title: const Text('Level Complete!',
-                  style: TextStyle(color: Colors.white)),
-              content: Text('Your score: $score',
-                  style: const TextStyle(color: Colors.white)),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();  // Close dialog
-                    Navigator.pushReplacement(  // Replace current screen
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BallGame(),
-                      ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                  ),
-                  child: const Text('Choose Level',
-                      style: TextStyle(color: Colors.white)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);  // Return to first screen
-                  },
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  child: const Text('Quit', style: TextStyle(color: Colors.white)),
-                ),
-              ],
+    await gyroData.endSession();
+    setState(() {
+      isGameWon = true;
+    });
+
+    // Cancel subscriptions before showing dialog
+    _sensorSubscription.cancel();
+    _timer.cancel();
+
+    // Add a small delay to ensure clean state
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (!mounted) return;  // Check if widget is still mounted
+
+    // Show dialog with proper context handling
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return WillPopScope(
+          onWillPop: () async => false,  // Prevent back button from closing dialog
+          child: AlertDialog(
+            backgroundColor: Colors.teal[200],
+            title: const Text(
+              'Level Complete!',
+              style: TextStyle(color: Colors.white),
             ),
-          );
-        },
-      );
+            content: Text(
+              'Your score: $score',
+              style: const TextStyle(color: Colors.white),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Handle navigation properly
+                  Navigator.of(dialogContext).pop();  // Close dialog
+                  setState(() {
+                    isGameStarted = false;
+                    updateCanPop(true);
+                  });
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                ),
+                child: const Text(
+                  'Choose Level',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Handle navigation properly
+                  Navigator.of(dialogContext).pop();  // Close dialog
+                  if (mounted) {
+                    Navigator.of(context).pop();  // Return to previous screen
+                  }
+                  updateCanPop(true);
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                child: const Text(
+                  'Quit',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Add this method to properly clean up resources
+  void _cleanupGame() {
+    if (!mounted) return;
+
+    setState(() {
+      isGameOver = false;
+      isGameWon = false;
+      isGameStarted = false;
+      score = 0;
+    });
+
+    if (_sensorSubscription != null) {
+      _sensorSubscription.cancel();
     }
+
+    if (_timer != null && _timer.isActive) {
+      _timer.cancel();
+    }
+
+    gyroData.endSession();
   }
 
   void _checkGyroscope() async {
     bool sensorAvailable =
-        await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
+    await SensorManager().isSensorAvailable(Sensors.GYROSCOPE);
     if (!sensorAvailable) {
       _showGyroscopeNotAvailableDialog();
     }
@@ -497,21 +515,27 @@ class _BallGameState extends State<BallGame>
       ),
     );
   }
-
   @override
-  void dispose() async {
-    await gyroData.endSession();
-    if (_isMoving) {
-      gyroData.endSession();
-    }
+  void dispose() {
+    // Clean up all game-related resources
+    _cleanupGame();
+
+    // Dispose of the animation controller
     _controller.dispose();
-    if (isGameStarted) {
+
+    // Cancel sensor subscription if it exists
+    if (_sensorSubscription != null) {
       _sensorSubscription.cancel();
+    }
+
+    // Cancel timer if it's active
+    if (_timer != null && _timer.isActive) {
       _timer.cancel();
     }
-    if (_isMoving) {
-      gyroData.endSession();
-    }
+
+    // End gyro session only once
+    gyroData.endSession();
+
     super.dispose();
   }
 
