@@ -38,8 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Failed to sign in: Please try again later")),
+          SnackBar(content: Text(response)),
         );
       }
     }

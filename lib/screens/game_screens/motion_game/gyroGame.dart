@@ -174,8 +174,8 @@ class _BallGameState extends State<BallGame>
 
             // Update ball position
             setState(() {
-              double horizontalSensitivity = 10.0;
-              double verticalSensitivity = 15.0;
+              double horizontalSensitivity = 20.0;
+              double verticalSensitivity = 25.0;
 
               posX += gyroY * horizontalSensitivity;
               posY += gyroX * verticalSensitivity;

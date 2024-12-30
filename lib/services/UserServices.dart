@@ -120,7 +120,7 @@ class UserServices {
 
   Future<String> loginDartFrog(String username, String password) async {
     bool isOnline = await isConnectedToInternet();
-    if (!isOnline) return 'fail';
+    if (!isOnline) return 'fail not online';
     debugPrint("User is online: sending data");
 
     try {
@@ -160,11 +160,11 @@ class UserServices {
         debugPrint("Login Successful: Token stored securely");
         return 'sucess';
       } else {
-        return 'fail;';
+        return 'fail Server Error;';
       }
     } catch (e) {
       debugPrint("Error during login: $e");
-      return 'fail';
+      return 'fail unkown error';
     }
   }
 
