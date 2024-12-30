@@ -10,9 +10,9 @@ class GyroData {
   DateTime? lastTimestamp;
 
   final double movementThreshold =
-      6.5; // Adjust this threshold to control sensitivity
-  final double speedThreshold = 6.5; // Threshold for tilt speed
-  final double accelerationThreshold = 6.5; // Threshold for tilt acceleration
+      15; // Adjust this threshold to control sensitivity
+  final double speedThreshold = 15; // Threshold for tilt speed
+  final double accelerationThreshold = 15; // Threshold for tilt acceleration
   final Duration delayBetweenSaves =
       const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
@@ -247,6 +247,7 @@ class GyroData {
   }
 
   Future<String> _sendSessionData() async {
+
     if (_sessionData.isEmpty) return "Session empty";
     bool isOnline = await isConnectedToInternet();
 
