@@ -130,7 +130,7 @@ class StepCounter {
         _logStepDuration(); // Log step duration
 
         double jerk = getJerk(magnitude);
-        double verticalOscillation = getVerticalOscillation();
+       // double verticalOscillation = getVerticalOscillation();
 
         // Store data for this step
         Map<String, double> orientationData = getOrientation();
