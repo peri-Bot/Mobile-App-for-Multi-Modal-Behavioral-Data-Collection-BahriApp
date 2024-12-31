@@ -3,7 +3,7 @@ import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/accelerometerGame_service.dart';
-
+import 'package:flutter/services.dart'; // For vibration feedback
 
 class AccelerometerGames extends StatefulWidget {
   const AccelerometerGames({super.key});
@@ -171,6 +171,15 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   }
 
   void _initSensor() async {
+    bool sensorAvailable = await _stepCounter.initSensor(
+      onStepDetected: () {
+        setState(() {
+          _stepCount++;
+        });
+        HapticFeedback.vibrate(); // Vibration feedback for each step
+      },
+      currentActivity: _currentActivity, // Pass the current activity
+    );
     setState(() {});
   }
 
@@ -229,6 +238,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       debugPrint("Ending session for userId: ${_stepCounter.userId}");
       await _stepCounter.endSession(_stepCounter.userId!); // End session and send data
     } else {
+      debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
     }
     _stepCounter.stopDataCollection(); // Stop data collection after sending data
     _stopTimer();
@@ -241,19 +251,25 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       _isPaused = false;
     });
   }
+
   @override
   void dispose() {
-
+    debugPrint("Disposing. Data collection enabled: ${_stepCounter.isDataCollectionEnabled}");
     if (_stepCounter.userId != null && _stepCounter.isDataCollectionEnabled) {
-
+      debugPrint("Disposing and ending session for userId: ${_stepCounter.userId}");
       _stepCounter.endSession(_stepCounter.userId!); // End session and send data
     } else {
+      debugPrint("Dispose: Data cannot be sent. Either user ID is empty or data collection is off.");
     }
     _stepCounter.stopDataCollection(); // Stop data collection after sending data
     _stepCounter.dispose();
     _timer?.cancel();
     super.dispose();
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

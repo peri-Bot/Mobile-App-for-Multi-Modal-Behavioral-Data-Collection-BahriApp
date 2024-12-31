@@ -187,12 +187,16 @@ class StepCounter {
 
   // End the session and send collected data
   Future<String> endSession(String userId) async {
+    debugPrint("Ending session for userId: $userId with session ID: $_sessionId and data collection enabled: $_isDataCollectionEnabled");
+
     // Prepare data payload
     Map<String, dynamic> data = {
       'userId': userId,
       'sessionId': _sessionId,
       'stepsData': _stepsData, // Include all collected steps data
     };
+
+    debugPrint("Prepared Data Payload for session end: $data");
     String result = await _sendDataToDartFrogServer(data);
 
     // Set data collection to false after sending the data
@@ -209,10 +213,14 @@ class StepCounter {
   bool isOnline = await isConnectedToInternet();
 
   if (data['userId'] == null || (data['userId'] as String).isEmpty || !_isDataCollectionEnabled) {
+  debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
+  debugPrint("userId: ${data['userId']}");
+  debugPrint("Data collection enabled: $_isDataCollectionEnabled");
   return "Data cannot be sent. Either user ID is empty or data collection is off";
   }
 
   try {
+  debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
 
   var response = await http.post(
   url,
