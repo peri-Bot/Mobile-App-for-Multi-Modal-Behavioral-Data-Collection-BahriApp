@@ -271,8 +271,6 @@ class GyroData {
     }
 
     try {
-      debugPrint(
-          'Sending data to server in background: ${jsonEncode(payload)}');
       await compute(_sendDataToServer, payload);
       debugPrint('Successfully sent data in background.');
       _sessionData.clear();

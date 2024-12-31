@@ -95,12 +95,8 @@ class _BallGameState extends State<BallGame>
 
     // End any previous session if it exists
     if (!sessionEnded) {
-      debugPrint('Ending previous session before starting a new one');
       await gyroData.endSession();
     }
-
-    // Start a new gyro session for the new game
-    debugPrint('Starting new session for difficulty: $difficulty');
     await gyroData.startNewSession(uid ?? 'anonymous');
 
     setState(() {
@@ -117,10 +113,6 @@ class _BallGameState extends State<BallGame>
     _initializeSensors();
     _startScoreTimer();
   }
-
-
-
-
   void _initializeSensors() async {
     if (await SensorManager().isSensorAvailable(Sensors.GYROSCOPE)) {
       final stream = await SensorManager().sensorUpdates(
@@ -210,10 +202,8 @@ class _BallGameState extends State<BallGame>
 
   void _gameOver() {
     if (!isGameOver && !sessionEnded) {
-      debugPrint('Game Over triggered');
       sessionEnded = true;  // Set the flag
       gyroData.endSession().then((_) {
-        debugPrint('Session ended in _gameOver');
         setState(() {
           isGameOver = true;
         });
