@@ -124,13 +124,8 @@ class _BallGameState extends State<BallGame>
           double gyroY = sensorEvent.data[1];
           double gyroZ = sensorEvent.data[2];
 
-          // Debug prints to verify sensor data
-          debugPrint('Raw Gyro Data - X: $gyroX, Y: $gyroY, Z: $gyroZ');
-
           // Calculate time delta
           if (_lastUpdateTime != null) {
-            // Calculate all gyro metrics in sequence
-            // 1. Basic orientation and stability calculations
             gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
             gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
 
@@ -140,19 +135,8 @@ class _BallGameState extends State<BallGame>
 
             // 3. Rotation and path calculations
             gyroData.calculateRotationDirection(gyroX, currentTime);
-            gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
+            //gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
             gyroData.calculateRotationDuration(gyroX, currentTime);
-
-            // Debug prints for all metrics
-            debugPrint('''
-              Stability: ${gyroData.calculateTiltStability(gyroX, gyroY, gyroZ)}
-              MicroAdjustments: ${gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ)}
-              PathStraightness: ${gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ)}
-              TiltSpeed: ${gyroData.tiltSpeed}
-              RotationDuration: ${gyroData.rotationDuration}
-              DirectionConsistency: ${gyroData.rotationDirectionConsistency}
-            ''');
-
             // Check if movement is significant
             if (gyroData.isSignificantMovement(gyroX, gyroY, gyroZ)) {
               _isMoving = true;
@@ -161,7 +145,6 @@ class _BallGameState extends State<BallGame>
               gyroData
                   .storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ)
                   .then((_) {
-                debugPrint('Stored gyro data with all metrics');
               });
             } else {
               if (_isMoving) {
