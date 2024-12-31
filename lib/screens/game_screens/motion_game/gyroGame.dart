@@ -164,7 +164,7 @@ class _BallGameState extends State<BallGame>
               // Update ball position only if no collision or goal
               setState(() {
                 double horizontalSensitivity = 20.0;
-                double verticalSensitivity = 25.0;
+                double verticalSensitivity = 20.0;
 
                 posX += gyroY * horizontalSensitivity;
                 posY += gyroX * verticalSensitivity;
