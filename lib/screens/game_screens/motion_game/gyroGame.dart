@@ -34,6 +34,7 @@ class _BallGameState extends State<BallGame>
   List<Rect> obstacles = [];
   String? uid;
   bool _canPop = false;
+  bool sessionEnded = false;
   void updateCanPop(bool value) {
     setState(() {
       _canPop = value;
@@ -88,12 +89,18 @@ class _BallGameState extends State<BallGame>
   }
 
   void startGame(String difficulty) async {
-    // Ensure UID is set
     if (uid == null) {
       await fetchUserId();
     }
 
-    // Start a new gyro session when game starts
+    // End any previous session if it exists
+    if (!sessionEnded) {
+      debugPrint('Ending previous session before starting a new one');
+      await gyroData.endSession();
+    }
+
+    // Start a new gyro session for the new game
+    debugPrint('Starting new session for difficulty: $difficulty');
     await gyroData.startNewSession(uid ?? 'anonymous');
 
     setState(() {
@@ -105,16 +112,20 @@ class _BallGameState extends State<BallGame>
       isGameOver = false;
       isGameWon = false;
       score = 0;
+      sessionEnded = false;  // Reset the session end flag
     });
     _initializeSensors();
     _startScoreTimer();
   }
 
+
+
+
   void _initializeSensors() async {
     if (await SensorManager().isSensorAvailable(Sensors.GYROSCOPE)) {
       final stream = await SensorManager().sensorUpdates(
         sensorId: Sensors.GYROSCOPE,
-        interval: Sensors.SENSOR_DELAY_GAME,
+        interval: Sensors.SENSOR_DELAY_FASTEST, // Highest frequency available
       );
 
       _sensorSubscription = stream.listen((sensorEvent) {
@@ -124,66 +135,52 @@ class _BallGameState extends State<BallGame>
           double gyroY = sensorEvent.data[1];
           double gyroZ = sensorEvent.data[2];
 
-          // Calculate time delta
           if (_lastUpdateTime != null) {
+            // Perform calculations here
             gyroData.calculateTiltAngle(gyroX, gyroY, gyroZ);
             gyroData.calculateTiltStability(gyroX, gyroY, gyroZ);
-
-            // 2. Motion and speed calculations
             gyroData.calculateTiltSpeed(gyroX, gyroY, currentTime);
             gyroData.calculateMicroAdjustments(gyroX, gyroY, gyroZ);
-
-            // 3. Rotation and path calculations
             gyroData.calculateRotationDirection(gyroX, currentTime);
-            //gyroData.calculateRotationPathStraightness(gyroX, gyroY, gyroZ);
             gyroData.calculateRotationDuration(gyroX, currentTime);
-            // Check if movement is significant
+
             if (gyroData.isSignificantMovement(gyroX, gyroY, gyroZ)) {
               _isMoving = true;
-
-              // Store the gyro data
-              gyroData
-                  .storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ)
-                  .then((_) {
-              });
+              gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ).then((_) {});
             } else {
               if (_isMoving) {
                 _isMoving = false;
-                // Reset rotation tracking when movement stops
                 gyroData.rotationStartTime = null;
                 gyroData.rotationDuration = 0.0;
               }
             }
 
-            // Update ball position
-            setState(() {
-              double horizontalSensitivity = 20.0;
-              double verticalSensitivity = 25.0;
+            // Check collision and goal immediately
+            if (_checkCollision()) {
+              _gameOver();
+            } else if (_checkGoal()) {
+              _gameWon();
+            } else {
+              // Update ball position only if no collision or goal
+              setState(() {
+                double horizontalSensitivity = 20.0;
+                double verticalSensitivity = 25.0;
 
-              posX += gyroY * horizontalSensitivity;
-              posY += gyroX * verticalSensitivity;
+                posX += gyroY * horizontalSensitivity;
+                posY += gyroX * verticalSensitivity;
 
-              // Clamp positions
-              posX =
-                  posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-              posY = posY.clamp(
-                  0.0, MediaQuery.of(context).size.height - ballSize - 10);
-
-              if (_checkCollision()) {
-                _gameOver();
-              }
-              if (_checkGoal()) {
-                _gameWon();
-              }
-            });
+                posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
+                posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+              });
+            }
           }
 
-          // Store current values for next update
           _lastUpdateTime = currentTime;
         }
       });
     }
   }
+
 
   void _startScoreTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -211,13 +208,23 @@ class _BallGameState extends State<BallGame>
     return ballRect.overlaps(goalRect);
   }
 
-  void _gameOver() async {
-    await gyroData.endSession();
-    setState(() {
-      isGameOver = true;
-    });
-    _sensorSubscription.cancel();
-    _timer.cancel();
+  void _gameOver() {
+    if (!isGameOver && !sessionEnded) {
+      debugPrint('Game Over triggered');
+      sessionEnded = true;  // Set the flag
+      gyroData.endSession().then((_) {
+        debugPrint('Session ended in _gameOver');
+        setState(() {
+          isGameOver = true;
+        });
+        _sensorSubscription.cancel();
+        _timer.cancel();
+        _showGameOverDialog();  // Separate dialog display logic
+      });
+    }
+  }
+
+  void _showGameOverDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -225,8 +232,7 @@ class _BallGameState extends State<BallGame>
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -236,11 +242,8 @@ class _BallGameState extends State<BallGame>
                   isGameStarted = false;
                 });
               },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-              ),
-              child: const Text('GO BACK',
-                  style: TextStyle(color: Colors.white)),
+              style: TextButton.styleFrom(backgroundColor: Colors.teal),
+              child: const Text('GO BACK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -248,23 +251,31 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  void _gameWon() async {
-    await gyroData.endSession();
-    setState(() {
-      isGameWon = true;
-    });
-    _sensorSubscription.cancel();
-    _timer.cancel();
+  void _gameWon() {
+    if (!isGameWon && !sessionEnded) {
+      debugPrint('Game Won triggered');
+      sessionEnded = true;  // Set the flag
+      gyroData.endSession().then((_) {
+        debugPrint('Session ended in _gameWon');
+        setState(() {
+          isGameWon = true;
+        });
+        _sensorSubscription.cancel();
+        _timer.cancel();
+        _showGameWonDialog();  // Separate dialog display logic
+      });
+    }
+  }
+
+  void _showGameWonDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('Level Complete!',
-              style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
+          title: const Text('Level Complete!', style: TextStyle(color: Colors.white)),
+          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -274,11 +285,8 @@ class _BallGameState extends State<BallGame>
                   isGameStarted = false;
                 });
               },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.teal,
-              ),
-              child: const Text('Choose Level',
-                  style: TextStyle(color: Colors.white)),
+              style: TextButton.styleFrom(backgroundColor: Colors.teal),
+              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
@@ -286,9 +294,7 @@ class _BallGameState extends State<BallGame>
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
+              style: TextButton.styleFrom(backgroundColor: Colors.redAccent),
               child: const Text('Quit', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -296,6 +302,27 @@ class _BallGameState extends State<BallGame>
       },
     );
   }
+
+
+
+  @override
+  void dispose() async {
+    debugPrint('Dispose triggered');
+    if (!sessionEnded) {
+      sessionEnded = true;  // Set the flag
+      await gyroData.endSession();
+      debugPrint('Session ended in dispose');
+    }
+    _controller.dispose();
+    if (isGameStarted) {
+      _sensorSubscription.cancel();
+      _timer.cancel();
+    }
+    super.dispose();
+  }
+
+
+
 
   Widget buildDifficultyMenu() {
     return Scaffold(
@@ -401,22 +428,6 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-  @override
-  void dispose() async {
-    await gyroData.endSession();
-    if (_isMoving) {
-      gyroData.endSession();
-    }
-    _controller.dispose();
-    if (isGameStarted) {
-      _sensorSubscription.cancel();
-      _timer.cancel();
-    }
-    if (_isMoving) {
-      gyroData.endSession();
-    }
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

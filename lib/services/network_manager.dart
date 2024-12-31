@@ -105,8 +105,8 @@ class NetworkManager {
           debugPrint('Pending offlineGyroData data uploaded successfully.');
           await box.delete(key); // Delete local data after successful upload
         } else {
-          debugPrint(
-              'Failed to upload pending offlineGyroData data: ${response.body}');
+          /*debugPrint(
+              'Failed to upload pending offlineGyroData data: ${response.body}');*/
         }
       } catch (e) {
         debugPrint(
