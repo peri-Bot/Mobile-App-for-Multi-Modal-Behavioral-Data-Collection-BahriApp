@@ -84,18 +84,18 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
     if (_currentActivity == 'walking') {
       if (_stepCount < 10) {
-        resultMessage = "You have taken less than 10 steps while walking. Boo!";
+        resultMessage = "Good Walk right? great job";
         score = 5;
       } else if (_stepCount < 20) {
         resultMessage =
-            "You have taken more than 10 steps while walking. Keep moving!";
+            "Good Walk right? great job";
         score = 10;
       } else if (_stepCount < 30) {
         resultMessage =
-            "You have taken more than 20 steps while walking. More data, more score!";
+            "Good Walk right? great job";
         score = 15;
       } else {
-        resultMessage = "You have taken more than 30 steps while walking!";
+        resultMessage = "Good Walk right? great job";
         score = 20;
       }
     } else if (_currentActivity == 'jogging') {

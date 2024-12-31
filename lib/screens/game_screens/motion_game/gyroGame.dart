@@ -274,8 +274,7 @@ class _BallGameState extends State<BallGame>
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('Level Complete!', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          title: const Text('SUCCESS!GOOD JOB', style: TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
