@@ -22,6 +22,8 @@ class StepCounter {
   double _minAcceleration = double.infinity;
   String? _currentActivity;
   String? userId;
+  List<double> _recentMagnitudes = []; // New list to store recent magnitudes
+  final int _maxHistory = 2; // Keep only the last two magnitudes
 
   // New fields
   DateTime? _lastStepTime;
@@ -94,9 +96,13 @@ class StepCounter {
     _accelerationData.add(magnitude);
     _peakAcceleration = max(_peakAcceleration, magnitude);
     _minAcceleration = min(_minAcceleration, magnitude);
-
-    // Collect vertical oscillation data (Z-axis for vertical movement)
     _verticalOscillationData.add(z);
+
+    // Store recent magnitudes for jerk calculation
+    _recentMagnitudes.add(magnitude);
+    if (_recentMagnitudes.length > _maxHistory) {
+      _recentMagnitudes.removeAt(0);
+    }
 
     if (_lastMagnitude != 0) {
       double delta = magnitude - _lastMagnitude;
@@ -226,12 +232,11 @@ class StepCounter {
         _verticalOscillationData.length;
   }
 
-  // Calculate jerk (rate of change of acceleration)
   double getJerk(double magnitude) {
-    if (_accelerationData.isEmpty) return 0;
-    double lastAcceleration = _accelerationData.last;
+    if (_recentMagnitudes.length < 2) return 0;
+    double lastMagnitude = _recentMagnitudes[_recentMagnitudes.length - 2];
     double deltaTime = 0.1; // 100ms sample rate
-    return (magnitude - lastAcceleration) / deltaTime;
+    return (magnitude - lastMagnitude) / deltaTime;
   }
 
   // Get average step duration
