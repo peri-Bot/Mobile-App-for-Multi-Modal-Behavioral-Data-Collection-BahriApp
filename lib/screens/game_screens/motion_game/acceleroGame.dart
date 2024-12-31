@@ -143,7 +143,7 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
           content: Text('$resultMessage\nYour score is $score points.'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Play Again'),
+              child: const Text('go back'),
               onPressed: () {
                 updateCanPop(true);
                 Navigator.of(context).pop();
@@ -183,7 +183,9 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     setState(() {});
   }
 
-  void _startWalking() {
+  void _startWalking() async {
+    await fetchUserId(); // Ensure user ID is fetched
+    debugPrint("Starting walking with userId: $uid");
     setState(() {
       _currentActivity = 'walking';
       _isWalking = true;
@@ -198,7 +200,8 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _startTimer();
   }
 
-  void _startJogging() {
+  void _startJogging() async {
+    await fetchUserId(); // Ensure user ID is fetched
     setState(() {
       _currentActivity = 'jogging';
       _isWalking = false;
@@ -213,7 +216,8 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _startTimer();
   }
 
-  void _startSitting() {
+  void _startSitting() async {
+    await fetchUserId(); // Ensure user ID is fetched
     setState(() {
       _currentActivity = 'Walked up and down stairs';
       _isWalking = false;
@@ -228,8 +232,15 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _startTimer();
   }
 
-  void _stopActivity() {
-    _stepCounter.stopDataCollection();
+
+  void _stopActivity() async {
+    if (_stepCounter.userId != null && _stepCounter.isDataCollectionEnabled) {
+      debugPrint("Ending session for userId: ${_stepCounter.userId}");
+      await _stepCounter.endSession(_stepCounter.userId!); // End session and send data
+    } else {
+      debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
+    }
+    _stepCounter.stopDataCollection(); // Stop data collection after sending data
     _stopTimer();
     _showCompletionDialog();
     setState(() {
@@ -243,10 +254,22 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
   @override
   void dispose() {
+    debugPrint("Disposing. Data collection enabled: ${_stepCounter.isDataCollectionEnabled}");
+    if (_stepCounter.userId != null && _stepCounter.isDataCollectionEnabled) {
+      debugPrint("Disposing and ending session for userId: ${_stepCounter.userId}");
+      _stepCounter.endSession(_stepCounter.userId!); // End session and send data
+    } else {
+      debugPrint("Dispose: Data cannot be sent. Either user ID is empty or data collection is off.");
+    }
+    _stepCounter.stopDataCollection(); // Stop data collection after sending data
     _stepCounter.dispose();
     _timer?.cancel();
     super.dispose();
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
