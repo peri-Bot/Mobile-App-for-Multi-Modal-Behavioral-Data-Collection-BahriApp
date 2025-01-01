@@ -267,6 +267,7 @@ class FreeTextService {
     bool isOnline = await isConnectedToInternet();
 
     gameInfo['uid'] = uid;
+    gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
 
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
