@@ -180,10 +180,12 @@ class MenuDrawer extends StatelessWidget {
                     title: const Text('Team',
                         style: TextStyle(color: Colors.black)),
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const CheckTeamScreen()));
+                              builder: (context) => const BaseScreen(
+                                    initialIndex: 1,
+                                  )));
                     },
                   ),
                   ListTile(
@@ -191,10 +193,12 @@ class MenuDrawer extends StatelessWidget {
                     title: const Text('Leaderboard',
                         style: TextStyle(color: Colors.black)),
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => LeaderboardPage()));
+                              builder: (context) => const BaseScreen(
+                                    initialIndex: 2,
+                                  )));
                     },
                   ),
                 ],

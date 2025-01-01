@@ -9,22 +9,38 @@ import 'package:flutter/material.dart';
 import 'menu_screen.dart';
 
 class BaseScreen extends StatefulWidget {
-  const BaseScreen({super.key});
+  final int initialIndex;
+  const BaseScreen({
+    super.key,
+    this.initialIndex = 0,
+  });
 
   @override
   State<BaseScreen> createState() => _BaseScreenState();
 }
 
 class _BaseScreenState extends State<BaseScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+  final GlobalKey<CurvedNavigationBarState> _bottomNavKey = GlobalKey();
 
   final List<Widget> _screens = [
     //const HomeScreen(),
     const GamesListScreen(),
     // Add other screens here, e.g. SecondScreen(), ThirdScreen(), etc.
     const CheckTeamScreen(), // Placeholder for Groups Screen
-    LeaderboardPage(), // Placeholder for Leaderboard Screen
+    const LeaderboardPage(), // Placeholder for Leaderboard Screen
   ];
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex; // Use the parameter
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navBarState = _bottomNavKey.currentState;
+      if (navBarState != null) {
+        navBarState.setPage(_selectedIndex);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +100,7 @@ class _BaseScreenState extends State<BaseScreen> {
         ],
       ),
       bottomNavigationBar: CurvedNavigationBar(
+        key: _bottomNavKey,
         height: 53,
         backgroundColor: Colors.transparent,
         animationDuration: const Duration(milliseconds: 150),

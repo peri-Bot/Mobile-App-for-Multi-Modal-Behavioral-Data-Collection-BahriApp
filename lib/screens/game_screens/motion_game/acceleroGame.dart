@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/accelerometerGame_service.dart';
@@ -20,12 +19,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
   bool _isJogging = false;
   bool _isSitting = false;
   Timer? _timer;
-  bool _canPop = false;
-  void updateCanPop(bool value) {
-    setState(() {
-      _canPop = value;
-    });
-  }
 
   int _elapsedSeconds = 0;
   String _currentActivity = '';
@@ -87,12 +80,10 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
         resultMessage = "Good Walk right? great job";
         score = 5;
       } else if (_stepCount < 20) {
-        resultMessage =
-            "Good Walk right? great job";
+        resultMessage = "Good Walk right? great job";
         score = 10;
       } else if (_stepCount < 30) {
-        resultMessage =
-            "Good Walk right? great job";
+        resultMessage = "Good Walk right? great job";
         score = 15;
       } else {
         resultMessage = "Good Walk right? great job";
@@ -145,7 +136,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
             TextButton(
               child: const Text('go back'),
               onPressed: () {
-                updateCanPop(true);
                 Navigator.of(context).pop();
                 _resetGame();
               },
@@ -232,15 +222,17 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     _startTimer();
   }
 
-
   void _stopActivity() async {
     if (_stepCounter.userId != null && _stepCounter.isDataCollectionEnabled) {
       debugPrint("Ending session for userId: ${_stepCounter.userId}");
-      await _stepCounter.endSession(_stepCounter.userId!); // End session and send data
+      await _stepCounter
+          .endSession(_stepCounter.userId!); // End session and send data
     } else {
-      debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
+      debugPrint(
+          "Data cannot be sent. Either user ID is empty or data collection is off.");
     }
-    _stepCounter.stopDataCollection(); // Stop data collection after sending data
+    _stepCounter
+        .stopDataCollection(); // Stop data collection after sending data
     _stopTimer();
     _showCompletionDialog();
     setState(() {
@@ -254,187 +246,169 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
 
   @override
   void dispose() {
-    debugPrint("Disposing. Data collection enabled: ${_stepCounter.isDataCollectionEnabled}");
+    debugPrint(
+        "Disposing. Data collection enabled: ${_stepCounter.isDataCollectionEnabled}");
     if (_stepCounter.userId != null && _stepCounter.isDataCollectionEnabled) {
-      debugPrint("Disposing and ending session for userId: ${_stepCounter.userId}");
-      _stepCounter.endSession(_stepCounter.userId!); // End session and send data
+      debugPrint(
+          "Disposing and ending session for userId: ${_stepCounter.userId}");
+      _stepCounter
+          .endSession(_stepCounter.userId!); // End session and send data
     } else {
-      debugPrint("Dispose: Data cannot be sent. Either user ID is empty or data collection is off.");
+      debugPrint(
+          "Dispose: Data cannot be sent. Either user ID is empty or data collection is off.");
     }
-    _stepCounter.stopDataCollection(); // Stop data collection after sending data
+    _stepCounter
+        .stopDataCollection(); // Stop data collection after sending data
     _stepCounter.dispose();
     _timer?.cancel();
     super.dispose();
   }
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: _canPop,
-      onPopInvoked: (bool didPop) {
-        if (didPop) {
-          return;
-        }
-
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) {
-            return const FadeMessageBox(
-              message: "Please finish the game first.",
-              duration: Duration(seconds: 2),
-            );
-          },
-        );
-      },
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: const Text('Accelerometer Game'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.lock,
-              color: Colors.black,
-            ),
-            onPressed: () {},
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text('Accelerometer Game'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+          onPressed: () {},
+        ),
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromRGBO(183, 153, 255, 1),
+              Color.fromRGBO(172, 188, 255, 1),
+              Color.fromRGBO(174, 226, 255, 1),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromRGBO(183, 153, 255, 1),
-                Color.fromRGBO(172, 188, 255, 1),
-                Color.fromRGBO(174, 226, 255, 1),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Time Elapsed: $_elapsedSeconds seconds',
+              style: const TextStyle(
+                fontSize: 24,
+                color: Colors.white,
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Time Elapsed: $_elapsedSeconds seconds',
-                style: const TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 80),
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'choose an activity to do; Walk, jog, or sit while holding your phone, '
-                  'press stop when you are done.',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-              const Text(
-                "Choose an Activity",
+            const SizedBox(height: 80),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'choose an activity to do; Walk, jog, or sit while holding your phone, '
+                'press stop when you are done.',
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.deepPurple),
-              ),
-              const SizedBox(height: 25),
-              const SizedBox(
-                height: 20,
-              ),
-              // Walking button
-              Visibility(
-                visible: !_isWalking && !_isJogging && !_isSitting,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 20),
-                    textStyle: const TextStyle(fontSize: 20),
-                    backgroundColor: Colors.white70,
-                    foregroundColor: Colors.teal,
-                  ),
-                  onPressed: _startWalking,
-                  child: const Text('Start Walking'),
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontStyle: FontStyle.italic,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              // Jogging button
-              Visibility(
-                visible: !_isWalking && !_isJogging && !_isSitting,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 20),
-                    textStyle: const TextStyle(fontSize: 20),
-                    backgroundColor: Colors.white70,
-                    foregroundColor: Colors.teal,
-                  ),
-                  onPressed: _startJogging,
-                  child: const Text('Start Jogging'),
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            const Text(
+              "Choose an Activity",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.deepPurple),
+            ),
+            const SizedBox(height: 25),
+            const SizedBox(
+              height: 20,
+            ),
+            // Walking button
+            Visibility(
+              visible: !_isWalking && !_isJogging && !_isSitting,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  textStyle: const TextStyle(fontSize: 20),
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
                 ),
+                onPressed: _startWalking,
+                child: const Text('Start Walking'),
               ),
-              const SizedBox(
-                height: 20,
-              ),
-              // Sitting button
-              Visibility(
-                visible: !_isWalking && !_isJogging && !_isSitting,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 20),
-                    textStyle: const TextStyle(fontSize: 20),
-                    backgroundColor: Colors.white70,
-                    foregroundColor: Colors.teal,
-                  ),
-                  onPressed: _startSitting,
-                  child: const Text('Go Up Stairs and Down Staris'),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            // Jogging button
+            Visibility(
+              visible: !_isWalking && !_isJogging && !_isSitting,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  textStyle: const TextStyle(fontSize: 20),
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
                 ),
+                onPressed: _startJogging,
+                child: const Text('Start Jogging'),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            // Sitting button
+            Visibility(
+              visible: !_isWalking && !_isJogging && !_isSitting,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  textStyle: const TextStyle(fontSize: 20),
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.teal,
+                ),
+                onPressed: _startSitting,
+                child: const Text('Go Up Stairs and Down Staris'),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Stop button - visible only when an activity is active
+            if (_isWalking || _isJogging || _isSitting)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                  textStyle: const TextStyle(fontSize: 20),
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _stopActivity,
+                child: const Text('Stop Activity'),
               ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-              // Stop button - visible only when an activity is active
-              if (_isWalking || _isJogging || _isSitting)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 50, vertical: 20),
-                    textStyle: const TextStyle(fontSize: 20),
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: _stopActivity,
-                  child: const Text('Stop Activity'),
-                ),
-
-              const SizedBox(height: 20),
-
-              // Pause/Resume button
-              if (_isWalking || _isJogging || _isSitting)
-                ElevatedButton(
-                  onPressed: _isPaused ? _resumeGame : _pauseGame,
-                  child: Text(_isPaused ? 'Resume' : 'Pause'),
-                ),
-            ],
-          ),
+            // Pause/Resume button
+            if (_isWalking || _isJogging || _isSitting)
+              ElevatedButton(
+                onPressed: _isPaused ? _resumeGame : _pauseGame,
+                child: Text(_isPaused ? 'Resume' : 'Pause'),
+              ),
+          ],
         ),
       ),
     );

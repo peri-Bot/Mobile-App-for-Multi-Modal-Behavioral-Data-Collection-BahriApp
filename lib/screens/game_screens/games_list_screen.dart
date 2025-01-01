@@ -462,7 +462,7 @@ class GamesList extends State<GamesListScreen> {
                                   children: [
                                     Text(
                                       textAlign: TextAlign.center,
-                                      "Move the ball to the finish line by tilting your phone without touching any objects or borders.",
+                                      "Move the ball to the finish line by tilting your phone without touching any objects.",
                                       style: TextStyle(
                                           fontFamily:
                                               "assets/fonts/Poppins-SemiBold.ttf",
@@ -474,7 +474,7 @@ class GamesList extends State<GamesListScreen> {
                                     ),
                                     Text(
                                       textAlign: TextAlign.center,
-                                      "ምንም አይነት ነገር እና ድንበር ሳይነኩ ስልክዎን በማዘንበል ኳሱን ወደ መጨረሻው መስመር ያንቀሳቅሱት።",
+                                      "ምንም አይነት መሰናክል ሳይነኩ ስልክዎን በማዘንበል ኳሱን ወደ መጨረሻው መስመር ያንቀሳቅሱት።",
                                     ),
                                   ],
                                 ),

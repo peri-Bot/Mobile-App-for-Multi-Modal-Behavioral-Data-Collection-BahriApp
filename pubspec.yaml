@@ -34,9 +34,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_markdown: any
+  flutter_native_splash: ^2.4.1
+  
   #flutter_svg: ^2.0.10+1
   path: ^1.9.0
-  #provider: ^6.1.2
+  provider: ^6.1.2
   #flutter_dotenv: ^5.1.0
   curved_navigation_bar: ^1.0.6
   pinput: ^5.0.0
@@ -63,9 +65,37 @@ dependencies:
 
 
 dev_dependencies:
+
   flutter_lints: ^3.0.0
   flutter_test:
     sdk: flutter
+
+# flutter_launcher_icons:
+#   android: "launcher_icon"
+#   ios: false
+#   image_path: "assets/icon/icon.png"
+#   adaptive_icon_foreground: "assets/icon/icon.png"
+#   adaptive_icon_background: "#ffffff"
+# flutter_launcher_icons:
+#   android: "launcher_icon"
+#   ios: true
+#   image_path: "assets/icon/icon.png"
+#   min_sdk_android: 22 # android min sdk min:16, default 21
+#   adaptive_icon_background: "#ffffff"
+#   adaptive_icon_foreground: "assets/icon/icon.png"
+#   web:
+#     generate: true
+#     image_path: "assets/icon/icon.png"
+#     background_color: "#hexcode"
+#     theme_color: "#hexcode"
+#   windows:
+#     generate: true
+#     image_path: "assets/icon/icon.png"
+#     icon_size: 48 # min:48, max:256, default: 48
+#   macos:
+#     generate: true
+#     image_path: "assets/icon/icon.png"
+ 
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -84,8 +114,9 @@ flutter:
     - assets/images/
     - assets/legal_and_others/
     - assets/pic_pick_images/
-
+    - assets/Logo/
     - ./assets/Motion_Game/
+    - assets/icon/icon.png
 
     - .env
 

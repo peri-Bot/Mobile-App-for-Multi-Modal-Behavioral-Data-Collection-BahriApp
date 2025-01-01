@@ -108,11 +108,12 @@ class _BallGameState extends State<BallGame>
       isGameOver = false;
       isGameWon = false;
       score = 0;
-      sessionEnded = false;  // Reset the session end flag
+      sessionEnded = false; // Reset the session end flag
     });
     _initializeSensors();
     _startScoreTimer();
   }
+
   void _initializeSensors() async {
     if (await SensorManager().isSensorAvailable(Sensors.GYROSCOPE)) {
       final stream = await SensorManager().sensorUpdates(
@@ -138,7 +139,9 @@ class _BallGameState extends State<BallGame>
 
             if (gyroData.isSignificantMovement(gyroX, gyroY, gyroZ)) {
               _isMoving = true;
-              gyroData.storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ).then((_) {});
+              gyroData
+                  .storeGyroDataDartFrog(uid!, gyroX, gyroY, gyroZ)
+                  .then((_) {});
             } else {
               if (_isMoving) {
                 _isMoving = false;
@@ -155,14 +158,16 @@ class _BallGameState extends State<BallGame>
             } else {
               // Update ball position only if no collision or goal
               setState(() {
-                double horizontalSensitivity = 20.0;
+                double horizontalSensitivity = 15.0;
                 double verticalSensitivity = 20.0;
 
                 posX += gyroY * horizontalSensitivity;
                 posY += gyroX * verticalSensitivity;
 
-                posX = posX.clamp(0.0, MediaQuery.of(context).size.width - ballSize);
-                posY = posY.clamp(0.0, MediaQuery.of(context).size.height - ballSize - 10);
+                posX = posX.clamp(
+                    0.0, MediaQuery.of(context).size.width - ballSize);
+                posY = posY.clamp(
+                    0.0, MediaQuery.of(context).size.height - ballSize - 10);
               });
             }
           }
@@ -172,7 +177,6 @@ class _BallGameState extends State<BallGame>
       });
     }
   }
-
 
   void _startScoreTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -202,14 +206,14 @@ class _BallGameState extends State<BallGame>
 
   void _gameOver() {
     if (!isGameOver && !sessionEnded) {
-      sessionEnded = true;  // Set the flag
+      sessionEnded = true; // Set the flag
       gyroData.endSession().then((_) {
         setState(() {
           isGameOver = true;
         });
         _sensorSubscription.cancel();
         _timer.cancel();
-        _showGameOverDialog();  // Separate dialog display logic
+        _showGameOverDialog(); // Separate dialog display logic
       });
     }
   }
@@ -222,7 +226,8 @@ class _BallGameState extends State<BallGame>
         return AlertDialog(
           backgroundColor: Colors.teal[200],
           title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score', style: const TextStyle(color: Colors.white)),
+          content: Text('Your score: $score',
+              style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -233,7 +238,8 @@ class _BallGameState extends State<BallGame>
                 });
               },
               style: TextButton.styleFrom(backgroundColor: Colors.teal),
-              child: const Text('GO BACK', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('GO BACK', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -244,7 +250,7 @@ class _BallGameState extends State<BallGame>
   void _gameWon() {
     if (!isGameWon && !sessionEnded) {
       debugPrint('Game Won triggered');
-      sessionEnded = true;  // Set the flag
+      sessionEnded = true; // Set the flag
       gyroData.endSession().then((_) {
         debugPrint('Session ended in _gameWon');
         setState(() {
@@ -252,7 +258,7 @@ class _BallGameState extends State<BallGame>
         });
         _sensorSubscription.cancel();
         _timer.cancel();
-        _showGameWonDialog();  // Separate dialog display logic
+        _showGameWonDialog(); // Separate dialog display logic
       });
     }
   }
@@ -264,7 +270,8 @@ class _BallGameState extends State<BallGame>
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.teal[200],
-          title: const Text('SUCCESS!GOOD JOB', style: TextStyle(color: Colors.white)),
+          title: const Text('SUCCESS!GOOD JOB',
+              style: TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () {
@@ -275,7 +282,8 @@ class _BallGameState extends State<BallGame>
                 });
               },
               style: TextButton.styleFrom(backgroundColor: Colors.teal),
-              child: const Text('Choose Level', style: TextStyle(color: Colors.white)),
+              child: const Text('Choose Level',
+                  style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               onPressed: () {
@@ -292,13 +300,11 @@ class _BallGameState extends State<BallGame>
     );
   }
 
-
-
   @override
   void dispose() async {
     debugPrint('Dispose triggered');
     if (!sessionEnded) {
-      sessionEnded = true;  // Set the flag
+      sessionEnded = true; // Set the flag
       await gyroData.endSession();
       debugPrint('Session ended in dispose');
     }
@@ -309,9 +315,6 @@ class _BallGameState extends State<BallGame>
     }
     super.dispose();
   }
-
-
-
 
   Widget buildDifficultyMenu() {
     return Scaffold(
@@ -416,7 +419,6 @@ class _BallGameState extends State<BallGame>
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
