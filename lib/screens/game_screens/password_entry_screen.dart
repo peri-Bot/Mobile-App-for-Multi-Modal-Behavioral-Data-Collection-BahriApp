@@ -306,6 +306,7 @@ class _PasswordEntryScreenState extends State<PasswordEntryScreen> {
     var radius = 10.0;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(

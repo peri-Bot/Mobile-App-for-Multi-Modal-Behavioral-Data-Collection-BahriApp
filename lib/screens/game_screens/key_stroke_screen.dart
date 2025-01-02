@@ -63,12 +63,12 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
   String? _targetSentence;
   Map<int, List<String>> sentenceMapEng = {
     0: [
-      "The quick brown fox.",
-      "Coffee is good.",
-      "Sandwiches on the table.",
-      "There were seven balloons.",
-      "You didn't tell me.",
-      "Practice makes perfect.",
+      "The quick brown fox",
+      "Coffee is good",
+      "Sandwiches on the table",
+      "There were seven balloons",
+      "You didn't tell me",
+      "Practice makes perfect",
       "Hello, world!",
     ],
     1: [
@@ -313,7 +313,7 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
                             updateCanPop(true);
                             debugPrint("yoo");
                             _setScore(remainingTime);
-                            onTypingComplete();
+                            //onTypingComplete();
                             gameInfo['endTime'] =
                                 DateTime.now().toIso8601String();
                             gameInfo['completeUserInput'] =
@@ -547,19 +547,19 @@ class _KeyStrokeScreen extends State<KeyStrokeScreen> {
     }
   }
 
-  void onTypingComplete() {
-    List<Map<String, dynamic>> data = keystrokeService.getKeystrokeData();
-    Map<String, double> metrics = keystrokeService.getAllMetrics();
+  // void onTypingComplete() {
+  //   List<Map<String, dynamic>> data = keystrokeService.getKeystrokeData();
+  //   Map<String, double> metrics = keystrokeService.getAllMetrics();
 
-    // Use the collected data and metrics as needed
-    debugPrint("Data of the collected keystroke");
-    //String jsonString = jsonEncode(data);
-    print(
-        const JsonEncoder.withIndent('  ').convert(data)); // Pretty-print JSON
-    debugPrint('Metrics: $metrics');
+  //   // Use the collected data and metrics as needed
+  //  // debugPrint("Data of the collected keystroke");
+  //   //String jsonString = jsonEncode(data);
+  //   //print(
+  //   //    const JsonEncoder.withIndent('  ').convert(data)); // Pretty-print JSON
+  //   //debugPrint('Metrics: $metrics');
 
-    // You can also access individual metrics if needed
-    debugPrint(
-        'Average Key Press Duration: ${keystrokeService.calculateAKPD()}');
-  }
+  //   // You can also access individual metrics if needed
+  //  // debugPrint(
+  //  //     'Average Key Press Duration: ${keystrokeService.calculateAKPD()}');
+  // }
 }

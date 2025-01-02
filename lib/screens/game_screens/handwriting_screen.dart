@@ -222,6 +222,7 @@ class _HandwritingScreenState extends State<HandwritingScreen> {
     var radius = 10.0;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(

@@ -126,7 +126,6 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       score = 0;
     }
 
-
     // showDialog(
     //   context: context,
     //   builder: (context) {
@@ -415,10 +414,12 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       ),
     );
   }
+
   void _showEnd() {
     var radius = 10.0;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -500,5 +501,3 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
     );
   }
 }
-
-
