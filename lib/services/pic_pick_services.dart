@@ -50,7 +50,9 @@ class TapDataCollectionService {
     bool isOnline = await isConnectedToInternet();
     //if (!isOnline) return 'fail';
     gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
-
+    if (tapData.isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
       'tapData': tapData,
@@ -81,6 +83,11 @@ class TapDataCollectionService {
         // User registered successfully
         debugPrint('Tap Data Successfully added');
         return 'success';
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
       } else {
         // Handle error
         debugPrint('Could not add tap data: ${response.body}');
@@ -90,11 +97,11 @@ class TapDataCollectionService {
         return 'Tap Data saved_locally';
       }
     } catch (e) {
-      debugPrint('Error occurred: $e');
-      var box = Hive.box('offlineTapData');
-      await box.add(requestData);
-      debugPrint('Tap Data saved locally (offline).');
-      return 'Tap Data saved_locally';
+      // debugPrint('Error occurred: $e');
+      // var box = Hive.box('offlineTapData');
+      // await box.add(requestData);
+      // debugPrint('Tap Data saved locally (offline).');
+      return 'Unhandled Exception';
     }
   }
 }

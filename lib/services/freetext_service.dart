@@ -268,12 +268,21 @@ class FreeTextService {
 
     gameInfo['uid'] = uid;
     gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
-
+    if (keystrokeData.isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
       'keystrokeFreeTextData': keystrokeData,
       'averageKeyStrokeFreeTextMetrics': getAverageMetrics(),
     };
+    if ((requestData['keystrokeFreeTextData'] as List<Map<String, dynamic>>)
+            .isEmpty ||
+        (requestData['averageKeyStrokeFreeTextMetrics']
+                as List<Map<String, dynamic>>)
+            .isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
 
     debugPrint('Request Data:');
     debugPrint('Game Info: ${requestData['gameInfo']}');
@@ -301,6 +310,11 @@ class FreeTextService {
         // User registered successfully
         debugPrint('  keyStroke Data added');
         return 'success';
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
       } else {
         // Handle error
         debugPrint('Could not add keyStroke data: ${response.body}');
@@ -311,10 +325,7 @@ class FreeTextService {
       }
     } catch (e) {
       debugPrint('Error occurred keyStroke : $e');
-      var box = Hive.box('offlineKeystrokeFreeTextData');
-      await box.add(requestData);
-      debugPrint('Data saved locally (offline).');
-      return 'Server Error: saved_locally';
+      return 'Unhandled Exception';
     }
   }
 }

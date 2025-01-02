@@ -264,7 +264,9 @@ class PasswordTextService {
   Future<String> saveKeyStrokePasswordTextData(
       Map<String, dynamic> gameInfo) async {
     bool isOnline = await isConnectedToInternet();
-
+    if (keystrokeData.isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
     gameInfo['uid'] = uid;
     gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -299,6 +301,11 @@ class PasswordTextService {
         // User registered successfully
         debugPrint('  keyStroke Data added');
         return 'success';
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
       } else {
         // Handle error
         debugPrint('Could not add keyStroke data: ${response.body}');
@@ -308,11 +315,11 @@ class PasswordTextService {
         return 'Server Error: saved_locally';
       }
     } catch (e) {
-      debugPrint('Error occurred keyStroke : $e');
-      var box = Hive.box('offlineKeystrokePasswordTextData');
-      await box.add(requestData);
-      debugPrint('Data saved locally (offline).');
-      return 'Server Error: saved_locally';
+      // debugPrint('Error occurred keyStroke : $e');
+      // var box = Hive.box('offlineKeystrokePasswordTextData');
+      // await box.add(requestData);
+      // debugPrint('Data saved locally (offline).');
+      return 'Unhandled Exception';
     }
   }
 }

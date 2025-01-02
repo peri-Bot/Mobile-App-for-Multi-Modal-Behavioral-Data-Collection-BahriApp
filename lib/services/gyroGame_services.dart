@@ -10,11 +10,11 @@ class GyroData {
   DateTime? lastTimestamp;
 
   final double movementThreshold =
-  15; // Adjust this threshold to control sensitivity
+      15; // Adjust this threshold to control sensitivity
   final double speedThreshold = 15; // Threshold for tilt speed
   final double accelerationThreshold = 15; // Threshold for tilt acceleration
   final Duration delayBetweenSaves =
-  const Duration(milliseconds: 200); // Optional: Add a delay between saves
+      const Duration(milliseconds: 200); // Optional: Add a delay between saves
 
   double roll = 0.0;
   double pitch = 0.0;
@@ -61,12 +61,8 @@ class GyroData {
     }
   }
 
-
   String _generateSessionId() {
-    return DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString();
+    return DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   void calculateTiltAngle(double gyroX, double gyroY, double gyroZ) {
@@ -79,14 +75,12 @@ class GyroData {
   void calculateTiltSpeed(double gyroX, double gyroY, DateTime currentTime) {
     if (lastTimestamp != null) {
       double deltaTime = _handleNaN(
-          currentTime
-              .difference(lastTimestamp!)
-              .inMilliseconds / 1000.0);
+          currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0);
       if (deltaTime > 0) {
         // Prevent division by zero
         // Calculate magnitude of angular velocity
         double currentTiltSpeed =
-        _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY));
+            _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY));
         tiltSpeed = currentTiltSpeed;
 
         if (lastTiltSpeed != null) {
@@ -151,8 +145,8 @@ class GyroData {
     return _handleNaN(sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ));
   }
 
-  double calculateRotationPathStraightness(double gyroX, double gyroY,
-      double gyroZ) {
+  double calculateRotationPathStraightness(
+      double gyroX, double gyroY, double gyroZ) {
     return _handleNaN((gyroX.abs() + gyroY.abs() + gyroZ.abs()) / 3.0);
   }
 
@@ -165,15 +159,11 @@ class GyroData {
 
       // Calculate duration in seconds
       rotationDuration = _handleNaN(
-          currentTime
-              .difference(rotationStartTime!)
-              .inMilliseconds / 1000.0);
+          currentTime.difference(rotationStartTime!).inMilliseconds / 1000.0);
 
       // Update cumulative rotation
       double deltaTime = lastTimestamp != null
-          ? currentTime
-          .difference(lastTimestamp!)
-          .inMilliseconds / 1000.0
+          ? currentTime.difference(lastTimestamp!).inMilliseconds / 1000.0
           : 0.0;
       cumulativeRotation += gyroX * deltaTime;
     } else {
@@ -189,7 +179,7 @@ class GyroData {
 
   bool isSignificantMovement(double gyroX, double gyroY, double gyroZ) {
     double movementMagnitude =
-    sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
+        sqrt(gyroX * gyroX + gyroY * gyroY + gyroZ * gyroZ);
 
     return movementMagnitude > movementThreshold ||
         tiltSpeed > speedThreshold ||
@@ -211,10 +201,12 @@ class GyroData {
     await Hive.openBox('offlineGyroData');
   }
 
-  Future<void> storeGyroDataDartFrog(String userId,
-      double gyroX,
-      double gyroY,
-      double gyroZ,) async {
+  Future<void> storeGyroDataDartFrog(
+    String userId,
+    double gyroX,
+    double gyroY,
+    double gyroZ,
+  ) async {
     try {
       if (!_isSessionActive) {
         await startNewSession(userId);
@@ -254,7 +246,7 @@ class GyroData {
     if (_sessionData.isEmpty) return "Session empty";
 
     bool isOnline = await isConnectedToInternet();
-    final url = Uri.parse('http://15.184.243.127:8080/collect_gyro_data');
+    //final url = Uri.parse('http://15.184.243.127:8080/collect_gyro_data');
 
     final payload = {
       'userId': _userId,
@@ -276,12 +268,7 @@ class GyroData {
       _sessionData.clear();
       return 'success';
     } catch (e) {
-      debugPrint('Error sending data: $e');
-      var box = Hive.box('offlineGyroData');
-      await box.add(payload);
-      debugPrint('Data saved locally (offline).');
-      _sessionData.clear();
-      return 'saved_locally';
+      return 'Unhandled Exception';
     }
   }
 
@@ -297,20 +284,26 @@ class GyroData {
         },
       );
 
-      if (response.statusCode != 200) {
-        debugPrint(
-            'Server error: ${response.statusCode} - Body: ${response.body}');
-        throw Exception('Failed to send data: ${response.statusCode}');
-      } else {
+      if (response.statusCode == 200) {
         debugPrint('Data sent successfully: ${response.statusCode}');
+
+        throw Exception('Failed to send data: ${response.statusCode}');
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+      } else {
+        debugPrint('Data not sent successfully: ${response.statusCode}');
+        var box = Hive.box('offlineGyroData');
+        await box.add(payload);
+        debugPrint('Data saved locally (offline).');
+        _sessionData.clear();
       }
     } catch (e) {
       debugPrint('Network error: $e');
       throw e;
     }
   }
-
-
 
   double _handleNaN(double value) {
     if (value.isNaN || value.isInfinite) {

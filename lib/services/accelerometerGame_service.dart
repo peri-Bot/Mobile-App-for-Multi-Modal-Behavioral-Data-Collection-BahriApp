@@ -33,9 +33,8 @@ class StepCounter {
   int _totalSteps = 0;
 
   bool get isDataCollectionEnabled => _isDataCollectionEnabled;
-  List<Map<String, dynamic>> _stepsData = [
-  ]; // New list to store each step's data
-
+  List<Map<String, dynamic>> _stepsData =
+      []; // New list to store each step's data
 
   //final Uuid _uuid = Uuid();
   String? _sessionId;
@@ -52,9 +51,9 @@ class StepCounter {
   }) async {
     _currentActivity = currentActivity;
     bool accelerometerAvailable =
-    await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
+        await SensorManager().isSensorAvailable(Sensors.ACCELEROMETER);
     bool magnetometerAvailable =
-    await SensorManager().isSensorAvailable(Sensors.MAGNETIC_FIELD);
+        await SensorManager().isSensorAvailable(Sensors.MAGNETIC_FIELD);
 
     if (accelerometerAvailable && magnetometerAvailable) {
       final accelerometerStream = await SensorManager().sensorUpdates(
@@ -68,18 +67,18 @@ class StepCounter {
 
       _accelerometerSubscription =
           accelerometerStream.listen((SensorEvent event) {
-            if (_isDataCollectionEnabled) {
-              _processAccelerometerData(
-                  event.data, onStepDetected, currentActivity);
-            }
-          });
+        if (_isDataCollectionEnabled) {
+          _processAccelerometerData(
+              event.data, onStepDetected, currentActivity);
+        }
+      });
 
       _magnetometerSubscription =
           magnetometerStream.listen((SensorEvent event) {
-            if (_isDataCollectionEnabled) {
-              _processMagnetometerData(event.data);
-            }
-          });
+        if (_isDataCollectionEnabled) {
+          _processMagnetometerData(event.data);
+        }
+      });
 
       // Initialize session ID
       initializeSession();
@@ -95,8 +94,8 @@ class StepCounter {
 
   // Other fields...
 
-  void _processAccelerometerData(List<double> data, Function onStepDetected,
-      String currentActivity) {
+  void _processAccelerometerData(
+      List<double> data, Function onStepDetected, String currentActivity) {
     if (_stepsData.length >= _maxDataEntries) {
       return; // Stop collecting new data if we have reached the limit
     }
@@ -111,7 +110,6 @@ class StepCounter {
 
     // Ensure the vertical (z) component is being added correctly
     _verticalOscillationData.add(z);
-
 
     // Store recent magnitudes for jerk calculation
     _recentMagnitudes.add(magnitude);
@@ -130,7 +128,7 @@ class StepCounter {
         _logStepDuration(); // Log step duration
 
         double jerk = getJerk(magnitude);
-       // double verticalOscillation = getVerticalOscillation();
+        // double verticalOscillation = getVerticalOscillation();
 
         // Store data for this step
         Map<String, double> orientationData = getOrientation();
@@ -157,9 +155,6 @@ class StepCounter {
     _lastMagnitude = magnitude;
   }
 
-
-
-
   void _processMagnetometerData(List<double> data) {
     _magnetometerData.addAll(data);
   }
@@ -176,18 +171,15 @@ class StepCounter {
     debugPrint("Data collection stopped");
   }
 
-
   // Initialize session ID
   void initializeSession() {
-    _sessionId = DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString();
+    _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   // End the session and send collected data
   Future<String> endSession(String userId) async {
-    debugPrint("Ending session for userId: $userId with session ID: $_sessionId and data collection enabled: $_isDataCollectionEnabled");
+    debugPrint(
+        "Ending session for userId: $userId with session ID: $_sessionId and data collection enabled: $_isDataCollectionEnabled");
 
     // Prepare data payload
     Map<String, dynamic> data = {
@@ -206,63 +198,78 @@ class StepCounter {
     return result;
   }
 
-
   // Send data to Dart Frog server
   Future<String> _sendDataToDartFrogServer(Map<String, dynamic> data) async {
-  final url = Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data');
-  bool isOnline = await isConnectedToInternet();
+    final url =
+        Uri.parse('http://15.184.243.127:8080/collect_accelerometer_data');
+    bool isOnline = await isConnectedToInternet();
 
-  if (data['userId'] == null || (data['userId'] as String).isEmpty || !_isDataCollectionEnabled) {
-  debugPrint("Data cannot be sent. Either user ID is empty or data collection is off.");
-  debugPrint("userId: ${data['userId']}");
-  debugPrint("Data collection enabled: $_isDataCollectionEnabled");
-  return "Data cannot be sent. Either user ID is empty or data collection is off";
+    if (data['userId'] == null ||
+        (data['userId'] as String).isEmpty ||
+        !_isDataCollectionEnabled ||
+        _stepsData.isEmpty ||
+        (data['stepsData'] as List<Map<String, dynamic>>).isEmpty) {
+      debugPrint(
+          "Data cannot be sent. Either user ID is empty or data collection is off.");
+      debugPrint("userId: ${data['userId']}");
+      debugPrint("Data collection enabled: $_isDataCollectionEnabled");
+      return "Data cannot be sent. Either user ID is empty or data collection is off or empty";
+    }
+    if (!isOnline) {
+      // Save data to Hive if offline
+      var box = Hive.box('offlineKeystrokeFreeTextData');
+      await box.add(data);
+      debugPrint('Data saved locally (offline).');
+      return 'saved_locally';
+    }
+    try {
+      debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
+
+      var response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint("Data sent successfully.");
+        return 'success';
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
+      } else {
+        debugPrint("Failed to send data. Status: ${response.statusCode}");
+        debugPrint('Could not add accelerometer data: ${response.body}');
+        var box = Hive.box('offlineAcceloData');
+        await box.add(data);
+        debugPrint('Data saved locally (offline).');
+        return 'saved_locally';
+      }
+    } catch (e) {
+      debugPrint("Error sending data: $e");
+      // var box = Hive.box('offlineAcceloData');
+      // await box.add(data);
+      // debugPrint('Data saved locally (offline).');
+      return 'Unhandled Exception';
+    }
   }
-
-  try {
-  debugPrint("Prepared Data Payload: ${jsonEncode(data)}");
-
-  var response = await http.post(
-  url,
-  headers: {'Content-Type': 'application/json'},
-  body: jsonEncode(data),
-  );
-
-  if (response.statusCode == 200) {
-  debugPrint("Data sent successfully.");
-  return 'success';
-  } else {
-  debugPrint("Failed to send data. Status: ${response.statusCode}");
-  debugPrint('Could not add accelerometer data: ${response.body}');
-  var box = Hive.box('offlineAcceloData');
-  await box.add(data);
-  debugPrint('Data saved locally (offline).');
-  return 'saved_locally';
-  }
-  } catch (e) {
-  debugPrint("Error sending data: $e");
-  var box = Hive.box('offlineAcceloData');
-  await box.add(data);
-  debugPrint('Data saved locally (offline).');
-  return 'saved_locally';
-  }
-  }
-
 
   // Get average acceleration
   double getAverageAcceleration() {
-  return _accelerationData.isEmpty
-  ? 0
-      : _accelerationData.reduce((a, b) => a + b) / _accelerationData.length;
+    return _accelerationData.isEmpty
+        ? 0
+        : _accelerationData.reduce((a, b) => a + b) / _accelerationData.length;
   }
 
   // Get standard deviation of acceleration
   double getStandardDeviation() {
-  double mean = getAverageAcceleration();
-  num sumSquaredDiffs = _accelerationData
-      .map((value) => pow(value - mean, 2))
-      .reduce((a, b) => a + b);
-  return sqrt(sumSquaredDiffs / _accelerationData.length);
+    double mean = getAverageAcceleration();
+    num sumSquaredDiffs = _accelerationData
+        .map((value) => pow(value - mean, 2))
+        .reduce((a, b) => a + b);
+    return sqrt(sumSquaredDiffs / _accelerationData.length);
   }
 
   // Get vertical oscillation (average vertical movement)
@@ -271,7 +278,6 @@ class StepCounter {
     double sum = _verticalOscillationData.reduce((a, b) => a + b);
     return sum / _verticalOscillationData.length;
   }
-
 
   // Calculate the rate of change of acceleration (jerk)
   double getJerk(double magnitude) {
@@ -282,109 +288,105 @@ class StepCounter {
     return (magnitude - lastMagnitude) / deltaTime;
   }
 
-
   // Get average step duration
   double getAverageStepDuration() {
-  if (_stepDurations.isEmpty) return 0;
-  return _stepDurations.reduce((a, b) => a + b) / _stepDurations.length;
+    if (_stepDurations.isEmpty) return 0;
+    return _stepDurations.reduce((a, b) => a + b) / _stepDurations.length;
   }
 
   // Get step frequency (steps per minute)
   double getStepFrequency() {
-  if (_stepDurations.isEmpty) return 0;
-  double totalTime =
-  _stepDurations.reduce((a, b) => a + b) / 1000; // in seconds
-  return _totalSteps / (totalTime / 60); // steps per minute
+    if (_stepDurations.isEmpty) return 0;
+    double totalTime =
+        _stepDurations.reduce((a, b) => a + b) / 1000; // in seconds
+    return _totalSteps / (totalTime / 60); // steps per minute
   }
 
   // Get the device orientation (pitch, roll, yaw) using accelerometer and magnetometer
   Map<String, double> getOrientation() {
-  if (_magnetometerData.isEmpty) return {'pitch': 0, 'roll': 0, 'yaw': 0};
+    if (_magnetometerData.isEmpty) return {'pitch': 0, 'roll': 0, 'yaw': 0};
 
-  double ax = _accelerationData[0];
-  double ay = _accelerationData[1];
-  double az = _accelerationData[2];
+    double ax = _accelerationData[0];
+    double ay = _accelerationData[1];
+    double az = _accelerationData[2];
 
-  double mx = _magnetometerData[0];
-  double my = _magnetometerData[1];
-  double mz = _magnetometerData[2];
+    double mx = _magnetometerData[0];
+    double my = _magnetometerData[1];
+    double mz = _magnetometerData[2];
 
-  // Normalize accelerometer data (gravity vector)
-  double normAccel = sqrt(ax * ax + ay * ay + az * az);
-  ax /= normAccel;
-  ay /= normAccel;
-  az /= normAccel;
+    // Normalize accelerometer data (gravity vector)
+    double normAccel = sqrt(ax * ax + ay * ay + az * az);
+    ax /= normAccel;
+    ay /= normAccel;
+    az /= normAccel;
 
-  // Normalize magnetometer data (earth magnetic field vector)
-  double normMag = sqrt(mx * mx + my * my + mz * mz);
-  mx /= normMag;
-  my /= normMag;
-  mz /= normMag;
+    // Normalize magnetometer data (earth magnetic field vector)
+    double normMag = sqrt(mx * mx + my * my + mz * mz);
+    mx /= normMag;
+    my /= normMag;
+    mz /= normMag;
 
-  // Calculate pitch and roll
-  double pitch = asin(-ax); // Pitch angle (in radians)
-  double roll = atan2(ay, az); // Roll angle (in radians)
+    // Calculate pitch and roll
+    double pitch = asin(-ax); // Pitch angle (in radians)
+    double roll = atan2(ay, az); // Roll angle (in radians)
 
-  // Calculate yaw (compass heading)
-  double yaw =
-  atan2(my * ax - mx * ay, mx * az - mz * ax); // Yaw angle (in radians)
+    // Calculate yaw (compass heading)
+    double yaw =
+        atan2(my * ax - mx * ay, mx * az - mz * ax); // Yaw angle (in radians)
 
-  // Convert radians to degrees for easier interpretation
-  double pitchDeg = pitch * 180.0 / pi;
-  double rollDeg = roll * 180.0 / pi;
-  double yawDeg = yaw * 180.0 / pi;
+    // Convert radians to degrees for easier interpretation
+    double pitchDeg = pitch * 180.0 / pi;
+    double rollDeg = roll * 180.0 / pi;
+    double yawDeg = yaw * 180.0 / pi;
 
-  return {'pitch': pitchDeg, 'roll': rollDeg, 'yaw': yawDeg};
+    return {'pitch': pitchDeg, 'roll': rollDeg, 'yaw': yawDeg};
   }
 
   // Log step duration and store it in list
   void _logStepDuration() {
-  if (_lastStepTime != null) {
-  DateTime now = DateTime.now();
-  double stepDuration =
-  now
-      .difference(_lastStepTime!)
-      .inMilliseconds
-      .toDouble();
-  _stepDurations.add(stepDuration);
-  print("Step duration: $stepDuration ms");
-  }
-  _lastStepTime = DateTime.now();
+    if (_lastStepTime != null) {
+      DateTime now = DateTime.now();
+      double stepDuration =
+          now.difference(_lastStepTime!).inMilliseconds.toDouble();
+      _stepDurations.add(stepDuration);
+      print("Step duration: $stepDuration ms");
+    }
+    _lastStepTime = DateTime.now();
   }
 
   Future<bool> isConnectedToInternet() async {
-  var connectivityResult = await Connectivity().checkConnectivity();
-  if (connectivityResult.contains(ConnectivityResult.mobile) ||
-  connectivityResult.contains(ConnectivityResult.wifi)) {
-  return true;
-  } else {
-  return false;
-  }
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Future<void> initHive() async {
-  await Hive.initFlutter();
-  await Hive.openBox('offlineAcceloData');
+    await Hive.initFlutter();
+    await Hive.openBox('offlineAcceloData');
   }
 
   // Reset the counters and data
   void reset() {
-  _lastMagnitude = 0;
-  _isMovingUp = false;
-  _accelerationData.clear();
-  _magnetometerData.clear();
-  _peakAcceleration = 0;
-  _minAcceleration = double.infinity;
-  _lastStepTime = null;
-  _verticalOscillationData.clear();
-  _stepDurations.clear();
-  _totalSteps = 0;
-  _sessionId = null;
+    _lastMagnitude = 0;
+    _isMovingUp = false;
+    _accelerationData.clear();
+    _magnetometerData.clear();
+    _peakAcceleration = 0;
+    _minAcceleration = double.infinity;
+    _lastStepTime = null;
+    _verticalOscillationData.clear();
+    _stepDurations.clear();
+    _totalSteps = 0;
+    _sessionId = null;
   }
 
   void dispose() async {
-  await endSession(userId!);
-  _accelerometerSubscription?.cancel();
-  _magnetometerSubscription?.cancel();
+    await endSession(userId!);
+    _accelerometerSubscription?.cancel();
+    _magnetometerSubscription?.cancel();
   }
-  }
+}

@@ -46,6 +46,9 @@ class FirestoreService {
   ) async {
     String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
     bool isOnline = await isConnectedToInternet();
+    if (swipeData.isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
 
     final body = jsonEncode({
       'userId': userId,
@@ -78,6 +81,11 @@ class FirestoreService {
       if (response.statusCode == 200) {
         debugPrint('Swipe data sent to server successfully!');
         return ('Swipe data sent to server successfully!');
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
       } else {
         debugPrint('Failed to send swipe data: ${response.body}');
         var box = Hive.box('offlineSwipeData');
@@ -86,11 +94,11 @@ class FirestoreService {
         return 'Swipe Data saved_locally';
       }
     } catch (e) {
-      debugPrint('Error occurred while sending swipe data: $e');
-      var box = Hive.box('offlineSwipeData');
-      await box.add(body);
-      debugPrint('Swipe Data saved locally (offline).');
-      return 'Swipe Data saved_locally';
+      // debugPrint('Error occurred while sending swipe data: $e');
+      // var box = Hive.box('offlineSwipeData');
+      // await box.add(body);
+      // debugPrint('Swipe Data saved locally (offline).');
+      return 'Unhandled Exception';
     }
   }
 

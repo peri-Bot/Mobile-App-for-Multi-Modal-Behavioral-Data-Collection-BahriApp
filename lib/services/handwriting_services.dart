@@ -63,6 +63,9 @@ class HandwritingServices {
 
     gameInfo['uid'] = uid;
     gameInfo['sessionId'] = DateTime.now().millisecondsSinceEpoch.toString();
+    if (svgContent == null || svgContent!.isEmpty) {
+      return "Data cannot be sent. data collection is empty";
+    }
     final Map<String, dynamic> requestData = {
       'gameInfo': gameInfo,
       'HandwritingData': svgContent,
@@ -71,6 +74,7 @@ class HandwritingServices {
     debugPrint('Request Data:');
     debugPrint('Game Info: ${requestData['gameInfo']}');
     debugPrint('Handwriting Data: ${requestData['HandwritingData']}');
+
     if (!isOnline) {
       // Save data to Hive if offline
       var box = Hive.box('offlineHandwritingData');
@@ -93,6 +97,11 @@ class HandwritingServices {
         // User registered successfully
         debugPrint('  Handwriting Data added');
         return 'success';
+      } else if (response.statusCode == 400) {
+        // Client-side error; log the issue but do not save locally
+        debugPrint(
+            'Server responded with 400: ${response.body}. Data will not be saved locally.');
+        return 'error_400';
       } else {
         // Handle error
         debugPrint('Could not add Handwriting data: ${response.body}');
@@ -103,10 +112,10 @@ class HandwritingServices {
       }
     } catch (e) {
       debugPrint('Error occurred Handwriting : $e');
-      var box = Hive.box('offlineHandwritingData');
-      await box.add(requestData);
-      debugPrint('Data saved locally (offline).');
-      return 'Server Error: saved_locally';
+      // var box = Hive.box('offlineHandwritingData');
+      // await box.add(requestData);
+      // debugPrint('Data saved locally (offline).');
+      return 'Unhandled Exception';
     }
   }
 }
