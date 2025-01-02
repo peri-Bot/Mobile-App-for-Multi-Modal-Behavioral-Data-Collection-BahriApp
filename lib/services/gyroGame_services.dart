@@ -10,9 +10,9 @@ class GyroData {
   DateTime? lastTimestamp;
 
   final double movementThreshold =
-  15; // Adjust this threshold to control sensitivity
-  final double speedThreshold = 15; // Threshold for tilt speed
-  final double accelerationThreshold = 15; // Threshold for tilt acceleration
+  20; // Adjust this threshold to control sensitivity
+  final double speedThreshold = 20; // Threshold for tilt speed
+  final double accelerationThreshold = 20; // Threshold for tilt acceleration
   final Duration delayBetweenSaves =
   const Duration(milliseconds: 200); // Optional: Add a delay between saves
 

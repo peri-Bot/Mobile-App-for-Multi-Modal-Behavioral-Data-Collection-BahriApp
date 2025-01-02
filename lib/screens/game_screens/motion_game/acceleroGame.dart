@@ -126,24 +126,26 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       score = 0;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Game Over'),
-          content: Text('$resultMessage\nYour score is $score points.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('go back'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _resetGame();
-              },
-            ),
-          ],
-        );
-      },
-    );
+
+    // showDialog(
+    //   context: context,
+    //   builder: (context) {
+    //     return AlertDialog(
+    //       title: const Text('Game Over'),
+    //       content: Text('$resultMessage\nYour score is $score points.'),
+    //       actions: <Widget>[
+    //         TextButton(
+    //           child: const Text('go back'),
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //             _resetGame();
+    //           },
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
+    _showEnd();
   }
 
   void _resetGame() {
@@ -413,4 +415,90 @@ class MotionSensorGamePageState extends State<AccelerometerGames> {
       ),
     );
   }
+  void _showEnd() {
+    var radius = 10.0;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(25.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Successfully Recorded",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 11,
+                    ),
+                    Center(
+                      child: Text(
+                        'Go back to levels page',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 0, 0, 0),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close dialog
+                      Navigator.of(context).pop(); // Navigate back
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(radius),
+                          bottomRight: Radius.circular(radius),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      height: 35,
+                      width: 250,
+                      child: const Text(
+                        "Go Back",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 11,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
+
+

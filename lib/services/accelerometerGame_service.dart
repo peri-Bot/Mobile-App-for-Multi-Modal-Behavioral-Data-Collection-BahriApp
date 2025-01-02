@@ -59,11 +59,11 @@ class StepCounter {
     if (accelerometerAvailable && magnetometerAvailable) {
       final accelerometerStream = await SensorManager().sensorUpdates(
         sensorId: Sensors.ACCELEROMETER,
-        interval: const Duration(milliseconds: 100),
+        interval: Sensors.SENSOR_DELAY_FASTEST,
       );
       final magnetometerStream = await SensorManager().sensorUpdates(
         sensorId: Sensors.MAGNETIC_FIELD,
-        interval: const Duration(milliseconds: 100),
+        interval: Sensors.SENSOR_DELAY_FASTEST,
       );
 
       _accelerometerSubscription =
