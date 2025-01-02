@@ -42,13 +42,11 @@ class _BallGameState extends State<BallGame>
     'Easy': [
       const Rect.fromLTWH(50, 150, 200, 40),
       const Rect.fromLTWH(50, 320, 200, 40),
-      const Rect.fromLTWH(220, 550, 150, 40),
     ],
     'Medium': [
       const Rect.fromLTWH(50, 150, 200, 30),
-      const Rect.fromLTWH(50, 240, 200, 30),
+      //const Rect.fromLTWH(50, 240, 200, 30),
       const Rect.fromLTWH(150, 500, 200, 30),
-      const Rect.fromLTWH(150, 600, 200, 30),
     ],
     'Hard': [
       const Rect.fromLTWH(50, 100, 100, 25),
@@ -56,8 +54,8 @@ class _BallGameState extends State<BallGame>
       const Rect.fromLTWH(50, 300, 200, 25),
       const Rect.fromLTWH(50, 400, 250, 25),
       const Rect.fromLTWH(50, 500, 200, 25),
-      const Rect.fromLTWH(50, 600, 150, 25),
-      const Rect.fromLTWH(50, 700, 100, 25),
+      // const Rect.fromLTWH(50, 600, 150, 25),
+      // const Rect.fromLTWH(50, 700, 100, 25),
     ],
   };
 
@@ -152,8 +150,8 @@ class _BallGameState extends State<BallGame>
             } else {
               // Update ball position only if no collision or goal
               setState(() {
-                double horizontalSensitivity = 15.0;
-                double verticalSensitivity = 20.0;
+                double horizontalSensitivity = 8.0;
+                double verticalSensitivity = 7.0;
 
                 posX += gyroY * horizontalSensitivity;
                 posY += gyroX * verticalSensitivity;
@@ -207,7 +205,7 @@ class _BallGameState extends State<BallGame>
         });
         _sensorSubscription.cancel();
         _timer.cancel();
-        _showEnd; // Separate dialog display logic
+        _showEnd(); // Separate dialog display logic
       });
     }
   }
@@ -337,45 +335,45 @@ class _BallGameState extends State<BallGame>
         });
         _sensorSubscription.cancel();
         _timer.cancel();
-        _showGameWonDialog(); // Separate dialog display logic
+        _showEnd(); // Separate dialog display logic
       });
     }
   }
 
-  void _showGameWonDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.teal[200],
-          title: const Text('SUCCESS!GOOD JOB',
-              style: TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  isGameStarted = false;
-                });
-              },
-              style: TextButton.styleFrom(backgroundColor: Colors.teal),
-              child: const Text('Choose Level',
-                  style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(backgroundColor: Colors.redAccent),
-              child: const Text('Quit', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _showGameWonDialog() {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Colors.teal[200],
+  //         title: const Text('SUCCESS!GOOD JOB',
+  //             style: TextStyle(color: Colors.white)),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               setState(() {
+  //                 isGameStarted = false;
+  //               });
+  //             },
+  //             style: TextButton.styleFrom(backgroundColor: Colors.teal),
+  //             child: const Text('Choose Level',
+  //                 style: TextStyle(color: Colors.white)),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               Navigator.of(context).pop();
+  //             },
+  //             style: TextButton.styleFrom(backgroundColor: Colors.redAccent),
+  //             child: const Text('Quit', style: TextStyle(color: Colors.white)),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void dispose() async {
