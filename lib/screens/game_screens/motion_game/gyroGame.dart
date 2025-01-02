@@ -1,5 +1,4 @@
 import 'package:bahri_app/services/gyroGame_services.dart';
-import 'package:bahri_app/widgets/fade_message_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_sensors/flutter_sensors.dart';
@@ -33,13 +32,8 @@ class _BallGameState extends State<BallGame>
   String currentDifficulty = '';
   List<Rect> obstacles = [];
   String? uid;
-  bool _canPop = false;
+
   bool sessionEnded = false;
-  void updateCanPop(bool value) {
-    setState(() {
-      _canPop = value;
-    });
-  }
 
   DateTime? _lastUpdateTime;
   bool _isMoving = false;
@@ -213,35 +207,120 @@ class _BallGameState extends State<BallGame>
         });
         _sensorSubscription.cancel();
         _timer.cancel();
-        _showGameOverDialog(); // Separate dialog display logic
+        _showEnd; // Separate dialog display logic
       });
     }
   }
 
-  void _showGameOverDialog() {
+  // void _showGameOverDialog() {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Colors.teal[200],
+  //         title: const Text('Game Over', style: TextStyle(color: Colors.white)),
+  //         content: Text('Your score: $score',
+  //             style: const TextStyle(color: Colors.white)),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+
+  //               Navigator.of(context).pop();
+  //               setState(() {
+  //                 isGameStarted = false;
+  //               });
+  //             },
+  //             style: TextButton.styleFrom(backgroundColor: Colors.teal),
+  //             child:
+  //                 const Text('GO BACK', style: TextStyle(color: Colors.white)),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _showEnd() {
+    var radius = 10.0;
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.teal[200],
-          title: const Text('Game Over', style: TextStyle(color: Colors.white)),
-          content: Text('Your score: $score',
-              style: const TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                updateCanPop(true);
-                Navigator.of(context).pop();
-                setState(() {
-                  isGameStarted = false;
-                });
-              },
-              style: TextButton.styleFrom(backgroundColor: Colors.teal),
-              child:
-                  const Text('GO BACK', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(25.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Successfully Recorded",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 11,
+                    ),
+                    Center(
+                      child: Text(
+                        'Go back to levels page',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 0, 0, 0),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close dialog
+                      Navigator.of(context).pop(); // Navigate back
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(radius),
+                          bottomRight: Radius.circular(radius),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      height: 35,
+                      width: 250,
+                      child: const Text(
+                        "Go Back",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 11,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -275,7 +354,6 @@ class _BallGameState extends State<BallGame>
           actions: [
             TextButton(
               onPressed: () {
-                updateCanPop(true);
                 Navigator.of(context).pop();
                 setState(() {
                   isGameStarted = false;
@@ -287,7 +365,6 @@ class _BallGameState extends State<BallGame>
             ),
             TextButton(
               onPressed: () {
-                updateCanPop(true);
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
@@ -428,121 +505,102 @@ class _BallGameState extends State<BallGame>
       );
     }
 
-    return PopScope(
-      canPop: _canPop,
-      onPopInvoked: (bool didPop) {
-        if (didPop) {
-          return;
-        }
-
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) {
-            return const FadeMessageBox(
-              message: "Please finish the game first.",
-              duration: Duration(seconds: 2),
-            );
-          },
-        );
-      },
-      child: Scaffold(
-        backgroundColor: Colors.blue[40],
-        body: Stack(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
+    return Scaffold(
+      backgroundColor: Colors.blue[40],
+      body: Stack(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blueAccent, width: 20),
+            ),
+          ),
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 100),
+            left: posX,
+            top: posY,
+            child: Container(
+              width: ballSize,
+              height: ballSize,
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.blueAccent, width: 20),
+                color: isGameOver || isGameWon
+                    ? Colors.transparent
+                    : Colors.pinkAccent,
+                shape: BoxShape.circle,
               ),
             ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 100),
-              left: posX,
-              top: posY,
-              child: Container(
-                width: ballSize,
-                height: ballSize,
-                decoration: BoxDecoration(
-                  color: isGameOver || isGameWon
-                      ? Colors.transparent
-                      : Colors.pinkAccent,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            for (Rect obstacle in obstacles)
-              Positioned(
-                left: obstacle.left,
-                top: obstacle.top,
-                child: Container(
-                  width: obstacle.width,
-                  height: obstacle.height,
-                  color: Colors.blue,
-                ),
-              ),
+          ),
+          for (Rect obstacle in obstacles)
             Positioned(
-              left: 20,
-              right: 20,
-              top: 0,
+              left: obstacle.left,
+              top: obstacle.top,
               child: Container(
-                width: 200,
-                height: 50,
-                color: Colors.green[400],
-                child: const Center(
-                  child: Text(
-                    'GOAL',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                width: obstacle.width,
+                height: obstacle.height,
+                color: Colors.blue,
               ),
             ),
-            // Score display
-            // Positioned(
-            //   top: 60,
-            //   right: 20,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     decoration: BoxDecoration(
-            //       color: Colors.black54,
-            //       borderRadius: BorderRadius.circular(10),
-            //     ),
-            //     child: Text(
-            //       'Score: $score',
-            //       style: const TextStyle(
-            //         color: Colors.white,
-            //         fontSize: 20,
-            //         fontWeight: FontWeight.bold,
-            //       ),
-            //     ),
-            //   ),
-            // ),
-            // Difficulty display
-            Positioned(
-              top: 60,
-              left: 20,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          Positioned(
+            left: 20,
+            right: 20,
+            top: 0,
+            child: Container(
+              width: 200,
+              height: 50,
+              color: Colors.green[400],
+              child: const Center(
                 child: Text(
-                  'Level: $currentDifficulty',
-                  style: const TextStyle(
+                  'GOAL',
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // Score display
+          // Positioned(
+          //   top: 60,
+          //   right: 20,
+          //   child: Container(
+          //     padding: const EdgeInsets.all(8),
+          //     decoration: BoxDecoration(
+          //       color: Colors.black54,
+          //       borderRadius: BorderRadius.circular(10),
+          //     ),
+          //     child: Text(
+          //       'Score: $score',
+          //       style: const TextStyle(
+          //         color: Colors.white,
+          //         fontSize: 20,
+          //         fontWeight: FontWeight.bold,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // Difficulty display
+          Positioned(
+            top: 60,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Level: $currentDifficulty',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
