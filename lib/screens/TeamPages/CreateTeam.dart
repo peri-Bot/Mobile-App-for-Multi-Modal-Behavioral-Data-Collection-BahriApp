@@ -106,6 +106,8 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a team name';
+                            } else if (value.length > 8) {
+                              return 'Maximum 8 characters allowed ';
                             }
                             return null;
                           },
@@ -127,6 +129,8 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a team description';
+                            } else if (value.length > 20) {
+                              return 'Maximum 20 characters allowed ';
                             }
                             return null;
                           },
