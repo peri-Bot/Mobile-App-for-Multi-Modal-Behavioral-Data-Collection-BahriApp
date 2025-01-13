@@ -278,8 +278,7 @@ class FreeTextService {
     };
     if ((requestData['keystrokeFreeTextData'] as List<Map<String, dynamic>>)
             .isEmpty ||
-        (requestData['averageKeyStrokeFreeTextMetrics']
-                as List<Map<String, dynamic>>)
+        (requestData['averageKeyStrokeFreeTextMetrics'] as Map<String, dynamic>)
             .isEmpty) {
       return "Data cannot be sent. data collection is empty";
     }
@@ -287,7 +286,7 @@ class FreeTextService {
     debugPrint('Request Data:');
     debugPrint('Game Info: ${requestData['gameInfo']}');
     debugPrint(
-        'keystroke Data: ${requestData['keystrokekeystrokeFreeTextDataData']}');
+        'keystroke Data: ${requestData['keystrokekeystrokeFreeTextData']}');
     if (!isOnline) {
       // Save data to Hive if offline
       var box = Hive.box('offlineKeystrokeFreeTextData');
